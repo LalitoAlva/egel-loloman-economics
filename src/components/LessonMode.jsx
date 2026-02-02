@@ -46,6 +46,18 @@ const LessonMode = ({ onBack }) => {
         setLoading(false);
     };
 
+    // Toggle body class for mobile scroll locking
+    useEffect(() => {
+        if (selectedModulo) {
+            document.body.classList.add('lesson-mode-active');
+        } else {
+            document.body.classList.remove('lesson-mode-active');
+        }
+        return () => {
+            document.body.classList.remove('lesson-mode-active');
+        };
+    }, [selectedModulo]);
+
     // Cargar contenido del módulo seleccionado (con infografía como primera tarjeta)
     const loadContenido = async (moduloId, modulo) => {
         setLoading(true);
@@ -174,31 +186,31 @@ const LessonMode = ({ onBack }) => {
     if (!selectedModulo) {
         return (
             <div className="container fade-in">
-                <div style={{ maxWidth: '600px', margin: '0 auto 20px auto' }}>
+                <div style={{ maxWidth: '600px', margin: '0 auto 10px auto' }}>
                     <button
                         onClick={onBack}
                         style={{
                             width: '100%',
-                            padding: '15px',
+                            padding: '12px',
                             background: 'var(--bg-secondary)',
                             color: 'var(--text-secondary)',
                             border: '1px solid var(--card-border)',
                             borderRadius: '12px',
                             cursor: 'pointer',
-                            fontSize: '1rem',
+                            fontSize: '0.95rem',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            gap: '10px'
+                            gap: '8px'
                         }}
                     >
                         ← Volver al Inicio
                     </button>
                 </div>
 
-                <header style={{ textAlign: 'center', marginBottom: '40px' }}>
-                    <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📚 Clases por Módulo</h1>
-                    <p style={{ color: 'var(--text-secondary)' }}>Selecciona un módulo para estudiar</p>
+                <header style={{ textAlign: 'center', marginBottom: '20px' }}>
+                    <h1 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>📚 Clases por Módulo</h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Selecciona un módulo para estudiar</p>
                 </header>
 
                 <div className="module-grid">
