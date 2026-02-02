@@ -319,10 +319,104 @@ input[type="range"]::-webkit-slider-thumb {
   transform: rotate(90deg) scale(1.1);
 }
 
-[data-theme="dark"] .close-btn {
-  background: rgba(255, 255, 255, 0.05);
-}
-
 [data-theme="dark"] .close-btn:hover {
   background: rgba(239, 68, 68, 0.25);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN (MOBILE ADAPTATION)
+   ============================================ */
+
+/* Utility classes for responsive display */
+.desktop-only {
+  display: flex !important;
+}
+
+.mobile-only {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+
+  /* Hide/Show utilities */
+  .desktop-only {
+    display: none !important;
+  }
+
+  .hidden-on-mobile {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  /* Container adjustments */
+  .container {
+    padding: 10px;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Card Styles for Mobile */
+  .card,
+  .slide-card {
+    padding: 20px;
+    /* Reduced from 40px */
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  /* Typography sizes */
+  h1 {
+    font-size: 1.8rem !important;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  h3 {
+    font-size: 1.2rem !important;
+  }
+
+  p {
+    font-size: 1rem !important;
+    line-height: 1.5;
+  }
+
+  /* Button adjustments */
+  .btn-primary {
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+
+  /* Grid adjustments */
+  .module-grid {
+    grid-template-columns: 1fr;
+    /* Single column on mobile */
+    gap: 15px;
+  }
+
+  /* Close button position */
+  .close-btn {
+    top: 10px;
+    right: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+
+  .card,
+  .slide-card {
+    padding: 15px;
+  }
+
+  h1 {
+    font-size: 1.5rem !important;
+  }
 }

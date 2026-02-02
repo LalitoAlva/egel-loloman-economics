@@ -291,7 +291,7 @@ const LessonMode = ({ onBack }) => {
     return (
         <div className="container fade-in">
             {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                 <button onClick={() => setSelectedModulo(null)} style={{ background: 'transparent', color: 'var(--text-secondary)' }}>
                     ← Módulos
                 </button>
@@ -309,7 +309,7 @@ const LessonMode = ({ onBack }) => {
                                 fontSize: '0.9rem'
                             }}
                         >
-                            🔍 Ver completa
+                            🔍 <span className="hidden-on-mobile">Ver completa</span>
                         </button>
                     )}
                     {selectedModulo.audio_url && (
@@ -325,7 +325,11 @@ const LessonMode = ({ onBack }) => {
                                 fontSize: '0.9rem'
                             }}
                         >
-                            {isCurrentModulePlaying ? '⏸️ Reproduciendo' : '🎧 Audio'}
+                            {isCurrentModulePlaying ? (
+                                <>⏸️ <span className="hidden-on-mobile">Reproduciendo</span></>
+                            ) : (
+                                <>🎧 <span className="hidden-on-mobile">Audio</span></>
+                            )}
                         </button>
                     )}
                     <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>
@@ -346,7 +350,8 @@ const LessonMode = ({ onBack }) => {
                 </div>
             ) : currentCard ? (
                 <div className="slide-card fade-in" key={currentIndex} style={{
-                    width: '80%',
+                    width: '100%',
+                    maxWidth: '900px',
                     margin: '0 auto',
                     borderTop: `6px solid ${selectedModulo.color}`,
                     height: CARD_HEIGHT,

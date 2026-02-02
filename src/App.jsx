@@ -255,22 +255,24 @@ function AppContent() {
                 </div>
 
                 {/* Right side: Theme toggle, User info and mode */}
-                <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px'
-                }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px'
+                    }}>
 
                     {currentMode !== 'home' && (
                         <button
+                            className="hidden-on-mobile"
                             onClick={() => handleModeChange('home')}
                             style={{
                                 background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                                 border: 'none',
                                 color: 'var(--text-secondary)',
-                                padding: '10px 20px', // Increased padding
+                                padding: '10px 20px',
                                 cursor: 'pointer',
-                                fontSize: '1.1rem', // Increased
+                                fontSize: '1.1rem',
                                 fontWeight: '600',
                                 borderRadius: '8px',
                                 display: 'flex',
@@ -282,33 +284,35 @@ function AppContent() {
                         </button>
                     )}
 
-
-
-                    <FontSizeToggle />
-                    <ThemeToggle />
+                    <div className="hidden-on-mobile">
+                        <FontSizeToggle />
+                    </div>
+                    <div className="hidden-on-mobile">
+                        <ThemeToggle />
+                    </div>
 
                     <div style={{
                         background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                         border: 'none',
                         color: 'var(--text-secondary)',
-                        padding: '10px 20px', // Increased padding
+                        padding: '10px 20px',
                         cursor: 'pointer',
-                        fontSize: '1.1rem', // Increased
+                        fontSize: '1.1rem',
                         fontWeight: '600',
                         borderRadius: '8px',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '8px'
                     }}
-                        onClick={() => handleModeChange('progress')}
+                        onClick={() => handleModeChange('profile')}
                     >
-                        <span style={{ fontSize: '1.2rem' }}>{user.avatar || '👤'}</span> {/* Increased */}
-                        <span style={{ color: 'var(--accent-color)', fontSize: '1.1rem' }}> {/* Increased */}
+                        <span style={{ fontSize: '1.2rem' }}>{user.avatar || '👤'}</span>
+                        <span className="hidden-on-mobile" style={{ color: 'var(--accent-color)', fontSize: '1.1rem' }}>
                             {user.nombre.split(' ')[0]}
                         </span>
                     </div>
 
-                    <span style={{
+                    <span className="hidden-on-mobile" style={{
                         padding: '10px 20px',
                         background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                         border: 'none',
@@ -324,14 +328,15 @@ function AppContent() {
                     </span>
 
                     <button
+                        className="hidden-on-mobile"
                         onClick={handleLogout}
                         style={{
                             background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                             border: 'none',
                             color: 'var(--text-secondary)',
-                            padding: '10px 20px', // Increased padding
+                            padding: '10px 20px',
                             cursor: 'pointer',
-                            fontSize: '1.1rem', // Increased
+                            fontSize: '1.1rem',
                             fontWeight: '600',
                             borderRadius: '8px',
                             display: 'flex',

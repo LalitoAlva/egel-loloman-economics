@@ -347,7 +347,7 @@ const QuizMode = ({ onBack }) => {
                         <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 'bold' }}>
                             ⏱️ Tiempo límite:
                         </label>
-                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {timeOptions.map(time => (
                                 <button
                                     key={time}
@@ -376,7 +376,7 @@ const QuizMode = ({ onBack }) => {
                         </label>
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(3, 1fr)', // 3 columns
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', // Responsive grid
                             gap: '12px',
                             justifyContent: 'center'
                         }}>
@@ -449,7 +449,7 @@ const QuizMode = ({ onBack }) => {
                         <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-primary)', fontSize: '1rem' }}>
                             🎯 Dificultad:
                         </label>
-                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {[
                                 { value: null, label: '⚖️ Balanceado', color: 'var(--accent-color)' },
                                 { value: 'basico', label: '🟢 Básico', color: '#22c55e' },
