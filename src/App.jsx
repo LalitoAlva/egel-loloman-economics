@@ -188,12 +188,7 @@ function AppContent() {
             {/* Global Audio Player - Fixed at top */}
             <GlobalAudioPlayer />
 
-            {/* Notifications Bubble */}
-            <NotificationsBubble
-                isOpen={showNotifications}
-                onToggle={() => setShowNotifications(!showNotifications)}
-                onClose={() => setShowNotifications(false)}
-            />
+            {/* Sidebar */}
 
             {/* Sidebar */}
             <Sidebar
