@@ -353,7 +353,8 @@ input[type="range"]::-webkit-slider-thumb {
 
   /* Container adjustments */
   .container {
-    padding: 10px;
+    padding: 0;
+    /* Full width */
     width: 100%;
     max-width: 100%;
   }
@@ -362,10 +363,22 @@ input[type="range"]::-webkit-slider-thumb {
   .card,
   .slide-card {
     padding: 20px;
-    /* Reduced from 40px */
-    border-radius: 16px;
-    margin-bottom: 20px;
+    border-radius: 0;
+    /* No rounded corners */
+    margin-bottom: 0;
+    /* No bottom margin */
+    border: none;
+    /* Remove border if any */
+    min-height: calc(100vh - 60px);
+    /* Full height minus header */
   }
+
+  /* Typography sizes */
+  h1 {
+    font-size: 1.6rem !important;
+  }
+
+  /* ... existing styles ... */
 
   /* Typography sizes */
   h1 {

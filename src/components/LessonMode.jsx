@@ -352,9 +352,9 @@ const LessonMode = ({ onBack }) => {
                 <div className="slide-card fade-in" key={currentIndex} style={{
                     width: '100%',
                     maxWidth: '900px',
-                    margin: '0 auto',
+                    margin: '0 auto', // Will be overridden by CSS on mobile if needed, but keeping for desktop
                     borderTop: `6px solid ${selectedModulo.color}`,
-                    height: CARD_HEIGHT,
+                    // height removed here, handled by CSS min-height
                     display: 'flex',
                     flexDirection: 'column'
                 }}>
