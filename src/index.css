@@ -343,6 +343,11 @@ input[type="range"]::-webkit-slider-thumb {
     display: none !important;
   }
 
+  /* Fix body scroll on mobile */
+  body.lesson-mode-active {
+    overflow: hidden;
+  }
+
   .hidden-on-mobile {
     display: none !important;
   }
@@ -369,8 +374,13 @@ input[type="range"]::-webkit-slider-thumb {
     /* No bottom margin */
     border: none;
     /* Remove border if any */
-    min-height: calc(100vh - 60px);
-    /* Full height minus header */
+    /* Height calculation: 100dvh (viewport) - 60px (Header) - ~120px (Controls + Margins) */
+    height: calc(100dvh - 180px);
+
+    overflow-y: auto;
+    /* Internal scrolling */
+    overscroll-behavior: contain;
+    /* Prevent body scroll chain */
   }
 
   /* Typography sizes */
