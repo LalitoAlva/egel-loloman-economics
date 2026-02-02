@@ -44,70 +44,20 @@ CREATE TABLE modulos (
     icon VARCHAR(10) DEFAULT '📚',
     color VARCHAR(20) DEFAULT '#a855f7',
     numero INTEGER,
+    audio_url TEXT,
+    infografia_url TEXT,
     activo BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT NOW()
 );
 
--- Insertar módulos basados en los valores únicos del backup
-INSERT INTO modulos (slug, titulo, descripcion, icon, color, numero)
-SELECT DISTINCT
-    modulo,
-    CASE modulo
-        WHEN 'costos_normas' THEN 'Costos y Normas'
-        WHEN 'dictamenes_control' THEN 'Dictámenes y Control'
-        WHEN 'fiscal' THEN 'Fiscal'
-        WHEN 'auditoria' THEN 'Auditoría'
-        WHEN 'finanzas' THEN 'Finanzas'
-        WHEN 'contabilidad' THEN 'Contabilidad'
-        WHEN 'administracion' THEN 'Administración'
-        WHEN 'economia' THEN 'Economía'
-        WHEN 'microeconomia' THEN 'Microeconomía'
-        WHEN 'macroeconomia' THEN 'Macroeconomía'
-        ELSE INITCAP(REPLACE(modulo, '_', ' '))
-    END,
-    CASE modulo
-        WHEN 'costos_normas' THEN 'Normas contables y control de costos'
-        WHEN 'dictamenes_control' THEN 'Control interno y dictámenes financieros'
-        WHEN 'fiscal' THEN 'Impuestos y legislación fiscal'
-        WHEN 'auditoria' THEN 'Procedimientos y técnicas de auditoría'
-        WHEN 'finanzas' THEN 'Finanzas corporativas y mercados'
-        WHEN 'contabilidad' THEN 'Contabilidad general y financiera'
-        WHEN 'administracion' THEN 'Administración de empresas'
-        WHEN 'economia' THEN 'Teoría económica general'
-        WHEN 'microeconomia' THEN 'Comportamiento de agentes económicos'
-        WHEN 'macroeconomia' THEN 'Economía a nivel agregado'
-        ELSE 'Preguntas de práctica para el EGEL'
-    END,
-    CASE modulo
-        WHEN 'costos_normas' THEN '📊'
-        WHEN 'dictamenes_control' THEN '📋'
-        WHEN 'fiscal' THEN '🏛️'
-        WHEN 'auditoria' THEN '🔍'
-        WHEN 'finanzas' THEN '💰'
-        WHEN 'contabilidad' THEN '📒'
-        WHEN 'administracion' THEN '📈'
-        WHEN 'economia' THEN '🌐'
-        WHEN 'microeconomia' THEN '📉'
-        WHEN 'macroeconomia' THEN '📊'
-        ELSE '📚'
-    END,
-    CASE modulo
-        WHEN 'costos_normas' THEN '#3b82f6'
-        WHEN 'dictamenes_control' THEN '#10b981'
-        WHEN 'fiscal' THEN '#f59e0b'
-        WHEN 'auditoria' THEN '#8b5cf6'
-        WHEN 'finanzas' THEN '#ef4444'
-        WHEN 'contabilidad' THEN '#06b6d4'
-        WHEN 'administracion' THEN '#ec4899'
-        WHEN 'economia' THEN '#14b8a6'
-        WHEN 'microeconomia' THEN '#6366f1'
-        WHEN 'macroeconomia' THEN '#22c55e'
-        ELSE '#a855f7'
-    END,
-    ROW_NUMBER() OVER (ORDER BY modulo)
-FROM preguntas_backup
-WHERE modulo IS NOT NULL
-GROUP BY modulo;
+-- Insertar los 6 módulos originales (según courseContent.js y assets)
+INSERT INTO modulos (slug, titulo, descripcion, icon, color, numero, audio_url, infografia_url) VALUES
+    ('eco-1', 'Economía I: Fundamentos Micro y Macro', 'Teoría del Consumidor, Productor y Equilibrio Macroeconómico', '📊', '#38bdf8', 1, '/assets/audio/1.5.MacroMicroEconomia.m4a', '/assets/infografias/1.3.MacroMicroEconomia.png'),
+    ('eco-2', 'Economía II: Finanzas', 'Proyectos y Riesgo', '📈', '#4ade80', 2, '/assets/audio/2.5.ProyectosYRIesgo.m4a', '/assets/infografias/2.3.ProyectosYRiesgo.png'),
+    ('eco-3', 'Economía III: Internacional', 'Comercio y Bienestar', '🌍', '#facc15', 3, '/assets/audio/3.5.Internacional.m4a', '/assets/infografias/3.3.Internacional.png'),
+    ('con-1', 'Contaduría I: Información', 'Costos y Normas', '📑', '#f472b6', 4, '/assets/audio/4.5.CostosYNormas.m4a', '/assets/infografias/4.3.CostosYNormas.png'),
+    ('con-2', 'Contaduría II: Fiscal', 'Impuestos y Leyes', '⚖️', '#a78bfa', 5, '/assets/audio/5.5.ImpuestosYLeyes.m4a', '/assets/infografias/5.3.ImpuestosYLeyes.png'),
+    ('con-3', 'Contaduría III: Auditoría', 'Dictámenes y Control', '🔍', '#fb923c', 6, '/assets/audio/6.5.DictamenesYControl.m4a', '/assets/infografias/6.4.DictamenesYControl.png');
 
 -- ============================================
 -- PASO 4: CREAR TABLA PREGUNTAS CON modulo_id FK
@@ -139,6 +89,7 @@ CREATE INDEX idx_preguntas_activo ON preguntas(activo);
 -- ============================================
 -- PASO 5: RESTAURAR PREGUNTAS CON modulo_id
 -- ============================================
+-- Mapea los subtemas antiguos a los 6 módulos nuevos
 INSERT INTO preguntas (modulo_id, subtema, tema, nivel, pregunta, opcion_a, opcion_b, opcion_c, opcion_d, respuesta_correcta, explicacion, formula, activo, created_at)
 SELECT
     m.id as modulo_id,
@@ -156,8 +107,32 @@ SELECT
     COALESCE(b.activo, true),
     COALESCE(b.created_at, NOW())
 FROM preguntas_backup b
-JOIN modulos m ON m.slug = b.modulo
-WHERE b.modulo IS NOT NULL;
+JOIN modulos m ON m.slug = (
+    CASE 
+        -- ECO-1: Micro y Macro Fundamentos
+        WHEN b.subtema IN ('teoria_consumidor', 'elasticidades', 'teoria_productor', 'costos', 'estructuras_mercado', 'teoria_juegos', 'pib_contabilidad', 'modelo_islm', 'politica_fiscal', 'politica_monetaria', 'mundell_fleming', 'oferta_demanda_agregada', 'inflacion_phillips', 'crecimiento_solow') THEN 'eco-1'
+        
+        -- ECO-2: Finanzas
+        WHEN b.subtema IN ('interes', 'valor_temporal', 'van_tir', 'van', 'riesgo', 'descuento', 'tir', 'amortizacion', 'costo_capital', 'flujos') THEN 'eco-2'
+        WHEN b.subtema = 'evaluacion' AND b.tema IN ('Período de Recuperación', 'Limitaciones del Payback', 'Índice de Rentabilidad', 'Razón Beneficio-Costo') THEN 'eco-2'
+        
+        -- ECO-3: Internacional
+        WHEN b.subtema IN ('internacional', 'comercio', 'balanza_pagos') THEN 'eco-3'
+        
+        -- CON-1: Información Financiera
+        WHEN b.subtema IN ('postulados', 'caracteristicas', 'elementos', 'juicio', 'marco', 'valuacion', 'presentacion') THEN 'con-1'
+        
+        -- CON-2: Fiscal
+        WHEN b.subtema IN ('iva', 'acreditamiento', 'isr', 'presuntiva', 'seguro_social', 'obligaciones', 'gobierno', 'laboral') THEN 'con-2'
+        
+        -- CON-3: Auditoría
+        WHEN b.subtema IN ('evidencia', 'procedimientos', 'coso', 'dictamen', 'riesgo_auditoria', 'documentacion', 'expertos', 'materialidad') THEN 'con-3'
+        
+        -- Excluir otros (pedagogía, etc.)
+        ELSE NULL
+    END
+)
+WHERE b.subtema IS NOT NULL;
 
 -- ============================================
 -- PASO 6: RECREAR TABLAS DE EXÁMENES
