@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-const NotificationsBubble = ({ isOpen, onToggle, onClose }) => {
+const NotificationsBubble = ({ isOpen, onToggle, onClose, inline, ...props }) => {
     const { user } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -122,9 +122,18 @@ const NotificationsBubble = ({ isOpen, onToggle, onClose }) => {
             <button
                 onClick={onToggle}
                 style={{
-                    position: 'fixed',
-                    top: '70px',
-                    right: '20px',
+                    // Conditional positioning
+                    ...(inline ? {
+                        position: 'relative',
+                        zIndex: 100,
+                        marginRight: '10px'
+                    } : {
+                        position: 'fixed',
+                        top: '70px',
+                        right: '20px',
+                        zIndex: 1000,
+                    }),
+
                     width: '45px',
                     height: '45px',
                     borderRadius: '50%',
@@ -135,9 +144,8 @@ const NotificationsBubble = ({ isOpen, onToggle, onClose }) => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     fontSize: '1.3rem',
-                    zIndex: 1000,
                     boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
                 }}
             >
                 🔔
@@ -184,7 +192,7 @@ const NotificationsBubble = ({ isOpen, onToggle, onClose }) => {
                         className="fade-in"
                         style={{
                             position: 'fixed',
-                            top: '125px',
+                            top: '80px',
                             right: '20px',
                             width: '340px',
                             maxHeight: '450px',

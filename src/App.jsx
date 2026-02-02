@@ -291,6 +291,15 @@ function AppContent() {
                         <ThemeToggle />
                     </div>
 
+                    {/* Notifications (Mobile & Desktop) */}
+                    <NotificationsBubble
+                        isOpen={showNotifications}
+                        onToggle={() => setShowNotifications(!showNotifications)}
+                        onClose={() => setShowNotifications(false)}
+                        inline={true}
+                        style={{ marginRight: '5px' }}
+                    />
+
                     <div style={{
                         background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                         border: 'none',
