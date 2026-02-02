@@ -59,6 +59,7 @@ const ClassMode = ({ module, onBack }) => {
             </button>
 
             <div className="card" style={{ margin: '0 auto', borderTop: `8px solid ${module.color}`, padding: '40px 60px' }}>
+                <button className="close-btn" onClick={onBack} title="Cerrar">×</button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
                     <span style={{ fontSize: '3rem' }}>{module.icon}</span>
                     <div>

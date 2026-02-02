@@ -1,176 +1,576 @@
-
 export const modules = [
     {
         id: 'eco-1',
-        title: 'Economía I: Fundamentos',
-        desc: 'Micro, Macro y Modelos',
+        title: 'Economía I: Fundamentos Micro y Macro',
+        desc: 'Teoría del Consumidor, Productor y Equilibrio Macroeconómico',
         icon: '📊',
         color: '#38bdf8',
-        detailed_report: `# Fundamentos de Micro y Macroeconomía
-**Capítulo: Análisis Integral de los Agentes y los Agregados Económicos**
+        detailed_report: `# Fundamentos Integrales de Micro y Macroeconomía
+**Marco Teórico para el EGEL de Economía**
 
-## Introducción
-La economía se divide en dos ramas principales para su estudio: la **microeconomía** y la **macroeconomía**. La microeconomía explora el comportamiento de los agentes individuales, como las empresas y las familias, y los factores que determinan el funcionamiento de mercados específicos. Se centra en las decisiones de precios, cantidades y los efectos de regulaciones e impuestos en mercados particulares. Por otro lado, la macroeconomía estudia el funcionamiento de la economía en su conjunto, analizando variables agregadas como el producto total (PIB), el empleo, la inflación y las tasas de interés.
+## Introducción Estratégica
+La economía moderna requiere dominar tanto el análisis individual (microeconomía) como el agregado (macroeconomía). Este módulo integra ambas perspectivas para proporcionar una visión completa de la toma de decisiones económicas, desde el consumidor individual hasta las políticas nacionales.
 
 ---
 
 ## PARTE I: MICROECONOMÍA
 
-### 1. Equilibrio del Consumidor
-El objetivo fundamental del consumidor es maximizar su utilidad dada una restricción presupuestaria, eligiendo la mejor cesta de bienes que puede adquirir con su renta disponible.
+### 1. Teoría del Consumidor
 
-#### 1.1 Preferencias y Restricción Presupuestaria
-Las preferencias del consumidor se representan mediante **curvas de indiferencia**, que muestran combinaciones de bienes que otorgan el mismo nivel de satisfacción. Estas curvas tienen pendiente negativa y son convexas al origen. Por otro lado, la **restricción presupuestaria** (o recta de balance) indica las combinaciones de bienes que el consumidor puede comprar dado su ingreso y los precios del mercado.
+El consumidor busca maximizar su utilidad sujeto a una restricción presupuestaria. Este problema de optimización se resuelve donde:
+- **Curvas de Indiferencia:** Representan combinaciones de bienes que dan la misma satisfacción
+- **Restricción Presupuestaria:** M = Px·X + Py·Y (donde M es el ingreso)
+- **Condición de Equilibrio:** TMS = Px/Py
 
-#### 1.2 La Condición de Equilibrio
-El consumidor alcanza el equilibrio cuando la curva de indiferencia es tangente a la recta presupuestaria. Matemáticamente, esto ocurre cuando la **Tasa Marginal de Sustitución (TMS)** —la disposición subjetiva a intercambiar un bien por otro— se iguala a la relación de precios del mercado ($Px/Py$).
+**Utilidad Marginal y Ley de Utilidades Marginales Decrecientes:**
+A medida que consumes más de un bien, la satisfacción adicional (utilidad marginal) disminuye.
 
-### 2. Monopolio y Eficiencia
-Un monopolio es una estructura de mercado donde existe un único vendedor de un bien o servicio que no tiene sustitutos cercanos.
-*   **Maximización de Beneficios:** El monopolista elige el nivel de producción donde el Ingreso Marginal es igual al Costo Marginal (IMg = CMg).
-*   **Ineficiencia Social:** A diferencia de la competencia perfecta, el monopolista fija un precio superior al Costo Marginal (P > CMg). Esto genera una **Pérdida Irrecuperable de Eficiencia**, ya que se producen menos unidades de las socialmente deseables.
+### 2. Elasticidades de Demanda
 
-### 3. Elasticidad Precio de la Demanda
-Mide la sensibilidad de la cantidad demandada ante cambios en el precio.
-*   **Demanda Elástica (>1):** Muy sensible. Si subes el precio, los ingresos totales caen.
-*   **Demanda Inelástica (<1):** Poco sensible. Si subes el precio, los ingresos totales suben (ej. medicinas, vicios).
+**Elasticidad Precio de la Demanda (EPD):**
+$$EPD = \\frac{\\%\\Delta Q_d}{\\%\\Delta P}$$
+
+- **Elástica (|EPD| > 1):** Demanda sensible. ↑P → ↓Ingresos Totales
+- **Inelástica (|EPD| < 1):** Demanda insensible. ↑P → ↑Ingresos Totales  
+- **Unitaria (|EPD| = 1):** Cambio proporcional. Ingresos constantes
+
+**Elasticidad Precio Cruzada:**
+- Positiva → Bienes Sustitutos (café y té)
+- Negativa → Bienes Complementarios (café y azúcar)
+
+**Elasticidad Ingreso:**
+- Positiva → Bien Normal (↑M → ↑Qd)
+- Negativa → Bien Inferior (↑M → ↓Qd)
+
+### 3. Teoría del Productor
+
+**Función de Producción:** Q = f(L, K)
+
+**Conceptos Clave:**
+- **Producto Marginal (PMg):** Producción adicional por unidad adicional de insumo
+- **Producto Medio (PMe):** Producción promedio por unidad de insumo
+- **Relación:** PMg corta a PMe en su máximo
+
+**Etapas de la Producción:**
+1. **Etapa I:** PMe creciente. PMg > PMe (Ineficiente - Factor fijo subutilizado)
+2. **Etapa II:** PMg y PMe decrecientes pero positivos (Zona Racional de Producción)
+3. **Etapa III:** PMg negativo (Ineficiente - Exceso de factor variable)
+
+**Rendimientos a Escala:**
+Si multiplicamos todos los inputs por λ > 1:
+- **Crecientes:** Q aumenta más que λ (economías de escala)
+- **Constantes:** Q aumenta exactamente λ (escala eficiente)
+- **Decrecientes:** Q aumenta menos que λ (deseconomías de escala)
+
+### 4. Costos de Producción
+
+**Corto Plazo:**
+- Costo Fijo (CF): No varía con Q
+- Costo Variable (CV): Varía con Q  
+- Costo Total (CT) = CF + CV
+- Costo Marginal (CMg) = ΔCT/ΔQ
+- Costo Medio Total (CMe) = CT/Q
+
+**Relación Importante:**
+CMg corta al CMe en su punto mínimo. Cuando CMg < CMe, el CMe está bajando.
+
+**Largo Plazo:**
+Todos los costos son variables. La curva de Costo Medio de Largo Plazo (CMeLP) es la envolvente de todas las curvas de CMeCP.
+
+### 5. Estructuras de Mercado
+
+**Competencia Perfecta:**
+- Muchos compradores y vendedores
+- Producto homogéneo
+- Libre entrada y salida
+- Información perfecta
+- **Equilibrio:** P = CMg = CMe (largo plazo)
+- **Beneficio económico:** Cero en el largo plazo
+
+**Monopolio:**
+- Un solo vendedor
+- No hay sustitutos cercanos
+- Barreras a la entrada
+- **Maximización:** IMg = CMg (donde IMg < P)
+- **Pérdida Irrecuperable:** Área entre P monopolio y CMg
+- **Discriminación de Precios:** Captura excedente del consumidor
+
+**Competencia Monopolística:**
+- Muchos vendedores
+- Productos diferenciados
+- Libre entrada
+- **Largo plazo:** P > CMg, beneficio económico = 0
+
+**Oligopolio:**
+- Pocos vendedores
+- Interdependencia estratégica
+- **Modelo de Cournot:** Competencia en cantidades
+- **Modelo de Bertrand:** Competencia en precios
+- **Modelo de Stackelberg:** Líder y seguidor
+
+### 6. Teoría de Juegos
+
+**Equilibrio de Nash:** 
+Situación donde ningún jugador puede mejorar unilateralmente cambiando su estrategia.
+
+**Dilema del Prisionero:**
+El equilibrio de Nash puede ser subóptimo para ambos jugadores (equilibrio no cooperativo).
+
+**Estrategias Dominantes:**
+Estrategia óptima independientemente de lo que haga el rival.
 
 ---
 
 ## PARTE II: MACROECONOMÍA
 
-### 4. Modelo de Solow
-Explica el crecimiento económico a largo plazo mediante la acumulación de capital, el crecimiento de la fuerza laboral y el cambio tecnológico.
-*   **Estado Estacionario:** Punto donde la inversión bruta es igual a la depreciación del capital. En este punto, el capital por trabajador deja de crecer.
-*   **Conclusión:** La acumulación de capital por sí sola no genera crecimiento perpetuo debido a los rendimientos decrecientes. Solo el **progreso tecnológico** puede sostener un aumento continuo en el nivel de vida.
+### 7. Contabilidad Nacional
 
-### 5. Modelo IS-LM
-Herramienta para analizar el equilibrio a corto plazo en una economía cerrada.
-*   **Curva IS (Inversión-Ahorro):** Equilibrio en el mercado de bienes.
-*   **Curva LM (Liquidez-Dinero):** Equilibrio en el mercado monetario.
-La intersección determina la tasa de interés y el nivel de renta de equilibrio.
+**PIB (Producto Interno Bruto):**
+Valor de mercado de todos los bienes y servicios finales producidos en un país durante un periodo.
 
-### 6. Modelo Mundell-Fleming
-Extensión del IS-LM para una economía abierta (con comercio y capitales).
-*   **Trinidad Imposible:** Un país no puede tener al mismo tiempo: 1) Tipo de cambio fijo, 2) Libre movilidad de capitales y 3) Política monetaria independiente.
-*   **Resultado:** Con tipo de cambio fijo, la política fiscal es muy eficaz, pero la monetaria es inútil (se pierde en defender la moneda).`,
+**Enfoques de Cálculo:**
+1. **Gasto:** PIB = C + I + G + (X - M)
+2. **Ingreso:** PIB = Salarios + Rentas + Intereses + Beneficios
+3. **Producción:** Suma del valor agregado en cada etapa
+
+**PIB Real vs Nominal:**
+- **Nominal:** A precios corrientes
+- **Real:** A precios constantes (ajustado por inflación)
+- **Deflactor del PIB:** (PIB Nominal / PIB Real) × 100
+
+### 8. Modelo IS-LM
+
+**Curva IS (Inversión-Ahorro):**
+Equilibrio en el mercado de bienes.
+- **Ecuación:** Y = C(Y - T) + I(i) + G
+- **Pendiente:** Negativa (↑i → ↓I → ↓Y)
+- **Desplazamiento:** Política fiscal expansiva desplaza IS a la derecha
+
+**Curva LM (Liquidez-Dinero):**
+Equilibrio en el mercado monetario.
+- **Ecuación:** M/P = L(i, Y)
+- **Pendiente:** Positiva (↑Y → ↑demanda de dinero → ↑i)
+- **Desplazamiento:** Política monetaria expansiva desplaza LM a la derecha
+
+**Efectos de las Políticas:**
+- **Política Fiscal Expansiva (↑G o ↓T):** ↑Y, ↑i (efecto crowding-out)
+- **Política Monetaria Expansiva (↑M):** ↑Y, ↓i
+
+### 9. Modelo Mundell-Fleming (Economía Abierta)
+
+**La Trinidad Imposible:**
+Un país no puede tener simultáneamente:
+1. Tipo de cambio fijo
+2. Libre movilidad de capitales  
+3. Política monetaria independiente
+
+**Efectividad de Políticas:**
+
+Con **Tipo de Cambio Fijo:**
+- Política Fiscal: Muy efectiva
+- Política Monetaria: Inefectiva (se pierde en defender el tipo de cambio)
+
+Con **Tipo de Cambio Flexible:**
+- Política Fiscal: Inefectiva (apreciación anula el efecto)
+- Política Monetaria: Muy efectiva
+
+### 10. Oferta y Demanda Agregada
+
+**Demanda Agregada (DA):**
+Relación inversa entre nivel de precios y producción demandada.
+- Desplazamientos: Política fiscal, monetaria, confianza del consumidor
+
+**Oferta Agregada de Corto Plazo (OACP):**
+Pendiente positiva (precios rígidos en el corto plazo)
+
+**Oferta Agregada de Largo Plazo (OALP):**
+Vertical al nivel de pleno empleo (precios flexibles)
+
+**Equilibrio Macroeconómico:**
+Intersección de DA y OA determina P* y Y*
+
+### 11. Inflación y Desempleo
+
+**Curva de Phillips (Corto Plazo):**
+Relación inversa entre inflación y desempleo.
+- **Trade-off:** Menor desempleo → Mayor inflación
+
+**Curva de Phillips de Largo Plazo:**
+Vertical a la tasa natural de desempleo (NAIRU).
+
+**Tipos de Inflación:**
+- **Demanda:** Exceso de demanda agregada
+- **Costos:** Aumento en costos de producción (ej. petróleo)
+- **Estructural:** Rigideces en la economía
+
+### 12. Modelo de Solow (Crecimiento)
+
+**Ecuación Fundamental:**
+$$\\Delta k = sy - (n + \\delta)k$$
+
+Donde:
+- k = capital per cápita
+- s = tasa de ahorro
+- y = producto per cápita
+- n = crecimiento poblacional
+- δ = tasa de depreciación
+
+**Estado Estacionario:**
+Capital per cápita constante (inversión = depreciación).
+
+**Conclusión Clave:**
+Solo el progreso tecnológico genera crecimiento sostenido del ingreso per cápita.
+
+### 13. Política Fiscal
+
+**Multiplicador del Gasto:**
+$$k = \\frac{1}{1 - c(1-t)}$$
+
+Donde c es la propensión marginal a consumir y t la tasa impositiva.
+
+**Tipos de Política:**
+- **Expansiva:** ↑G o ↓T → Estimula la economía
+- **Contractiva:** ↓G o ↑T → Frena la economía
+
+**Déficit y Deuda:**
+- **Déficit:** Gasto > Ingresos (flujo)
+- **Deuda:** Acumulación de déficits (stock)
+
+### 14. Política Monetaria
+
+**Instrumentos del Banco Central:**
+1. Operaciones de Mercado Abierto (más usado)
+2. Tasa de redescuento
+3. Coeficiente de reservas obligatorias
+
+**Transmisión Monetaria:**
+↑M → ↓i → ↑I → ↑DA → ↑Y
+
+**Trampa de Liquidez:**
+Situación donde i ≈ 0 y la política monetaria es inefectiva.
+
+**Regla de Taylor:**
+$$i = r^* + \\pi + 0.5(\\pi - \\pi^*) + 0.5(Y - Y^*)$$
+
+---
+
+## Conectividad Micro-Macro
+
+1. **Agregación:** La macroeconomía suma comportamientos microeconómicos
+2. **Función de Consumo:** Basada en utilidad microeconómica
+3. **Función de Inversión:** Basada en maximización de beneficios
+4. **Oferta Agregada:** Agregación de funciones de producción individuales
+5. **Mercado Laboral:** Oferta y demanda de trabajo (micro) determinan empleo agregado (macro)`,
+
         topics: [
+            // ============ MICROECONOMÍA ============
             {
-                id: 't1-micro',
-                title: 'Equilibrio del Consumidor',
-                content: 'Optimización de la utilidad.',
+                id: 't1-micro-consumidor',
+                title: '1. Equilibrio del Consumidor',
+                content: 'Maximización de utilidad con restricción presupuestaria',
                 lesson: {
-                    explanation: "El equilibrio se alcanza cuando la Tasa Marginal de Sustitución (TMS) se iguala a la relación de precios. Si TMS > Precios, valoras el bien más de lo que cuesta.",
-                    example_title: "Pizza vs Hamburguesas",
-                    example: "Si das 5 hamburguesas por 1 pizza (TMS=5) pero el mercado solo pide 2 (Px/Py=2), ¡compra más pizza! Ganas satisfacción 'barata'."
+                    explanation: "El consumidor maximiza su utilidad eligiendo la cesta de bienes donde la Tasa Marginal de Sustitución (TMS) se iguala a la relación de precios. TMS mide cuánto estás dispuesto a sacrificar de un bien por obtener más del otro. En equilibrio, tu valoración subjetiva (TMS) coincide con el precio relativo del mercado (Px/Py).",
+                    example_title: "Tacos vs Pizza: Tu Dilema del Viernes",
+                    example: "Tienes $200. Los tacos cuestan $20 y la pizza $40. Tu TMS es 3 (darías 3 tacos por 1 pizza). Pero el mercado pide Px/Py = 40/20 = 2. Como valoras la pizza más (3) de lo que cuesta (2), debes comprar MÁS pizza. Al hacerlo, tu TMS baja (ley de utilidad marginal decreciente) hasta que TMS = 2. Ahí maximizas tu felicidad gastronómica."
                 },
                 socratic_questions: [
                     {
-                        q: "Si TMS (3) > Precio Relativo (1), ¿por qué NO estás maximizando utilidad?",
-                        hint: "Valoras X más de lo que cuesta.",
-                        answer: "Debes comprar más X. Al hacerlo, su utilidad marginal baja hasta que tu valoración subjetiva iguala al costo de mercado."
+                        q: "Si TMS = 4 y Px/Py = 2, ¿qué bien debes consumir más y por qué?",
+                        hint: "Compara tu valoración subjetiva con el costo de mercado",
+                        answer: "Debes consumir más X. Valoras X el doble de lo que cuesta en términos de Y. Estás 'subvaluando' Y. Al comprar más X, su utilidad marginal baja hasta que TMS = 2."
+                    },
+                    {
+                        q: "¿Por qué las curvas de indiferencia no pueden cruzarse?",
+                        hint: "Piensa en las preferencias transitivas",
+                        answer: "Si se cruzaran, un punto estaría en dos niveles de utilidad diferentes. Esto violaría la transitividad: si A~B y B~C, entonces A~C. Es una contradicción lógica."
                     }
                 ]
             },
             {
-                id: 't2-micro',
-                title: 'Monopolio y Eficiencia',
-                content: 'Pérdida irrecuperable.',
+                id: 't2-micro-elasticidad',
+                title: '2. Elasticidad Precio de la Demanda',
+                content: 'Sensibilidad de la cantidad demandada ante cambios en el precio',
                 lesson: {
-                    explanation: "El monopolista fija P > CMg. Esto crea una pérdida de bienestar porque hay gente dispuesta a pagar más del costo, pero menos del precio monopólico.",
-                    example_title: "La Farmacéutica",
-                    example: "Producir la pastilla cuesta $10. Se vende a $100. Quien pagaría $80 se queda sin ella. Esa transacción beneficiosa para ambos (ganancia social potencial de $70) se pierde."
+                    explanation: "La elasticidad precio mide qué tan dramática es la reacción de los consumidores ante un cambio de precio. EPD = %ΔQd / %ΔP. Si |EPD| > 1 (elástica), los consumidores son muy sensibles: un aumento de precio reduce tanto la cantidad que los ingresos totales CAEN. Si |EPD| < 1 (inelástica), la cantidad casi no cambia y los ingresos SUBEN con el precio.",
+                    example_title: "Insulina vs iPhone",
+                    example: "Insulina (inelástica): Subes precio 50%, vendes casi lo mismo. La gente NECESITA insulina. Ingresos totales suben 50%. iPhone (elástico): Subes 50%, la gente compra Samsung o espera. Vendes 70% menos. Ingresos totales CAEN. Por eso Apple jamás sube precios drásticamente."
                 },
                 socratic_questions: [
                     {
-                        q: "¿Por qué el monopolista no baja el precio para venderle a ese cliente de $80?",
-                        hint: "Discriminación de precios.",
-                        answer: "Porque si baja el precio a $80 para él, tendría que bajárselo a TODOS (si no puede discriminar), perdiendo margen en sus ventas actuales."
+                        q: "Una aerolínea tiene EPD de pasajeros de negocios = -0.4 y turistas = -2.1. ¿A quién debe cobrarle más caro?",
+                        hint: "Inelástico significa que no se van aunque subas el precio",
+                        answer: "A los ejecutivos (negocios). Son inelásticos: subes 10%, solo pierdes 4% de pasajeros. Ganas 10%-4%=6% más. Los turistas son elásticos: subes 10%, pierdes 21%. Te quedas sin ingresos."
+                    },
+                    {
+                        q: "¿Por qué los bienes de lujo tienden a ser más elásticos que los de primera necesidad?",
+                        hint: "¿Puedes vivir sin ellos?",
+                        answer: "Porque puedes posponer o cancelar su compra sin mayor problema. La sal (necesidad) es inelástica: la necesitas YA. Un Rolex (lujo) es elástico: si sube mucho, simplemente no lo compras o esperas una oferta."
                     }
                 ]
             },
             {
-                id: 't3-micro-new',
-                title: 'Elasticidad Precio de la Demanda',
-                content: 'Sensibilidad del mercado.',
+                id: 't3-micro-productor',
+                title: '3. Teoría del Productor - Función de Producción',
+                content: 'Relación técnica entre insumos y producto',
                 lesson: {
-                    explanation: "Mide cuánto cambia la cantidad comprada si cambia el precio. Elástica (>1): muy sensible. Inelástica (<1): poco sensible (vicio o necesidad).",
-                    example_title: "Cigarros vs Autos de Lujo",
-                    example: "Si subes 10% el precio de los cigarros, la gente fuma casi igual (Inelástica, ganas más dinero). Si subes 10% un auto de lujo, la gente compra otra marca (Elástica, pierdes clientes)."
+                    explanation: "La función de producción Q = f(L,K) muestra el máximo output que puedes obtener con cada combinación de trabajo (L) y capital (K). El Producto Marginal (PMg) mide cuánto produces DE MÁS con una unidad adicional de insumo. PMg decreciente es una ley universal: el primer trabajador es productivo, el décimo ya se estorba con los demás.",
+                    example_title: "La Taquería con 1 Comal",
+                    example: "Tienes 1 comal (K fijo). Primer taquero: hace 50 tacos/hora (PMgL=50). Segundo: 40 tacos más (PMgL=40, rendimientos decrecientes). Tercer taquero: solo 25 más (se estorban en el comal). Cuarto: solo 10 tacos adicionales. Quinto: -5 tacos (¡ya ni caben! PMgL negativo = Etapa III). Zona racional: contratar entre el 2° y 4° taquero."
                 },
                 socratic_questions: [
                     {
-                        q: "Si vendes insulina (demanda perfectamente inelástica) y subes el precio al doble, ¿qué pasa con tus ingresos?",
-                        hint: "¿La gente deja de comprarla?",
-                        answer: "Tus ingresos se duplican. Al ser un bien vital sin sustitutos, la cantidad vendida no cae, así que absorbes todo el aumento de precio."
+                        q: "Si PMg = 0, ¿qué significa y en qué etapa de producción estás?",
+                        hint: "¿Aumenta la producción total?",
+                        answer: "Significa que agregar una unidad más de factor NO aumenta la producción. Es el límite entre Etapa II (eficiente) y Etapa III (ineficiente). Estás saturando el factor fijo."
+                    },
+                    {
+                        q: "¿Por qué ninguna empresa racional opera en la Etapa I?",
+                        hint: "Piensa en el factor fijo",
+                        answer: "Porque el factor fijo está SUBUTILIZADO. El PMe está creciendo, lo que significa que puedes aumentar la productividad promedio simplemente usando más del factor variable. Hay 'espacio libre' en la fábrica."
                     }
                 ]
             },
             {
-                id: 't4-micro-new',
-                title: 'Costos: Corto vs Largo Plazo',
-                content: 'Factores fijos y variables.',
+                id: 't4-micro-costos',
+                title: '4. Estructura de Costos',
+                content: 'Costos fijos, variables, marginales y medios',
                 lesson: {
-                    explanation: "Corto Plazo: Al menos un factor es fijo (ej. la fábrica). Largo Plazo: Todos los factores son variables (puedes construir otra fábrica).",
-                    example_title: "La Cafetería Saturada",
-                    example: "Corto plazo: Tienes mucha gente, contratas más baristas pero se estorban en la misma barra (rendimientos decrecientes). Largo plazo: Tiras la pared y amplías el local (cambias el factor fijo)."
+                    explanation: "En el CORTO plazo tienes Costos Fijos (CF, no cambian con Q, ej. renta) y Variables (CV, aumentan con Q, ej. materia prima). El Costo Marginal (CMg = ΔCT/ΔQ) es el costo de producir UNA unidad más. El Costo Medio (CMe = CT/Q) es el costo promedio por unidad. Relación CLAVE: CMg corta al CMe en su mínimo. Si CMg < CMe, producir la siguiente unidad BAJA el promedio.",
+                    example_title: "Tu Calificación en el Semestre",
+                    example: "Llevas promedio de 8.5 (CMe). Sacas 9 en el siguiente examen (CMg=9). Como CMg > CMe, tu promedio SUBE. Pero si sacas 7 (CMg=7 < CMe=8.5), tu promedio BAJA. Cuando CMg = CMe, el promedio se mantiene (punto mínimo del CMe)."
                 },
                 socratic_questions: [
                     {
-                        q: "¿Por qué en el largo plazo no existen los Costos Fijos?",
-                        hint: "Piensa en el contrato de alquiler a 10 años.",
-                        answer: "Porque en el largo plazo todos los contratos vencen y todas las decisiones se pueden cambiar. Puedes cerrar la fábrica o mudarte; todo es variable."
+                        q: "¿Por qué el CMg siempre corta al CMe en su punto mínimo?",
+                        hint: "Piensa en la lógica del promedio",
+                        answer: "Si CMg < CMe, producir una más BAJA el promedio (CMe bajando). Si CMg > CMe, producir una más SUBE el promedio (CMe subiendo). El único punto donde CMe deja de bajar y empieza a subir es cuando CMg = CMe. Es el mínimo."
+                    },
+                    {
+                        q: "Si tu CF = $1000 y produces 0 unidades, ¿cuánto pierdes?",
+                        hint: "Los costos fijos se pagan aunque no produzcas",
+                        answer: "Pierdes exactamente $1000. Los costos fijos son un 'costo hundido' en el corto plazo. Incluso sin producir, debes pagarlos (renta, seguros, etc.). Por eso, en el corto plazo, solo cierras si P < CVMe."
                     }
                 ]
             },
             {
-                id: 't5-macro',
-                title: 'Modelo de Solow',
-                content: 'La trampa del capital.',
+                id: 't5-micro-competencia',
+                title: '5. Competencia Perfecta',
+                content: 'Modelo de mercado con muchos vendedores idénticos',
                 lesson: {
-                    explanation: "Más máquinas (capital) generan crecimiento, pero cada vez menos. Sin tecnología, llegas a un punto donde solo inviertes para reponer lo roto (Estado Estacionario).",
-                    example_title: "Tractores Infinitos",
-                    example: "Tener 1 tractor ayuda mucho. Tener 100 por agricultor es inútil. El crecimiento por pura inversión se agota; necesitas mejores semillas (tecnología) para seguir creciendo."
+                    explanation: "En competencia perfecta hay TANTOS vendedores que ninguno puede influir en el precio. El precio es dado por el mercado (precio-aceptante). La empresa maximiza beneficios donde P = CMg. En el LARGO plazo, la entrada de nuevas empresas (atraídas por beneficios) hace que el precio baje hasta P = CMe (mínimo). Beneficio económico = 0.",
+                    example_title: "El Mercado de Tomates",
+                    example: "Eres UN productor entre 10,000. Si intentas cobrar $1 más por kilo que el mercado, NADIE te compra (producto homogéneo). Si cobras menos, te quedas sin inventario pero pierdes dinero. Debes vender al precio de mercado $15/kg. Produces donde CMg = $15. Si ganas beneficios extraordinarios, entran MÁS productores, la oferta aumenta, el precio cae a $12, y tu beneficio se evapora."
                 },
                 socratic_questions: [
                     {
-                        q: "Según Solow, ¿qué efecto tiene un aumento permanente en la tasa de ahorro de un país?",
-                        hint: "Nivel vs Tasa de Crecimiento.",
-                        answer: "Aumenta el nivel de ingreso por habitante (eres más rico), pero NO la tasa de crecimiento a largo plazo. Solo creces mientras transitas al nuevo nivel."
+                        q: "¿Por qué en competencia perfecta la curva de demanda de la empresa es horizontal?",
+                        hint: "¿Qué pasa si subes 1 peso el precio?",
+                        answer: "Porque la empresa es precio-aceptante. Si sube el precio aunque sea 1 centavo por encima del mercado, NADIE le compra (hay miles de sustitutos perfectos). Si baja el precio, puede vender todo lo que quiera pero pierde dinero innecesariamente."
+                    },
+                    {
+                        q: "Si P = $50, CMg = $50 y CMe = $60, ¿qué debe hacer la empresa en el corto plazo?",
+                        hint: "Compara con CVMe, no con CMe",
+                        answer: "Depende del CVMe. Si CVMe < $50, debe seguir produciendo (cubre costos variables y algo de los fijos). Si CVMe > $50, debe cerrar inmediatamente (ni siquiera cubre los costos variables). Los CF ya están hundidos."
                     }
                 ]
             },
             {
-                id: 't6-macro',
-                title: 'Mundell-Fleming',
-                content: 'Trinidad Imposible.',
+                id: 't6-micro-monopolio',
+                title: '6. Monopolio y Poder de Mercado',
+                content: 'Único vendedor que fija precio y cantidad',
                 lesson: {
-                    explanation: "Con Tipo de Cambio Fijo y libre capital, no tienes política monetaria. Si imprimes dinero, se fuga y tienes que recomprarlo para defender la moneda.",
-                    example_title: "Fuga de Capitales",
-                    example: "Bajas la tasa de interés para ayudar a Pymes. Los inversores huyen a EE.UU. por mejor rendimiento. Vendes tus reservas para sostener el peso. Resultado: te quedas sin reservas y la tasa vuelve a subir."
+                    explanation: "El monopolista ES el mercado. Enfrenta toda la curva de demanda (no solo un precio). Para vender más, debe BAJAR el precio de TODAS las unidades (no puede discriminar). Por eso su Ingreso Marginal (IMg) es MENOR que el Precio. Maximiza beneficio donde IMg = CMg, pero COBRA un precio P > CMg (usando la curva de demanda). Esto crea una Pérdida Irrecuperable de Eficiencia.",
+                    example_title: "CFE (Monopolio Eléctrico)",
+                    example: "CFE es el único que vende luz. Produce 100 millones de kWh donde IMg = CMg = $2/kWh. Pero COBRA $5/kWh (usando la demanda). Hay gente que pagaría $4/kWh (más del costo $2) pero NO lo hacen porque el precio es $5. Esa transacción beneficiosa (valor social de $4 - costo $2 = ganancia social $2) se PIERDE. Es la ineficiencia del monopolio."
                 },
                 socratic_questions: [
                     {
-                        q: "¿Qué única herramienta le queda al gobierno para estimular la economía bajo Tipo de Cambio Fijo?",
-                        hint: "Si la monetaria no sirve...",
-                        answer: "La Política Fiscal (Gasto Público). Al no afectar directamente el mercado cambiario como la tasa de interés, es muy potente en este régimen."
+                        q: "¿Por qué el monopolista NUNCA produce en la zona inelástica de la demanda?",
+                        hint: "¿Qué pasa con los ingresos si subes precio en zona inelástica?",
+                        answer: "Porque en la zona inelástica (|EPD| < 1), si sube el precio, sus ingresos SUBEN (la cantidad cae menos que proporcionalmente). Como los costos BAJAN al producir menos, el beneficio aumenta. Seguirá subiendo precio hasta entrar a la zona elástica."
+                    },
+                    {
+                        q: "Si un monopolio puede discriminar precios perfectamente (cobrar a cada cliente su disposición a pagar), ¿hay pérdida irrecuperable?",
+                        hint: "¿Se pierden transacciones beneficiosas?",
+                        answer: "NO. La discriminación perfecta elimina la pérdida irrecuperable porque TODAS las transacciones con valor social positivo se realizan. El monopolista captura TODO el excedente del consumidor, pero no hay ineficiencia. Es redistributivo, no ineficiente."
                     }
                 ]
             },
             {
-                id: 't7-macro-new',
-                title: 'Política Fiscal (IS-LM)',
-                content: 'Gasto Público y Crowding Out.',
+                id: 't7-micro-juegos',
+                title: '7. Teoría de Juegos - Equilibrio de Nash',
+                content: 'Toma de decisiones estratégicas interdependientes',
                 lesson: {
-                    explanation: "Más gasto público mueve la curva IS a la derecha (más PIB), pero sube la tasa de interés (porque el gobierno compite por dinero), lo que 'expulsa' inversión privada.",
-                    example_title: "Construyendo Carreteras",
-                    example: "El gobierno pide prestado millones para hacer puentes. La demanda de crédito sube, y con ella la tasa de interés. La empresa que quería pedir para una nueva planta ya no puede pagarla."
+                    explanation: "En un Equilibrio de Nash, cada jugador elige su mejor respuesta dada la estrategia del otro. NADIE puede mejorar unilateralmente cambiando de estrategia. No es necesariamente el mejor resultado para todos (ver Dilema del Prisionero), pero es estable. Busca la estrategia donde, cuando tu rival juega X, tú juegas Y, y cuando tú juegas Y, él juega X.",
+                    example_title: "Dilema del Prisionero - Dos Cárteles",
+                    example: "Pemex y Exxon pueden cooperar (producir poco, precio alto) o traicionar (producir mucho). Matriz de pagos: (Cooperar, Cooperar) = (50, 50). (Traicionar, Cooperar) = (80, 10). (Cooperar, Traicionar) = (10, 80). (Traicionar, Traicionar) = (30, 30). Equilibrio de Nash: (Traicionar, Traicionar) aunque (50,50) sería mejor para AMBOS. La traición es estrategia dominante."
                 },
                 socratic_questions: [
                     {
-                        q: "¿Cómo puede el Banco Central evitar que el gasto público suba las tasas de interés (Crowding Out)?",
-                        hint: "Acomodación monetaria.",
-                        answer: "Imprimiendo dinero (Política Monetaria Expansiva). Esto mueve la LM a la derecha, manteniendo la tasa estable mientras el PIB crece."
+                        q: "¿Puede haber más de un Equilibrio de Nash en un juego?",
+                        hint: "Piensa en el juego de 'Battle of the Sexes'",
+                        answer: "SÍ. Ejemplo: tú y tu pareja eligen entre Fútbol o Teatro. Ambos prefieren estar juntos que separados. Hay DOS equilibrios de Nash: (Fútbol, Fútbol) y (Teatro, Teatro). Requieren coordinación para elegir uno."
+                    },
+                    {
+                        q: "En el Dilema del Prisionero, ¿por qué no cooperan si ambos estarían mejor?",
+                        hint: "¿Qué pasa si el otro traiciona y tú cooperas?",
+                        answer: "Porque traicionar es estrategia dominante. Si el otro coopera, yo gano más traicionando (80 > 50). Si el otro traiciona, yo pierdo menos traicionando (30 > 10). Racionalmente, ambos traicionan aunque cooperar sería Pareto superior."
+                    }
+                ]
+            },
+
+            // ============ MACROECONOMÍA ============
+            {
+                id: 't8-macro-pib',
+                title: '8. PIB y Contabilidad Nacional',
+                content: 'Medición del producto y el ingreso agregado',
+                lesson: {
+                    explanation: "El PIB mide el valor de mercado de todos los bienes y servicios FINALES producidos en un país durante un año. Solo cuenta bienes finales para evitar doble contabilización. PIB = C + I + G + (X-M). PIB Nominal usa precios corrientes. PIB Real usa precios constantes (ajustado por inflación). PIB Real es mejor para medir crecimiento económico real.",
+                    example_title: "Pan y Harina",
+                    example: "El trigo se vende en $10, se convierte en harina por $20, y en pan final por $50. El PIB solo cuenta los $50 del pan (bien final). Si contáramos todo ($10+$20+$50=$80), estaríamos contando el trigo 3 veces. Alternativamente, suma VALOR AGREGADO: Trigo ($10) + Harina ($20-$10=$10) + Pan ($50-$20=$30) = $50 PIB."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué la compra de acciones en la Bolsa NO cuenta en el PIB?",
+                        hint: "¿Se está produciendo algo nuevo?",
+                        answer: "Porque es una transacción financiera, no la producción de un bien o servicio. Las acciones son un activo que cambia de manos. Solo contaría en el PIB la COMISIÓN del corredor (ese sí es un servicio producido)."
+                    },
+                    {
+                        q: "Si el PIB Nominal sube 8% pero la inflación fue 5%, ¿cuánto creció la economía REALMENTE?",
+                        hint: "Usa la aproximación: %ΔPIB Real ≈ %ΔPIB Nominal - Inflación",
+                        answer: "Aproximadamente 3%. El PIB Real = PIB Nominal / Deflactor. Si eliminamos el efecto de los precios (5%), el crecimiento REAL fue solo 3%. La economía creció menos de lo que parece."
+                    }
+                ]
+            },
+            {
+                id: 't9-macro-islm',
+                title: '9. Modelo IS-LM',
+                content: 'Equilibrio simultáneo en mercado de bienes y dinero',
+                lesson: {
+                    explanation: "IS (Inversión-Ahorro) muestra equilibrio en mercado de BIENES. Pendiente negativa: mayor tasa de interés → menor inversión → menor producción. LM (Liquidez-Dinero) muestra equilibrio en mercado MONETARIO. Pendiente positiva: mayor producción → mayor demanda de dinero → mayor tasa de interés. La intersección determina (i*, Y*) simultáneamente.",
+                    example_title: "Política Fiscal vs Monetaria",
+                    example: "Gobierno aumenta gasto (↑G). IS se desplaza a la derecha. Nueva intersección: Y sube (↑PIB), i sube (↑tasa). Pero la tasa alta desalienta inversión privada (crowding-out). Banco Central aumenta oferta monetaria (↑M). LM se desplaza a la derecha. Nueva intersección: Y sube, i BAJA. Estimula economía SIN crowding-out. ¿Cuál usarías en recesión?"
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Qué es el efecto crowding-out y por qué ocurre?",
+                        hint: "¿Qué pasa con la tasa de interés cuando el gobierno gasta más?",
+                        answer: "Cuando el gobierno aumenta G (política fiscal expansiva), la tasa de interés SUBE (IS a la derecha). La tasa alta DESALIENTA la inversión privada. El gasto público 'desplaza' inversión privada. Es el costo de la política fiscal: estimulas con una mano pero frenas con la otra."
+                    },
+                    {
+                        q: "¿En qué situación la política monetaria es completamente inefectiva?",
+                        hint: "Trampa de liquidez",
+                        answer: "En la TRAMPA DE LIQUIDEZ (i ≈ 0%). La LM es horizontal. Aumentar M no baja más la tasa (ya está en cero). No hay incentivo adicional para invertir. La política monetaria pierde tracción. Solo queda la política fiscal. Japón en los 90s."
+                    }
+                ]
+            },
+            {
+                id: 't10-macro-mundell',
+                title: '10. Modelo Mundell-Fleming',
+                content: 'IS-LM en economía abierta',
+                lesson: {
+                    explanation: "Mundell-Fleming extiende IS-LM a una economía abierta. La Trinidad Imposible establece que NO puedes tener: (1) Tipo de cambio fijo, (2) Libre movilidad de capitales, Y (3) Política monetaria independiente. Debes elegir solo DOS. Con tipo de cambio fijo, la política fiscal es muy potente pero la monetaria es inútil (se gasta defendiendo el tipo de cambio).",
+                    example_title: "México post-1994",
+                    example: "México tenía tipo de cambio fijo ($3.40/dólar), libre movilidad de capitales, pero NO podía usar política monetaria independiente. En diciembre 1994, cuando se agotaron las reservas, tuvo que DEVALUAR (abandonar tipo fijo). Hoy tiene tipo FLEXIBLE, lo que le da política monetaria independiente (Banxico sube tasas sin defender un tipo de cambio)."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué con tipo de cambio fijo la política monetaria expansiva NO aumenta Y?",
+                        hint: "¿Qué pasa cuando bajas la tasa de interés con libre movilidad de capitales?",
+                        answer: "Bajas i → capitales SALEN del país (buscan mayor rendimiento afuera) → presión a DEPRECIAR moneda → Banco Central VENDE dólares y COMPRA pesos (defendiendo tipo fijo) → Oferta monetaria REGRESA a su nivel original. ¡La política monetaria se auto-destruye!"
+                    },
+                    {
+                        q: "¿Qué combinación de la Trinidad Imposible tienen China y Estados Unidos?",
+                        hint: "China controla su tipo de cambio. USA tiene dólar flotante",
+                        answer: "China: Tipo de cambio fijo + Política monetaria independiente = NO libre movilidad de capitales (controles de capital). USA: Tipo de cambio flexible + Libre movilidad de capitales = Política monetaria independiente. Dos estrategias distintas."
+                    }
+                ]
+            },
+            {
+                id: 't11-macro-inflacion',
+                title: '11. Inflación y Curva de Phillips',
+                content: 'Relación entre inflación y desempleo',
+                lesson: {
+                    explanation: "La Curva de Phillips (corto plazo) muestra un trade-off: menor desempleo → mayor inflación. Cuando contratas más gente, los salarios suben (escasez de trabajadores), los costos suben, los precios suben. En el LARGO plazo, la curva es VERTICAL a la tasa natural de desempleo (NAIRU). No hay trade-off permanente: puedes tener inflación alta Y desempleo alto (estanflación años 70s).",
+                    example_title: "La Ilusión del Banco Central",
+                    example: "El banco central baja tasas, estimula economía, desempleo cae de 5% a 3%. ¡Éxito! Pero los trabajadores notan que la inflación subió de 2% a 5%. Exigen salarios más altos. Costos suben. Inflación sube a 8%. Al final, el desempleo REGRESA a 5% (tasa natural) pero ahora con inflación de 8%. Solo ganaste inflación, no empleo permanente."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué en el largo plazo la Curva de Phillips es vertical?",
+                        hint: "Expectativas adaptativas",
+                        answer: "Porque la gente ajusta sus expectativas de inflación. Si el banco central intenta mantener desempleo bajo inflando la economía, la gente anticipa la inflación y la incorpora en contratos salariales. Al final, vuelves a la tasa natural de desempleo pero con mayor inflación. No hay trade-off en el largo plazo."
+                    },
+                    {
+                        q: "¿Qué tipo de shock causaría inflación SIN reducir el desempleo (peor escenario)?",
+                        hint: "Shock de oferta negativo",
+                        answer: "Un SHOCK DE OFERTA negativo (ej. aumento del petróleo en 1973). Los costos de producción suben, la Oferta Agregada se contrae, suben precios (inflación) Y cae producción (más desempleo). Inflación + Recesión = ESTANFLACIÓN. La peor combinación."
+                    }
+                ]
+            },
+            {
+                id: 't12-macro-solow',
+                title: '12. Modelo de Solow - Crecimiento Económico',
+                content: 'Teoría del crecimiento de largo plazo',
+                lesson: {
+                    explanation: "Solow explica el crecimiento del PIB per cápita a largo plazo. En el estado estacionario, la inversión bruta iguala a la depreciación. El capital per cápita (k) deja de crecer. La acumulación de capital SOLA no genera crecimiento perpetuo por rendimientos decrecientes. Solo el PROGRESO TECNOLÓGICO puede sostener crecimiento continuo del ingreso per cápita.",
+                    example_title: "¿Por qué Corea del Sur creció tanto?",
+                    example: "1960: Corea invierte 10% del PIB, acumula capital, crece 8% anual. 1980: Ya tiene mucho capital, rendimientos decrecientes, crece solo 4%. ¿Se estancará? NO. Adopta nueva tecnología (Samsung, LG), mejora educación, innovación. Ahora con el MISMO capital, producen MÁS (progreso tecnológico = A). Vuelve a crecer 6%. Tecnología > Capital."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si un país aumenta su tasa de ahorro (s) de 20% a 30%, ¿crecerá para siempre más rápido?",
+                        hint: "Piensa en el nuevo estado estacionario",
+                        answer: "NO. Mayor ahorro aumenta la inversión, el capital per cápita SUBE y llega a un NUEVO estado estacionario más alto. Hay crecimiento TRANSITORIO mientras ajusta, pero eventualmente se detiene en el nuevo equilibrio. Para crecer perpetuamente se necesita progreso tecnológico constante."
+                    },
+                    {
+                        q: "¿Por qué los países pobres crecen más rápido que los ricos (convergencia)?",
+                        hint: "Rendimientos decrecientes del capital",
+                        answer: "Porque tienen POCO capital inicial. Cada máquina nueva es MUY productiva (altos rendimientos marginales). Los países ricos ya tienen MUCHO capital, cada máquina adicional agrega poco. Si ambos tienen la misma tecnología, el pobre 'alcanza' al rico. Eso sí, si no hay tecnología ni instituciones, no convergen (África)."
+                    }
+                ]
+            },
+            {
+                id: 't13-macro-fiscal',
+                title: '13. Política Fiscal y Multiplicador del Gasto',
+                content: 'Efectos del gasto e impuestos gubernamentales',
+                lesson: {
+                    explanation: "El Multiplicador del Gasto mide cuánto aumenta el PIB por cada peso adicional de gasto público. Multiplicador = 1/(1-c(1-t)), donde c es propensión marginal a consumir y t la tasa impositiva. Si c=0.8 y t=0.25, multiplicador = 1/(1-0.8(0.75)) = 1/0.4 = 2.5. ¡Cada peso gastado aumenta Y en $2.50! Pero ojo con el crowding-out (sube tasa de interés).",
+                    example_title: "Estímulo Fiscal de López Obrador",
+                    example: "Gobierno gasta $100,000 millones extras en Tren Maya. Primera ronda: trabajadores reciben ese ingreso. Segunda ronda: gastan 80% ($80,000 millones, c=0.8). Tercera ronda: esos receptores gastan 80% de $80,000 = $64,000. Y así sucesivamente. Total: $100k + $80k + $64k + ... = $100k × (1/(1-0.8)) = $500,000 millones de PIB. Multiplicador = 5 (sin impuestos)."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué el multiplicador de los impuestos es MENOR que el del gasto público?",
+                        hint: "Primer impacto: gasto público va 100% a la economía, impuestos no",
+                        answer: "Porque cuando el gobierno GASTA $100, los $100 van directamente a la economía. Cuando BAJA impuestos en $100, la gente solo GASTA una fracción c (ej. 80%), ahorra el resto. El primer impacto es menor: $80 vs $100. Multiplicador de impuestos = -c/(1-c). Es menor (en valor absoluto) que 1/(1-c)."
+                    },
+                    {
+                        q: "Si el gobierno aumenta G y T en la misma cantidad, ¿el PIB aumenta, baja o queda igual?",
+                        hint: "Multiplicador balanceado (Teorema de Haavelmo)",
+                        answer: "AUMENTA exactamente en la cantidad del aumento (multiplicador balanceado = 1). Ejemplo: ↑G=$100, ↑T=$100. ΔY = $100×(mult G) - $100×(mult T) = $100×(1/(1-c)) - $100×(c/(1-c)) = $100. El efecto neto es positivo pero moderado."
+                    }
+                ]
+            },
+            {
+                id: 't14-macro-monetaria',
+                title: '14. Política Monetaria',
+                content: 'Control de oferta monetaria y tasas de interés',
+                lesson: {
+                    explanation: "El Banco Central controla la oferta monetaria (M) para influir en la economía. Instrumentos: (1) Operaciones de Mercado Abierto (compra/venta bonos), (2) Tasa de redescuento, (3) Reservas obligatorias. Mecanismo: ↑M → ↓i → ↑I → ↑DA → ↑Y. Política expansiva estimula la economía (útil en recesión). Política contractiva frena inflación (sube tasas).",
+                    example_title: "Banxico vs Inflación 2022-2024",
+                    example: "2022: Inflación llega a 8.7% (muy alta). Banxico sube tasa de 4% a 11.25% (política contractiva). ↑i → ↓Consumo (créditos más caros) + ↓Inversión (préstamos caros) → ↓DA → ↓Presión inflacionaria. 2024: Inflación baja a 4%. Banxico empieza a BAJAR tasas (política expansiva) para no frenar economía. Es un balance delicado."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué comprar bonos gubernamentales AUMENTA la oferta monetaria?",
+                        hint: "¿Con qué paga el Banco Central?",
+                        answer: "Cuando Banxico COMPRA bonos del mercado, PAGA con dinero nuevo (lo crea electrónicamente). Ese dinero entra a la economía. Los bancos tienen más reservas, prestan más, multiplicador monetario actúa. M aumenta. Al VENDER bonos, hace lo contrario: retira dinero de circulación."
+                    },
+                    {
+                        q: "Si el banco central quiere bajar la tasa de interés pero la gente espera alta inflación, ¿funcionará?",
+                        hint: "Tasa real vs nominal (Ecuación de Fisher)",
+                        answer: "Depende de la tasa REAL, no nominal. Ecuación de Fisher: i_real = i_nominal - π_esperada. Si el banco baja i_nominal a 5% pero la inflación esperada es 6%, la tasa real es ¡-1%! (negativa). Eso SÍ estimula. Pero si solo baja a 7%, la tasa real es +1%, aún restrictiva. Las expectativas importan."
                     }
                 ]
             }

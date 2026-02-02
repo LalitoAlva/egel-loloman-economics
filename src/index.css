@@ -1,17 +1,96 @@
 :root {
-  /* Paleta "Deep Focus" - Manteniendo la elegancia pero con más contraste para "Slides" */
+  /* Tipografía Escala "Presentación" */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ============================================
+   TEMA OSCURO (Default)
+   ============================================ */
+[data-theme="dark"],
+:root {
+  /* Paleta "Deep Focus" - Elegancia con contraste */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
+  --bg-tertiary: #0f0f1a;
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
-  --accent-color: #38bdf8;
+  --accent-color: #a855f7;
+  --accent-hover: #9333ea;
   --success-color: #4ade80;
   --warning-color: #facc15;
   --error-color: #f87171;
   --card-border: #334155;
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+}
 
-  /* Tipografía Escala "Presentación" */
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+/* ============================================
+   TEMA CLARO
+   ============================================ */
+[data-theme="light"] {
+  /* Paleta "Clean Study" - Profesional y legible */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #0f172a;
+  /* Más oscuro para contraste */
+  --text-secondary: #1e293b;
+  /* Slate 800 - Casi negro para máxima legibilidad */
+  /* Más oscuro para legibilidad */
+  --accent-color: #581c87;
+  /* Violeta 900 - Contraste alto */
+  /* Violeta más profundo/menos brillante */
+  --accent-hover: #4c1d95;
+  /* Violeta 950 */
+  --success-color: #15803d;
+  /* Verde 700 */
+  /* Verde más oscuro */
+  --warning-color: #a16207;
+  /* Amarillo/Ocre 700 */
+  /* Amarillo más oscuro (ocre) */
+  --error-color: #b91c1c;
+  /* Rojo 700 */
+  --card-border: #94a3b8;
+  /* Borde más visible (Slate 400) */
+  --input-bg: #f1f5f9;
+  --input-border: #cbd5e1;
+  --shadow-color: rgba(0, 0, 0, 0.15);
+  /* Sombra un poco más marcada */
+  --overlay-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* Ajustes específicos para tema claro */
+[data-theme="light"] h2,
+[data-theme="light"] h3 {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] .slide-card,
+[data-theme="light"] .card {
+  box-shadow: 0 4px 20px var(--shadow-color);
+  border: 1px solid var(--card-border);
+}
+
+[data-theme="light"] .btn-primary {
+  color: #ffffff;
+}
+
+[data-theme="light"] .hover-card:hover {
+  box-shadow: 0 8px 30px var(--shadow-color);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 * {
@@ -153,4 +232,97 @@ button {
   padding: 25px;
   border-radius: 0 12px 12px 0;
   margin-top: 30px;
+}
+
+/* Hover Card Effect */
+.hover-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Card Background */
+.card-bg {
+  background: var(--bg-secondary);
+}
+
+/* App Shell - for fixed elements */
+.app-shell {
+  min-height: 100vh;
+  background: var(--bg-primary);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Input Range Styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #a855f7;
+  cursor: pointer;
+}
+
+/* Close Button Floating */
+.close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 20;
+  line-height: 1;
+}
+
+.close-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--error-color);
+  transform: rotate(90deg) scale(1.1);
+}
+
+[data-theme="dark"] .close-btn {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .close-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
 }
