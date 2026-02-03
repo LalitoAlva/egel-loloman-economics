@@ -150,7 +150,9 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
             <div className="container fade-in" style={{ maxWidth: '450px', margin: '0 auto', paddingTop: '40px' }}>
                 <div className="slide-card" style={{ padding: '40px', textAlign: 'center' }}>
                     {onBack && !hideBackButton && <button className="close-btn" onClick={onBack} title="Cerrar">×</button>}
-                    <div style={{ fontSize: '5rem', marginBottom: '20px' }}>📬</div>
+                    <div style={{ fontSize: '4rem', marginBottom: '20px', color: '#22c55e' }}>
+                        <i className="fa-solid fa-envelope-circle-check"></i>
+                    </div>
                     <h1 style={{ color: 'var(--text-primary)', marginBottom: '15px' }}>
                         ¡Solicitud Enviada!
                     </h1>
@@ -165,7 +167,8 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                         marginBottom: '25px'
                     }}>
                         <p style={{ color: '#3b82f6', fontSize: '0.9rem', margin: 0 }}>
-                            💡 El proceso de aprobación puede tomar hasta 24-48 horas.
+                            <i className="fa-solid fa-lightbulb" style={{ marginRight: '8px' }}></i>
+                            El proceso de aprobación puede tomar hasta 24-48 horas.
                             Revisa tu email para actualizaciones.
                         </p>
                     </div>
@@ -209,8 +212,8 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
             <div className="slide-card" style={{ padding: '40px' }}>
                 {onBack && !hideBackButton && <button className="close-btn" onClick={onBack} title="Cerrar">×</button>}
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '15px' }}>
-                        {isLogin ? '🔐' : '📋'}
+                    <div style={{ fontSize: '3.5rem', marginBottom: '15px', color: 'var(--accent-color)' }}>
+                        <i className={isLogin ? 'fa-solid fa-right-to-bracket' : 'fa-solid fa-user-plus'}></i>
                     </div>
                     <h1 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>
                         {isLogin ? 'Iniciar Sesión' : 'Solicitar Cuenta'}

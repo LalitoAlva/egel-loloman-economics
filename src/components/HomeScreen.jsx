@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAudio } from '../context/AudioContext';
+import Icon, { Icons } from './Icon';
 
 const HomeScreen = ({ onSelectModule, onSetMode }) => {
     const [modulos, setModulos] = useState([]);
@@ -39,7 +40,9 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px', color: 'var(--accent-color)' }}>
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                    </div>
                     <p style={{ color: 'var(--text-secondary)' }}>Cargando módulos...</p>
                 </div>
             </div>
@@ -114,7 +117,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                             justifyContent: 'center',
                             fontSize: '1.5rem'
                         }}>
-                            📚
+                            <i className="fa-solid fa-chalkboard-user"></i>
                         </div>
                         <div>
                             <h3 style={{ color: 'var(--text-primary)', marginBottom: '5px', fontSize: '1.1rem' }}>Clases</h3>
@@ -148,7 +151,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                             justifyContent: 'center',
                             fontSize: '1.5rem'
                         }}>
-                            📝
+                            <i className="fa-solid fa-clipboard-question"></i>
                         </div>
                         <div>
                             <h3 style={{ color: 'var(--text-primary)', marginBottom: '5px', fontSize: '1.1rem' }}>Quiz EGEL</h3>
@@ -182,7 +185,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                             justifyContent: 'center',
                             fontSize: '1.5rem'
                         }}>
-                            🧠
+                            <i className="fa-solid fa-brain"></i>
                         </div>
                         <div>
                             <h3 style={{ color: 'var(--text-primary)', marginBottom: '5px', fontSize: '1.1rem' }}>Ponte a Prueba</h3>
@@ -252,9 +255,10 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     fontSize: '1.5rem',
-                                    border: `2px solid ${modulo.color}50`
+                                    border: `2px solid ${modulo.color}50`,
+                                    color: modulo.color
                                 }}>
-                                    {modulo.icon}
+                                    <Icon name={modulo.icon} />
                                 </div>
                                 <div>
                                     <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.1rem' }}>
@@ -300,7 +304,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                         alignItems: 'center',
                                         gap: '4px'
                                     }}>
-                                        🖼️ Infografía
+                                        <i className="fa-solid fa-image"></i> Infografía
                                     </span>
                                 )}
                                 {modulo.audio_url && (
@@ -314,7 +318,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                         alignItems: 'center',
                                         gap: '4px'
                                     }}>
-                                        🎧 Audio clase
+                                        <i className="fa-solid fa-headphones"></i> Audio clase
                                     </span>
                                 )}
                                 <span style={{
@@ -324,7 +328,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                     color: 'var(--text-secondary)',
                                     fontSize: '0.75rem'
                                 }}>
-                                    📝 Ejercicios
+                                    <i className="fa-solid fa-pen-to-square"></i> Ejercicios
                                 </span>
                             </div>
 
@@ -369,7 +373,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                             fontSize: '1rem'
                                         }}
                                     >
-                                        {currentTrack?.module === modulo.titulo && isPlaying ? '⏸️' : '▶️'}
+                                        <i className={currentTrack?.module === modulo.titulo && isPlaying ? 'fa-solid fa-pause' : 'fa-solid fa-play'}></i>
                                     </button>
                                 )}
                             </div>
@@ -387,7 +391,9 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                 textAlign: 'center',
                 marginBottom: '40px'
             }}>
-                <div style={{ fontSize: '3rem', marginBottom: '15px' }}>📅</div>
+                <div style={{ fontSize: '3rem', marginBottom: '15px', color: '#ef4444' }}>
+                    <i className="fa-solid fa-calendar-check"></i>
+                </div>
                 <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Prueba Semanal</h3>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
                     Cada semana tendrás una evaluación para medir tu progreso

@@ -36,6 +36,12 @@ const AdminPanel = ({ onBack }) => {
     const [showRolEditModal, setShowRolEditModal] = useState(false);
     const [editingRol, setEditingRol] = useState(null);
 
+    // Content management state
+    const [contenidoClase, setContenidoClase] = useState([]);
+    const [selectedModuloContent, setSelectedModuloContent] = useState(null);
+    const [showContentEditModal, setShowContentEditModal] = useState(false);
+    const [editingContent, setEditingContent] = useState(null);
+
     // Password visibility toggles
     const [showPasswordNew, setShowPasswordNew] = useState(false);
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
@@ -101,6 +107,25 @@ const AdminPanel = ({ onBack }) => {
                     .select('*')
                     .order('numero');
                 setModulos(modulosData || []);
+                break;
+
+            case 'contenido':
+                // Cargar módulos para selector
+                const { data: modulosContenido } = await supabase
+                    .from('modulos')
+                    .select('*')
+                    .order('numero');
+                setModulos(modulosContenido || []);
+
+                // Cargar contenido si hay módulo seleccionado
+                if (selectedModuloContent) {
+                    const { data: contenidoData } = await supabase
+                        .from('contenido_clase')
+                        .select('*')
+                        .eq('modulo_id', selectedModuloContent.id)
+                        .order('orden');
+                    setContenidoClase(contenidoData || []);
+                }
                 break;
 
             case 'preguntas':
@@ -199,18 +224,12 @@ const AdminPanel = ({ onBack }) => {
     };
 
     const requestSecureAction = (actionType, payload, protectedCheck) => {
-        // Protection Checks
-        if (protectedCheck) {
-            const isProtected = (protectedCheck.nombre && protectedCheck.nombre.toLowerCase().includes('lalo')) ||
-                (protectedCheck.email && protectedCheck.email.includes('lalo')) ||
-                protectedCheck.rol_id === 1; // Assuming 1 is Admin
-            if (isProtected) {
-                alert('🚫 Acción denegada: Este registro está protegido (Administrador/Lalo).');
-                return;
-            }
+        // Protection: Solo proteger usuarios admin (por nombre de rol)
+        if (protectedCheck && protectedCheck.roles?.nombre === 'admin') {
+            alert('🚫 No puedes eliminar usuarios administradores.');
+            return;
         }
 
-        // Preserve full payload object for TOGGLE actions, otherwise just id
         setPendingAction({ type: actionType, payload: payload });
         setConfirmMessage(actionType.includes('DELETE') ? 'CONFIRMAR ELIMINACIÓN' : 'CONFIRMAR INACTIVACIÓN');
         setShowConfirmPassword(true);
@@ -556,11 +575,12 @@ const AdminPanel = ({ onBack }) => {
     };
 
     const tabs = [
-        { id: 'solicitudes', label: '📋 Solicitudes', icon: '📋', badge: solicitudes.filter(s => s.estado === 'pendiente').length },
-        { id: 'usuarios', label: '👥 Usuarios', icon: '👥' },
-        { id: 'roles', label: '🔑 Roles', icon: '🔑' },
-        { id: 'modulos', label: '📚 Módulos', icon: '📚' },
-        { id: 'preguntas', label: '❓ Preguntas', icon: '❓' }
+        { id: 'solicitudes', label: 'Solicitudes', icon: 'fa-solid fa-clipboard-list', badge: solicitudes.filter(s => s.estado === 'pendiente').length },
+        { id: 'usuarios', label: 'Usuarios', icon: 'fa-solid fa-users' },
+        { id: 'roles', label: 'Roles', icon: 'fa-solid fa-key' },
+        { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-book' },
+        { id: 'contenido', label: 'Contenido', icon: 'fa-solid fa-file-lines' },
+        { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-circle-question' }
     ];
 
     return (
@@ -588,8 +608,8 @@ const AdminPanel = ({ onBack }) => {
             </div>
 
             <header style={{ marginBottom: '30px' }}>
-                <h1 style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--text-primary)' }}>
-                    ⚙️ Panel de Administración
+                <h1 style={{ fontSize: '2rem', marginBottom: '10px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <i className="fa-solid fa-gear"></i> Panel de Administración
                 </h1>
                 <p style={{ color: 'var(--text-secondary)' }}>
                     Gestiona usuarios, roles y contenido del sistema
@@ -603,9 +623,9 @@ const AdminPanel = ({ onBack }) => {
                 gap: '15px',
                 marginBottom: '30px'
             }}>
-                <StatCard icon="👥" label="Usuarios" value={stats.usuarios} color="#a855f7" />
-                <StatCard icon="❓" label="Preguntas" value={stats.preguntas} color="#22c55e" />
-                <StatCard icon="📝" label="Exámenes" value={stats.examenes} color="#3b82f6" />
+                <StatCard icon={<i className="fa-solid fa-users"></i>} label="Usuarios" value={stats.usuarios} color="#a855f7" />
+                <StatCard icon={<i className="fa-solid fa-circle-question"></i>} label="Preguntas" value={stats.preguntas} color="#22c55e" />
+                <StatCard icon={<i className="fa-solid fa-file-signature"></i>} label="Exámenes" value={stats.examenes} color="#3b82f6" />
             </div>
 
             {/* Tabs */}
@@ -634,6 +654,7 @@ const AdminPanel = ({ onBack }) => {
                             position: 'relative'
                         }}
                     >
+                        <i className={tab.icon} style={{ marginRight: '8px' }}></i>
                         {tab.label}
                         {tab.badge > 0 && (
                             <span style={{
@@ -671,78 +692,67 @@ const AdminPanel = ({ onBack }) => {
                                 solicitudes={solicitudes}
                                 onApprove={async (solicitud) => {
                                     try {
-                                        // Get student role
+                                        // 1. Obtener rol de estudiante
                                         const { data: rolData } = await supabase
                                             .from('roles')
                                             .select('id')
                                             .eq('nombre', 'estudiante')
                                             .single();
 
-                                        if (!rolData) {
-                                            alert('Error: No se encontró el rol de estudiante');
-                                            return;
-                                        }
+                                        const rolId = rolData?.id || 2; // Default a 2 si no encuentra
 
-                                        // Create user account
-                                        const { data: newUser, error: userError } = await supabase
+                                        // 2. Crear el usuario
+                                        const userId = crypto.randomUUID();
+                                        const { error: userError } = await supabase
                                             .from('usuarios')
                                             .insert([{
+                                                id: userId,
                                                 nombre: solicitud.nombre,
                                                 email: solicitud.email,
                                                 password_hash: solicitud.password_hash,
-                                                avatar: solicitud.avatar || '📚',
-                                                rol_id: rolData.id,
-                                                activo: true
-                                            }])
-                                            .select()
-                                            .single();
+                                                rol_id: rolId,
+                                                activo: true,
+                                                created_at: new Date().toISOString()
+                                            }]);
 
                                         if (userError) {
                                             console.error('Error creating user:', userError);
-                                            alert('Error al crear el usuario');
+                                            alert('Error al crear usuario: ' + userError.message);
                                             return;
                                         }
 
-                                        // Update solicitud status
+                                        // 3. Actualizar estado de la solicitud
                                         await supabase
                                             .from('solicitudes_cuenta')
                                             .update({
                                                 estado: 'aprobada',
-                                                admin_id: user.id,
-                                                processed_at: new Date().toISOString()
+                                                fecha_respuesta: new Date().toISOString()
                                             })
                                             .eq('id', solicitud.id);
 
-                                        // Create notification for new user
-                                        await supabase
-                                            .from('notificaciones')
-                                            .insert([{
-                                                usuario_id: newUser.id,
-                                                tipo: 'sistema',
-                                                titulo: '🎉 ¡Cuenta Aprobada!',
-                                                mensaje: '¡Bienvenido a EGEL Study! Tu solicitud ha sido aprobada.',
-                                                icono: '✅',
-                                                color: '#22c55e'
-                                            }]);
-
-                                        alert('✅ Solicitud aprobada. El usuario ya puede iniciar sesión.');
+                                        alert('✅ Usuario creado y solicitud aprobada');
                                         loadData();
                                     } catch (err) {
                                         console.error('Error approving:', err);
-                                        alert('Error al aprobar la solicitud');
+                                        alert('Error al aprobar: ' + err.message);
                                     }
                                 }}
                                 onReject={async (solicitud, motivo) => {
                                     try {
-                                        await supabase
+                                        const { error } = await supabase
                                             .from('solicitudes_cuenta')
                                             .update({
                                                 estado: 'rechazada',
-                                                admin_id: user.id,
                                                 notas_admin: motivo || 'Solicitud rechazada',
-                                                processed_at: new Date().toISOString()
+                                                fecha_respuesta: new Date().toISOString()
                                             })
                                             .eq('id', solicitud.id);
+
+                                        if (error) {
+                                            console.error('Error rejecting:', error);
+                                            alert('Error al rechazar la solicitud');
+                                            return;
+                                        }
 
                                         alert('Solicitud rechazada');
                                         loadData();
@@ -771,7 +781,7 @@ const AdminPanel = ({ onBack }) => {
                                             width: '300px' // Wider button ~ 2 columns
                                         }}
                                     >
-                                        ➕ Nuevo Usuario
+                                        <i className="fa-solid fa-plus"></i> Nuevo Usuario
                                     </button>
                                 </div>
                                 <UsersTable
@@ -804,7 +814,7 @@ const AdminPanel = ({ onBack }) => {
                                             width: '300px'
                                         }}
                                     >
-                                        ➕ Nuevo Rol
+                                        <i className="fa-solid fa-plus"></i> Nuevo Rol
                                     </button>
                                 </div>
                                 <RolesTable
@@ -833,7 +843,7 @@ const AdminPanel = ({ onBack }) => {
                                             width: '300px'
                                         }}
                                     >
-                                        ➕ Nuevo Rol
+                                        <i className="fa-solid fa-plus"></i> Nuevo Rol
                                     </button>
                                 </div>
                                 <ModulosTable
@@ -843,6 +853,47 @@ const AdminPanel = ({ onBack }) => {
                                     onToggleStatus={handleToggleModuleStatus}
                                 />
                             </>
+                        )}
+
+                        {activeTab === 'contenido' && (
+                            <ContenidoPanel
+                                modulos={modulos}
+                                contenido={contenidoClase}
+                                selectedModulo={selectedModuloContent}
+                                onSelectModulo={async (mod) => {
+                                    setSelectedModuloContent(mod);
+                                    if (mod) {
+                                        const { data } = await supabase
+                                            .from('contenido_clase')
+                                            .select('*')
+                                            .eq('modulo_id', mod.id)
+                                            .order('orden');
+                                        setContenidoClase(data || []);
+                                    } else {
+                                        setContenidoClase([]);
+                                    }
+                                }}
+                                onAddContent={() => {
+                                    setEditingContent({ isNew: true, modulo_id: selectedModuloContent?.id, tipo: 'guia', orden: contenidoClase.length + 1 });
+                                    setShowContentEditModal(true);
+                                }}
+                                onEditContent={(item) => {
+                                    setEditingContent(item);
+                                    setShowContentEditModal(true);
+                                }}
+                                onDeleteContent={async (item) => {
+                                    if (!confirm('¿Eliminar esta tarjeta de contenido?')) return;
+                                    await supabase.from('contenido_clase').delete().eq('id', item.id);
+                                    setContenidoClase(prev => prev.filter(c => c.id !== item.id));
+                                }}
+                                onUpdateModuloMedia={async (modulo, field, value) => {
+                                    await supabase.from('modulos').update({ [field]: value }).eq('id', modulo.id);
+                                    setModulos(prev => prev.map(m => m.id === modulo.id ? { ...m, [field]: value } : m));
+                                    if (selectedModuloContent?.id === modulo.id) {
+                                        setSelectedModuloContent(prev => ({ ...prev, [field]: value }));
+                                    }
+                                }}
+                            />
                         )}
 
                         {activeTab === 'preguntas' && (
@@ -862,7 +913,7 @@ const AdminPanel = ({ onBack }) => {
                                             width: '300px'
                                         }}
                                     >
-                                        ➕ Nueva Pregunta
+                                        <i className="fa-solid fa-plus"></i> Nueva Pregunta
                                     </button>
                                 </div>
                                 <PreguntasTable
@@ -921,6 +972,55 @@ const AdminPanel = ({ onBack }) => {
                     onSave={handleSaveRol}
                 />
             )}
+
+            {/* Content Edit Modal */}
+            {showContentEditModal && editingContent && (
+                <ContentEditModal
+                    content={editingContent}
+                    onClose={() => { setShowContentEditModal(false); setEditingContent(null); }}
+                    onSave={async (data) => {
+                        try {
+                            if (data.isNew) {
+                                const { error } = await supabase
+                                    .from('contenido_clase')
+                                    .insert([{
+                                        modulo_id: data.modulo_id,
+                                        tipo: data.tipo,
+                                        orden: data.orden,
+                                        titulo: data.titulo,
+                                        contenido: data.contenido
+                                    }]);
+                                if (error) throw error;
+                            } else {
+                                const { error } = await supabase
+                                    .from('contenido_clase')
+                                    .update({
+                                        tipo: data.tipo,
+                                        orden: data.orden,
+                                        titulo: data.titulo,
+                                        contenido: data.contenido
+                                    })
+                                    .eq('id', data.id);
+                                if (error) throw error;
+                            }
+                            // Reload content
+                            if (selectedModuloContent) {
+                                const { data: newData } = await supabase
+                                    .from('contenido_clase')
+                                    .select('*')
+                                    .eq('modulo_id', selectedModuloContent.id)
+                                    .order('orden');
+                                setContenidoClase(newData || []);
+                            }
+                            setShowContentEditModal(false);
+                            setEditingContent(null);
+                        } catch (err) {
+                            console.error('Error saving content:', err);
+                            alert('Error al guardar: ' + err.message);
+                        }
+                    }}
+                />
+            )}
         </div>
     );
 };
@@ -962,7 +1062,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
         <div>
             {/* Pendientes */}
             <h3 style={{ color: 'var(--text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                📋 Solicitudes Pendientes
+                <i className="fa-solid fa-clipboard-list"></i> Solicitudes Pendientes
                 {pendientes.length > 0 && (
                     <span style={{
                         background: '#ef4444',
@@ -984,7 +1084,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                     borderRadius: '12px',
                     marginBottom: '30px'
                 }}>
-                    <span style={{ fontSize: '3rem' }}>✅</span>
+                    <div style={{ fontSize: '3rem', color: '#22c55e' }}><i className="fa-solid fa-check-circle"></i></div>
                     <p style={{ color: 'var(--text-secondary)', marginTop: '10px' }}>
                         No hay solicitudes pendientes
                     </p>
@@ -1004,13 +1104,13 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                                 <div>
                                     <h4 style={{ color: 'var(--text-primary)', marginBottom: '5px', fontSize: '1.1rem' }}>
-                                        {sol.avatar || '📚'} {sol.nombre}
+                                        {sol.avatar || <i className="fa-solid fa-user"></i>} {sol.nombre}
                                     </h4>
                                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                        📧 {sol.email}
+                                        <i className="fa-solid fa-envelope"></i> {sol.email}
                                     </p>
                                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '5px' }}>
-                                        📅 Solicitado: {formatDate(sol.created_at)}
+                                        <i className="fa-solid fa-calendar"></i> Solicitado: {formatDate(sol.created_at)}
                                     </p>
                                 </div>
                                 <span style={{
@@ -1021,7 +1121,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                                     fontSize: '0.8rem',
                                     fontWeight: '500'
                                 }}>
-                                    ⏳ Pendiente
+                                    <i className="fa-solid fa-hourglass-half"></i> Pendiente
                                 </span>
                             </div>
 
@@ -1111,7 +1211,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                                             fontSize: '0.95rem'
                                         }}
                                     >
-                                        ✅ Aprobar
+                                        <i className="fa-solid fa-check"></i> Aprobar
                                     </button>
                                     <button
                                         onClick={() => setRejectingId(sol.id)}
@@ -1127,7 +1227,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                                             fontSize: '0.95rem'
                                         }}
                                     >
-                                        ❌ Rechazar
+                                        <i className="fa-solid fa-xmark"></i> Rechazar
                                     </button>
                                 </div>
                             )}
@@ -1140,7 +1240,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
             {procesadas.length > 0 && (
                 <>
                     <h3 style={{ color: 'var(--text-primary)', marginBottom: '15px', marginTop: '30px' }}>
-                        📜 Historial de Solicitudes
+                        <i className="fa-solid fa-clock-rotate-left"></i> Historial de Solicitudes
                     </h3>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -1166,7 +1266,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                                                 background: sol.estado === 'aprobada' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
                                                 color: sol.estado === 'aprobada' ? '#22c55e' : '#ef4444'
                                             }}>
-                                                {sol.estado === 'aprobada' ? '✅ Aprobada' : '❌ Rechazada'}
+                                                {sol.estado === 'aprobada' ? <span><i className="fa-solid fa-check"></i> Aprobada</span> : <span><i className="fa-solid fa-xmark"></i> Rechazada</span>}
                                             </span>
                                         </td>
                                         <td style={{ padding: '12px', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
@@ -1179,6 +1279,408 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
                     </div>
                 </>
             )}
+        </div>
+    );
+};
+
+// ContenidoPanel Component - Gestión de contenido de clases por módulo
+const ContenidoPanel = ({ modulos, contenido, selectedModulo, onSelectModulo, onAddContent, onEditContent, onDeleteContent, onUpdateModuloMedia }) => {
+    const [editingAudio, setEditingAudio] = useState(false);
+    const [editingInfografia, setEditingInfografia] = useState(false);
+    const [audioUrl, setAudioUrl] = useState('');
+    const [infografiaUrl, setInfografiaUrl] = useState('');
+
+    return (
+        <div>
+            {/* Selector de Módulo */}
+            <div style={{ marginBottom: '20px' }}>
+                <label style={{ color: 'var(--text-secondary)', marginBottom: '8px', display: 'block' }}>
+                    Selecciona un módulo:
+                </label>
+                <select
+                    value={selectedModulo?.id || ''}
+                    onChange={(e) => {
+                        const mod = modulos.find(m => m.id === parseInt(e.target.value));
+                        onSelectModulo(mod || null);
+                        if (mod) {
+                            setAudioUrl(mod.audio_url || '');
+                            setInfografiaUrl(mod.infografia_url || '');
+                        }
+                    }}
+                    style={{
+                        width: '100%',
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--card-border)',
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '1rem'
+                    }}
+                >
+                    <option value="">-- Seleccionar módulo --</option>
+                    {modulos.map(m => (
+                        <option key={m.id} value={m.id}>{m.icon} {m.titulo}</option>
+                    ))}
+                </select>
+            </div>
+
+            {selectedModulo && (
+                <>
+                    {/* Info del módulo seleccionado */}
+                    <div className="slide-card" style={{ marginBottom: '20px', padding: '20px' }}>
+                        <h3 style={{ color: selectedModulo.color, marginBottom: '15px' }}>
+                            {selectedModulo.icon} {selectedModulo.titulo}
+                        </h3>
+
+                        {/* Audio URL */}
+                        <div style={{ marginBottom: '15px' }}>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                                <i className="fa-solid fa-headphones"></i> URL del Audio:
+                            </label>
+                            {editingAudio ? (
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <input
+                                        type="text"
+                                        value={audioUrl}
+                                        onChange={(e) => setAudioUrl(e.target.value)}
+                                        placeholder="/assets/audio/archivo.m4a"
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--card-border)',
+                                            background: 'var(--input-bg)',
+                                            color: 'var(--text-primary)'
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            onUpdateModuloMedia(selectedModulo, 'audio_url', audioUrl);
+                                            setEditingAudio(false);
+                                        }}
+                                        style={{ padding: '10px 15px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                    ><i className="fa-solid fa-check"></i></button>
+                                    <button
+                                        onClick={() => { setEditingAudio(false); setAudioUrl(selectedModulo.audio_url || ''); }}
+                                        style={{ padding: '10px 15px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                    ><i className="fa-solid fa-xmark"></i></button>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>
+                                        {selectedModulo.audio_url || '(No configurado)'}
+                                    </span>
+                                    <button
+                                        onClick={() => { setAudioUrl(selectedModulo.audio_url || ''); setEditingAudio(true); }}
+                                        style={{ padding: '8px 12px', background: 'var(--accent-color)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                    ><i className="fa-solid fa-pen-to-square"></i> Editar</button>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Infografía URL */}
+                        <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                                <i className="fa-solid fa-image"></i> URL de la Infografía:
+                            </label>
+                            {editingInfografia ? (
+                                <div style={{ display: 'flex', gap: '10px' }}>
+                                    <input
+                                        type="text"
+                                        value={infografiaUrl}
+                                        onChange={(e) => setInfografiaUrl(e.target.value)}
+                                        placeholder="/assets/infografias/imagen.png"
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px',
+                                            borderRadius: '8px',
+                                            border: '1px solid var(--card-border)',
+                                            background: 'var(--input-bg)',
+                                            color: 'var(--text-primary)'
+                                        }}
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            onUpdateModuloMedia(selectedModulo, 'infografia_url', infografiaUrl);
+                                            setEditingInfografia(false);
+                                        }}
+                                        style={{ padding: '10px 15px', background: '#22c55e', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                    ><i className="fa-solid fa-check"></i></button>
+                                    <button
+                                        onClick={() => { setEditingInfografia(false); setInfografiaUrl(selectedModulo.infografia_url || ''); }}
+                                        style={{ padding: '10px 15px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                    ><i className="fa-solid fa-xmark"></i></button>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <span style={{ color: 'var(--text-primary)', flex: 1, wordBreak: 'break-all' }}>
+                                        {selectedModulo.infografia_url || '(No configurado)'}
+                                    </span>
+                                    <button
+                                        onClick={() => { setInfografiaUrl(selectedModulo.infografia_url || ''); setEditingInfografia(true); }}
+                                        style={{ padding: '8px 12px', background: 'var(--accent-color)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem' }}
+                                    ><i className="fa-solid fa-pen-to-square"></i> Editar</button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Tarjetas de contenido */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ color: 'var(--text-primary)', margin: 0 }}>
+                            📄 Tarjetas de Contenido ({contenido.length})
+                        </h3>
+                        <button
+                            onClick={onAddContent}
+                            style={{
+                                padding: '10px 20px',
+                                background: '#22c55e',
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                fontWeight: '500'
+                            }}
+                        >
+                            <i className="fa-solid fa-plus"></i> Nueva Tarjeta
+                        </button>
+                    </div>
+
+                    {contenido.length === 0 ? (
+                        <div className="slide-card" style={{ textAlign: 'center', padding: '40px' }}>
+                            <p style={{ color: 'var(--text-secondary)' }}>No hay tarjetas de contenido para este módulo.</p>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Agrega tarjetas para que aparezcan en el modo clase.</p>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            {contenido.map((item, idx) => (
+                                <div key={item.id} className="slide-card" style={{ padding: '15px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                                <span style={{
+                                                    background: 'var(--accent-color)',
+                                                    color: '#fff',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '0.75rem',
+                                                    fontWeight: '600'
+                                                }}>#{item.orden}</span>
+                                                <span style={{
+                                                    background: item.tipo === 'guia' ? 'rgba(59, 130, 246, 0.2)' :
+                                                        item.tipo === 'informe' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(168, 85, 247, 0.2)',
+                                                    color: item.tipo === 'guia' ? '#3b82f6' :
+                                                        item.tipo === 'informe' ? '#22c55e' : '#a855f7',
+                                                    padding: '2px 8px',
+                                                    borderRadius: '12px',
+                                                    fontSize: '0.75rem'
+                                                }}>{item.tipo}</span>
+                                            </div>
+                                            <h4 style={{ color: 'var(--text-primary)', margin: '0 0 8px 0' }}>{item.titulo}</h4>
+                                            <p style={{
+                                                color: 'var(--text-secondary)',
+                                                fontSize: '0.85rem',
+                                                margin: 0,
+                                                maxHeight: '60px',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                {item.contenido?.substring(0, 150)}...
+                                            </p>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', marginLeft: '15px' }}>
+                                            <button
+                                                onClick={() => onEditContent(item)}
+                                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                                title="Editar"
+                                            ><i className="fa-solid fa-pen-to-square"></i></button>
+                                            <button
+                                                onClick={() => onDeleteContent(item)}
+                                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: '#ef4444' }}
+                                                title="Eliminar"
+                                            ><i className="fa-solid fa-trash-can"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </>
+            )}
+
+            {!selectedModulo && (
+                <div className="slide-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '15px' }}><i className="fa-solid fa-book-open"></i></div>
+                    <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Gestión de Contenido</h3>
+                    <p style={{ color: 'var(--text-secondary)' }}>
+                        Selecciona un módulo para administrar su contenido de clases.
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ContentEditModal Component - Modal para editar tarjetas de contenido
+const ContentEditModal = ({ content, onClose, onSave }) => {
+    const [formData, setFormData] = useState({
+        id: content.id,
+        isNew: content.isNew || false,
+        modulo_id: content.modulo_id,
+        tipo: content.tipo || 'guia',
+        orden: content.orden || 1,
+        titulo: content.titulo || '',
+        contenido: content.contenido || ''
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!formData.titulo.trim()) {
+            alert('El título es requerido');
+            return;
+        }
+        if (!formData.contenido.trim()) {
+            alert('El contenido es requerido');
+            return;
+        }
+        onSave(formData);
+    };
+
+    return (
+        <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.9)', zIndex: 1500,
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+            backdropFilter: 'blur(8px)',
+            paddingTop: '50px',
+            overflowY: 'auto'
+        }}>
+            <div className="slide-card fade-in" style={{ width: '100%', maxWidth: '600px', margin: '0 20px 50px 20px' }}>
+                <h2 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>
+                    {formData.isNew ? <span><i className="fa-solid fa-plus"></i> Nueva Tarjeta</span> : <span><i className="fa-solid fa-pen-to-square"></i> Editar Tarjeta</span>}
+                </h2>
+
+                <form onSubmit={handleSubmit}>
+                    <div style={{ display: 'grid', gap: '15px' }}>
+                        {/* Tipo y Orden */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            <div>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                                    Tipo
+                                </label>
+                                <select
+                                    value={formData.tipo}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, tipo: e.target.value }))}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--card-border)',
+                                        background: 'var(--input-bg)',
+                                        color: 'var(--text-primary)'
+                                    }}
+                                >
+                                    <option value="guia">Guía</option>
+                                    <option value="informe">Informe</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                                    Orden
+                                </label>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    value={formData.orden}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, orden: parseInt(e.target.value) || 1 }))}
+                                    style={{
+                                        width: '100%',
+                                        padding: '10px',
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--card-border)',
+                                        background: 'var(--input-bg)',
+                                        color: 'var(--text-primary)'
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Título */}
+                        <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                                Título *
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.titulo}
+                                onChange={(e) => setFormData(prev => ({ ...prev, titulo: e.target.value }))}
+                                placeholder="Título de la tarjeta"
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--card-border)',
+                                    background: 'var(--input-bg)',
+                                    color: 'var(--text-primary)'
+                                }}
+                            />
+                        </div>
+
+                        {/* Contenido */}
+                        <div>
+                            <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
+                                Contenido * (Markdown soportado)
+                            </label>
+                            <textarea
+                                value={formData.contenido}
+                                onChange={(e) => setFormData(prev => ({ ...prev, contenido: e.target.value }))}
+                                placeholder="Escribe el contenido de la tarjeta...&#10;&#10;Puedes usar **negrita**, *cursiva*, listas, etc."
+                                rows={12}
+                                style={{
+                                    width: '100%',
+                                    padding: '10px',
+                                    borderRadius: '8px',
+                                    border: '1px solid var(--card-border)',
+                                    background: 'var(--input-bg)',
+                                    color: 'var(--text-primary)',
+                                    resize: 'vertical',
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.9rem'
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Buttons */}
+                    <div style={{ display: 'flex', gap: '15px', marginTop: '25px' }}>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            style={{
+                                flex: 1,
+                                padding: '14px',
+                                background: 'transparent',
+                                color: '#ef4444',
+                                border: '2px solid #ef4444',
+                                borderRadius: '12px',
+                                cursor: 'pointer',
+                                fontWeight: '600',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="btn-primary"
+                            style={{ flex: 1, marginTop: 0 }}
+                        >
+                            {formData.isNew ? 'Crear Tarjeta' : 'Guardar Cambios'}
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
@@ -1262,10 +1764,10 @@ const UsersTable = ({ usuarios, roles, currentUserId, onToggleActive, onUpdateRo
                                     }}
                                     title="Editar usuario"
                                 >
-                                    ✏️
+                                    <i className="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 <button
-                                    onClick={() => onDelete(u.id)}
+                                    onClick={() => onDelete(u)}
                                     disabled={u.id === currentUserId}
                                     style={{
                                         background: 'transparent',
@@ -1276,7 +1778,7 @@ const UsersTable = ({ usuarios, roles, currentUserId, onToggleActive, onUpdateRo
                                     }}
                                     title={u.id === currentUserId ? 'No puedes eliminarte' : 'Eliminar usuario'}
                                 >
-                                    🗑️
+                                    <i className="fa-solid fa-trash-can"></i>
                                 </button>
                                 <button
                                     onClick={() => onToggleActive(u.id, u.activo)}
@@ -1291,7 +1793,7 @@ const UsersTable = ({ usuarios, roles, currentUserId, onToggleActive, onUpdateRo
                                     }}
                                     title={u.id === currentUserId ? 'No puedes modificar tu propio usuario' : (u.activo ? 'Desactivar usuario' : 'Activar usuario')}
                                 >
-                                    {u.activo ? '🚫' : '✅'}
+                                    {u.activo ? <i className="fa-solid fa-ban"></i> : <i className="fa-solid fa-check-circle"></i>}
                                 </button>
                             </div>
                         </td>
@@ -1381,7 +1883,7 @@ const RolesTable = ({ roles, onEdit, onToggleStatus, onDelete }) => (
                                 }}
                                 title="Editar rol"
                             >
-                                ✏️
+                                <i className="fa-solid fa-pen-to-square"></i>
                             </button>
                             <button
                                 onClick={() => onToggleStatus(r)}
@@ -1395,7 +1897,7 @@ const RolesTable = ({ roles, onEdit, onToggleStatus, onDelete }) => (
                                 }}
                                 title={r.activo !== false ? "Desactivar rol" : "Activar rol"}
                             >
-                                {r.activo !== false ? '🚫' : '✅'}
+                                {r.activo !== false ? <i className="fa-solid fa-ban"></i> : <i className="fa-solid fa-check-circle"></i>}
                             </button>
                             <button
                                 onClick={() => onDelete(r.id)}
@@ -1409,7 +1911,7 @@ const RolesTable = ({ roles, onEdit, onToggleStatus, onDelete }) => (
                                 }}
                                 title="Eliminar rol"
                             >
-                                🗑️
+                                <i className="fa-solid fa-trash-can"></i>
                             </button>
                         </td>
                     </tr>
@@ -1477,7 +1979,7 @@ const ModulosTable = ({ modulos, onEdit, onDelete, onToggleStatus }) => (
                                     }}
                                     title="Editar módulo"
                                 >
-                                    ✏️
+                                    <i className="fa-solid fa-pen-to-square"></i>
                                 </button>
                                 <button
                                     onClick={() => onDelete(m.id)}
@@ -1491,7 +1993,7 @@ const ModulosTable = ({ modulos, onEdit, onDelete, onToggleStatus }) => (
                                     }}
                                     title="Eliminar módulo"
                                 >
-                                    🗑️
+                                    <i className="fa-solid fa-trash-can"></i>
                                 </button>
                                 <button
                                     onClick={() => onToggleStatus(m)}
@@ -1505,7 +2007,7 @@ const ModulosTable = ({ modulos, onEdit, onDelete, onToggleStatus }) => (
                                     }}
                                     title={m.activo !== false ? "Desactivar módulo" : "Activar módulo"}
                                 >
-                                    {m.activo !== false ? '🚫' : '✅'}
+                                    {m.activo !== false ? <i className="fa-solid fa-ban"></i> : <i className="fa-solid fa-check-circle"></i>}
                                 </button>
 
                             </td>
@@ -1686,7 +2188,7 @@ const PreguntasTable = ({ preguntas, onEdit, onToggleStatus }) => {
                                         title="Editar pregunta"
                                         onClick={() => onEdit(p)}
                                     >
-                                        ✏️
+                                        <i className="fa-solid fa-pen-to-square"></i>
                                     </button>
                                     <button
                                         onClick={() => onToggleStatus(p)}
@@ -1700,7 +2202,7 @@ const PreguntasTable = ({ preguntas, onEdit, onToggleStatus }) => {
                                         }}
                                         title={p.activo !== false ? "Desactivar pregunta" : "Activar pregunta"}
                                     >
-                                        {p.activo !== false ? '🚫' : '✅'}
+                                        {p.activo !== false ? <i className="fa-solid fa-ban"></i> : <i className="fa-solid fa-check-circle"></i>}
                                     </button>
                                 </td>
                             </tr>
@@ -2309,6 +2811,7 @@ const ModuleEditModal = ({ modulo, onClose, onSave }) => {
 // Confirm Password Modal
 const ConfirmPasswordModal = ({ message, onConfirm, onCancel }) => {
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     return (
         <div style={{
@@ -2325,7 +2828,7 @@ const ConfirmPasswordModal = ({ message, onConfirm, onCancel }) => {
                 </p>
                 <div style={{ position: 'relative' }}>
                     <input
-                        type={showPasswordAdmin ? "text" : "password"}
+                        type={showPassword ? "text" : "password"}
                         placeholder="Contraseña de Administrador"
                         autoFocus
                         value={password}
@@ -2340,7 +2843,7 @@ const ConfirmPasswordModal = ({ message, onConfirm, onCancel }) => {
                     />
                     <button
                         type="button"
-                        onClick={() => setShowPasswordAdmin(!showPasswordAdmin)}
+                        onClick={() => setShowPassword(!showPassword)}
                         style={{
                             position: 'absolute',
                             right: '10px',
@@ -2351,9 +2854,9 @@ const ConfirmPasswordModal = ({ message, onConfirm, onCancel }) => {
                             fontSize: '1.1rem',
                             color: 'var(--text-secondary)'
                         }}
-                        title={showPasswordAdmin ? 'Ocultar' : 'Mostrar'}
+                        title={showPassword ? 'Ocultar' : 'Mostrar'}
                     >
-                        {showPasswordAdmin ? '👁️' : '👁️‍🗨️'}
+                        {showPassword ? '👁️' : '👁️‍🗨️'}
                     </button>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>

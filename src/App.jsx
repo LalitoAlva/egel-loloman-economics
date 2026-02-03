@@ -85,7 +85,7 @@ const ThemeToggle = () => {
                 gap: '8px'
             }}
         >
-            {theme === 'dark' ? '🌙' : '☀️'}
+            <i className={theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun'}></i>
         </button>
     );
 };
@@ -133,7 +133,9 @@ function AppContent() {
                 transition: 'background 0.3s'
             }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📖</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px', color: 'var(--accent-color)' }}>
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                    </div>
                     <p style={{ color: 'var(--text-secondary)' }}>Cargando EGEL Study...</p>
                 </div>
             </div>
@@ -160,7 +162,7 @@ function AppContent() {
                     zIndex: 900
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '1.5rem' }}>📖</span>
+                        <i className="fa-solid fa-graduation-cap" style={{ fontSize: '1.5rem', color: 'var(--accent-color)' }}></i>
                         <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '1.1rem' }}>
                             EGEL Study
                         </span>
@@ -231,7 +233,7 @@ function AppContent() {
                             background: 'transparent',
                             border: 'none',
                             color: 'var(--text-primary)',
-                            fontSize: '2rem', // Increased
+                            fontSize: '1.5rem',
                             cursor: 'pointer',
                             padding: '8px',
                             display: 'flex',
@@ -239,11 +241,11 @@ function AppContent() {
                             justifyContent: 'center'
                         }}
                     >
-                        ☰
+                        <i className="fa-solid fa-bars"></i>
                     </button>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '2rem' }}>📖</span> {/* Increased */}
-                        <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '1.5rem' }}> {/* Increased */}
+                        <i className="fa-solid fa-graduation-cap" style={{ fontSize: '1.8rem', color: 'var(--accent-color)' }}></i>
+                        <span style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '1.5rem' }}>
                             EGEL Study
                         </span>
                     </div>
@@ -275,7 +277,7 @@ function AppContent() {
                                 gap: '8px'
                             }}
                         >
-                            🏠 Inicio
+                            <i className="fa-solid fa-house"></i> Inicio
                         </button>
                     )}
 
@@ -310,7 +312,7 @@ function AppContent() {
                     }}
                         onClick={() => handleModeChange('profile')}
                     >
-                        <span style={{ fontSize: '1.2rem' }}>{user.avatar || '👤'}</span>
+                        <i className="fa-solid fa-user-circle" style={{ fontSize: '1.3rem' }}></i>
                         <span className="hidden-on-mobile" style={{ color: 'var(--accent-color)', fontSize: '1.1rem' }}>
                             {user.nombre.split(' ')[0]}
                         </span>
@@ -414,21 +416,30 @@ function AppContent() {
     );
 }
 
-// Helper function for mode labels
+// Helper function for mode labels with FA icons
 const getModeLabel = (mode) => {
     const labels = {
-        home: '🏠 Inicio',
-        lesson: '📚 Clases',
-        quiz: '📝 Quiz',
-        test: '🧠 Prueba',
-        weekly: '📅 Semanal',
-        progress: '📊 Progreso',
-        class: '📖 Clase',
-        login: '🔐 Login',
-        admin: '⚙️ Admin',
-        profile: '👤 Perfil'
+        home: { icon: 'fa-solid fa-house', text: 'Inicio' },
+        lesson: { icon: 'fa-solid fa-book-open', text: 'Clases' },
+        quiz: { icon: 'fa-solid fa-clipboard-question', text: 'Quiz' },
+        test: { icon: 'fa-solid fa-brain', text: 'Prueba' },
+        weekly: { icon: 'fa-solid fa-calendar-check', text: 'Semanal' },
+        progress: { icon: 'fa-solid fa-chart-line', text: 'Progreso' },
+        class: { icon: 'fa-solid fa-chalkboard-user', text: 'Clase' },
+        login: { icon: 'fa-solid fa-lock', text: 'Login' },
+        admin: { icon: 'fa-solid fa-gear', text: 'Admin' },
+        profile: { icon: 'fa-solid fa-user', text: 'Perfil' }
     };
-    return labels[mode] || mode;
+    const label = labels[mode];
+    if (label) {
+        return (
+            <>
+                <i className={label.icon} style={{ marginRight: '6px' }}></i>
+                {label.text}
+            </>
+        );
+    }
+    return mode;
 };
 
 // Main App with Providers

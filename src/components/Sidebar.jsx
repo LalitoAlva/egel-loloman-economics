@@ -6,12 +6,12 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
     const { theme, toggleTheme } = useTheme();
 
     const menuItems = [
-        { id: 'home', icon: '🏡', label: 'Inicio', mode: 'home' },
-        { id: 'lesson', icon: '📖', label: 'Clases', mode: 'lesson' },
-        { id: 'quiz', icon: '✏️', label: 'Quiz EGEL', mode: 'quiz' },
-        { id: 'test', icon: '💭', label: 'Ponte a Prueba', mode: 'test' },
-        { id: 'weekly', icon: '🗓️', label: 'Prueba Semanal', mode: 'weekly' },
-        { id: 'progress', icon: '📈', label: 'Mi Progreso', mode: 'progress' },
+        { id: 'home', icon: 'fa-solid fa-house', label: 'Inicio', mode: 'home' },
+        { id: 'lesson', icon: 'fa-solid fa-chalkboard-user', label: 'Clases', mode: 'lesson' },
+        { id: 'quiz', icon: 'fa-solid fa-clipboard-question', label: 'Quiz EGEL', mode: 'quiz' },
+        { id: 'test', icon: 'fa-solid fa-brain', label: 'Ponte a Prueba', mode: 'test' },
+        { id: 'weekly', icon: 'fa-solid fa-calendar-check', label: 'Prueba Semanal', mode: 'weekly' },
+        { id: 'progress', icon: 'fa-solid fa-chart-line', label: 'Mi Progreso', mode: 'progress' },
     ];
 
     const isAdmin = user?.roles?.nombre === 'admin';
@@ -60,7 +60,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                     justifyContent: 'space-between'
                 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <span style={{ fontSize: '1.8rem' }}>📖</span>
+                        <i className="fa-solid fa-graduation-cap" style={{ fontSize: '1.8rem', color: 'var(--accent-color)' }}></i>
                         <div>
                             <div style={{ color: 'var(--text-primary)', fontWeight: 'bold', fontSize: '1.1rem' }}>
                                 EGEL Study
@@ -80,7 +80,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                             cursor: 'pointer'
                         }}
                     >
-                        ✕
+                        <i className="fa-solid fa-xmark"></i>
                     </button>
                 </div>
 
@@ -106,7 +106,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                             justifyContent: 'center',
                             fontSize: '1.3rem'
                         }}>
-                            {user?.avatar || '👤'}
+                            <i className="fa-solid fa-user"></i>
                         </div>
                         <div style={{ flex: 1 }}>
                             <div style={{ color: 'var(--text-primary)', fontWeight: '500' }}>
@@ -124,13 +124,12 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                     : 'Sin cuenta'}
                             </div>
                         </div>
-                        <span style={{
+                        <i className="fa-solid fa-chevron-down" style={{
                             color: 'var(--text-secondary)',
                             transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0)',
-                            transition: 'transform 0.2s'
-                        }}>
-                            ▼
-                        </span>
+                            transition: 'transform 0.2s',
+                            fontSize: '0.8rem'
+                        }}></i>
                     </div>
 
                     {showUserMenu && (
@@ -155,7 +154,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                             onClose();
                                         }}
                                     >
-                                        📈 Mi Progreso
+                                        <i className="fa-solid fa-chart-line" style={{ marginRight: '8px' }}></i> Mi Progreso
                                     </button>
                                     <button
                                         style={{
@@ -175,7 +174,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                             onClose();
                                         }}
                                     >
-                                        🔐 Cambiar Contraseña
+                                        <i className="fa-solid fa-key" style={{ marginRight: '8px' }}></i> Cambiar Contraseña
                                     </button>
                                     <button
                                         style={{
@@ -195,7 +194,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                             onClose();
                                         }}
                                     >
-                                        ↪️ Cerrar Sesión
+                                        <i className="fa-solid fa-right-from-bracket" style={{ marginRight: '8px' }}></i> Cerrar Sesión
                                     </button>
                                 </>
                             ) : (
@@ -217,7 +216,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                         onClose();
                                     }}
                                 >
-                                    🔐 Iniciar Sesión
+                                    <i className="fa-solid fa-right-to-bracket" style={{ marginRight: '8px' }}></i> Iniciar Sesión
                                 </button>
                             )}
                         </div>
@@ -258,7 +257,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                 fontSize: '0.95rem'
                             }}
                         >
-                            <span style={{ fontSize: '1.2rem' }}>{item.icon}</span>
+                            <i className={item.icon} style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
                             {item.label}
                         </button>
                     ))}
@@ -273,7 +272,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                 textTransform: 'uppercase',
                                 letterSpacing: '1px'
                             }}>
-                                ⚡ Administración
+                                <i className="fa-solid fa-bolt" style={{ marginRight: '6px' }}></i> Administración
                             </div>
                             <button
                                 onClick={() => {
@@ -302,7 +301,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                     fontSize: '0.95rem'
                                 }}
                             >
-                                <span style={{ fontSize: '1.2rem' }}>⚙️</span>
+                                <i className="fa-solid fa-gear" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
                                 Panel de Admin
                             </button>
                         </>
@@ -324,7 +323,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                         alignItems: 'center',
                         gap: '8px'
                     }}>
-                        {theme === 'dark' ? '🌙' : '☀️'}
+                        <i className={theme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun'}></i>
                         <span>Tema {theme === 'dark' ? 'Oscuro' : 'Claro'}</span>
                     </div>
                     <button
@@ -369,7 +368,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                             position: 'relative'
                         }}
                     >
-                        🔔
+                        <i className="fa-solid fa-bell"></i>
                         <span style={{
                             position: 'absolute',
                             top: '-5px',
