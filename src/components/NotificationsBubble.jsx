@@ -148,7 +148,10 @@ const NotificationsBubble = ({ isOpen, onToggle, onClose, inline, ...props }) =>
                     transition: 'all 0.2s',
                 }}
             >
-                🔔
+                <i className="fa-solid fa-bell" style={{
+                    fontSize: '1.2rem',
+                    color: isOpen ? '#fff' : 'var(--text-primary)'
+                }}></i>
                 {unreadCount > 0 && (
                     <span style={{
                         position: 'absolute',
