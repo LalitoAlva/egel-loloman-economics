@@ -5,29 +5,50 @@ const VoiceReader = ({ text }) => {
     const [utterance, setUtterance] = useState(null);
 
     useEffect(() => {
-        // Cancel speech when component unmounts
         return () => {
             window.speechSynthesis.cancel();
         };
     }, []);
+
+    // Helper to strip markdown for cleaner reading
+    const cleanText = (md) => {
+        if (!md) return '';
+        return md
+            .replace(/#{1,6}\s/g, '') // Remove headers
+            .replace(/(\*\*|__)(.*?)\1/g, '$2') // Remove bold
+            .replace(/(\*|_)(.*?)\1/g, '$2') // Remove italic
+            .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Remove links
+            .replace(/`{1,3}[^`]*`{1,3}/g, 'Código') // Remove code blocks
+            .replace(/[-*]\s/g, '') // Remove list bullets
+            .trim();
+    };
 
     const toggleSpeech = () => {
         if (isSpeaking) {
             window.speechSynthesis.cancel();
             setIsSpeaking(false);
         } else {
-            // Cancel any previous speech
             window.speechSynthesis.cancel();
 
-            const newUtterance = new SpeechSynthesisUtterance(text);
-            newUtterance.lang = 'es-MX'; // Mexican Spanish
+            const textToRead = cleanText(text);
+            const newUtterance = new SpeechSynthesisUtterance(textToRead);
+
+            // Try to find a good Spanish voice
+            const voices = window.speechSynthesis.getVoices();
+            const spanishVoice = voices.find(v => v.lang.includes('es-MX')) ||
+                voices.find(v => v.lang.includes('es'));
+
+            if (spanishVoice) {
+                newUtterance.voice = spanishVoice;
+            }
+            // Fallback is default system voice
+
+            newUtterance.lang = 'es-MX';
             newUtterance.rate = 1;
 
-            newUtterance.onend = () => {
-                setIsSpeaking(false);
-            };
-
-            newUtterance.onerror = () => {
+            newUtterance.onend = () => setIsSpeaking(false);
+            newUtterance.onerror = (e) => {
+                console.error("Speech error", e);
                 setIsSpeaking(false);
             };
 
@@ -41,7 +62,7 @@ const VoiceReader = ({ text }) => {
         <button
             onClick={toggleSpeech}
             style={{
-                background: isSpeaking ? '#ef4444' : 'var(--accent-color)', // Red to stop, accent to start
+                background: isSpeaking ? '#ef4444' : 'var(--accent-color)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
@@ -53,7 +74,8 @@ const VoiceReader = ({ text }) => {
                 cursor: 'pointer',
                 transition: 'all 0.2s',
                 boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-                marginBottom: '10px'
+                marginBottom: '10px',
+                fontSize: '1.2rem'
             }}
             title={isSpeaking ? "Detener lectura" : "Escuchar texto"}
         >
