@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import VoiceReader from './VoiceReader';
 
 const SocraticMode = ({ onBack }) => {
     const { user } = useAuth();
@@ -335,6 +336,10 @@ const SocraticMode = ({ onBack }) => {
                             <i className="fa-solid fa-brain"></i> REFLEXIONA
                         </div>
 
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                            <VoiceReader text={pregunta.pregunta} />
+                        </div>
+
                         <h2 style={{ fontSize: '1.4rem', lineHeight: '1.7', marginBottom: '30px' }}>
                             {pregunta.pregunta}
                         </h2>
@@ -379,9 +384,12 @@ const SocraticMode = ({ onBack }) => {
                             borderLeft: '4px solid #eab308',
                             marginBottom: '25px'
                         }}>
-                            <strong style={{ display: 'block', marginBottom: '8px', color: '#eab308' }}>
-                                🤔 Piensa en esto:
-                            </strong>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                <strong style={{ display: 'block', marginBottom: '8px', color: '#eab308' }}>
+                                    🤔 Piensa en esto:
+                                </strong>
+                                <VoiceReader text={`Pista: ${pregunta.explicacion?.substring(0, 150) || 'Considera los conceptos fundamentales del tema.'}`} />
+                            </div>
                             <p style={{ lineHeight: '1.6', margin: 0 }}>
                                 {pregunta.explicacion?.substring(0, 150) || 'Considera los conceptos fundamentales del tema.'}...
                             </p>
@@ -423,6 +431,9 @@ const SocraticMode = ({ onBack }) => {
                             borderLeft: '4px solid #22c55e',
                             marginBottom: '20px'
                         }}>
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '5px' }}>
+                                <VoiceReader text={`La respuesta correcta es: ${pregunta[`opcion_${pregunta.respuesta_correcta}`]}. ${pregunta.explicacion}`} />
+                            </div>
                             <strong style={{ display: 'block', marginBottom: '10px', color: '#22c55e', fontSize: '1.1rem' }}>
                                 ✓ Respuesta correcta: {pregunta.respuesta_correcta?.toUpperCase()}
                             </strong>

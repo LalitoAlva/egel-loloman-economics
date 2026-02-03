@@ -68,7 +68,7 @@ const StudentDashboard = ({ onBack }) => {
     if (!user) {
         return (
             <div className="container fade-in" style={{ textAlign: 'center', paddingTop: '60px' }}>
-                <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🔐</div>
+                <div style={{ fontSize: '4rem', marginBottom: '20px' }}><i className="fa-solid fa-lock"></i></div>
                 <h1 style={{ color: '#fff', marginBottom: '15px' }}>Inicia Sesión</h1>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>
                     Necesitas iniciar sesión para ver tu progreso.
@@ -81,7 +81,7 @@ const StudentDashboard = ({ onBack }) => {
     if (loading) {
         return (
             <div className="container fade-in" style={{ textAlign: 'center', paddingTop: '60px' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+                <div style={{ fontSize: '3rem', marginBottom: '20px' }}><i className="fa-solid fa-spinner fa-spin"></i></div>
                 <p>Cargando tu progreso...</p>
             </div>
         );
@@ -107,7 +107,7 @@ const StudentDashboard = ({ onBack }) => {
                         gap: '10px'
                     }}
                 >
-                    ← Volver al Inicio
+                    <i className="fa-solid fa-door-open"></i> Volver al Inicio
                 </button>
             </div>
 
@@ -122,15 +122,15 @@ const StudentDashboard = ({ onBack }) => {
                 borderRadius: '16px',
                 borderLeft: '6px solid var(--accent-color)'
             }}>
-                <div style={{ fontSize: '4rem' }}>{user.avatar || '👤'}</div>
+                <div style={{ fontSize: '4rem' }}>{user.id ? <i className="fa-solid fa-user-astronaut" style={{ color: 'var(--accent-color)' }}></i> : <i className="fa-solid fa-circle-user"></i>}</div>
                 <div>
                     <h1 style={{ fontSize: '1.8rem', marginBottom: '5px', color: '#fff' }}>
                         ¡Hola, {user.nombre}!
                     </h1>
                     <p style={{ color: 'var(--text-secondary)' }}>
-                        {user.roles?.nombre === 'estudiante' ? '📚 Estudiante' :
-                            user.roles?.nombre === 'profesor' ? '👨‍🏫 Profesor' :
-                                '⚙️ Administrador'}
+                        {user.roles?.nombre === 'estudiante' ? <span><i className="fa-solid fa-graduation-cap"></i> Estudiante</span> :
+                            user.roles?.nombre === 'profesor' ? <span><i className="fa-solid fa-chalkboard-user"></i> Profesor</span> :
+                                <span><i className="fa-solid fa-user-shield"></i> Administrador</span>}
                     </p>
                 </div>
             </header>
@@ -143,25 +143,25 @@ const StudentDashboard = ({ onBack }) => {
                 marginBottom: '30px'
             }}>
                 <StatCard
-                    icon="📝"
+                    icon={<i className="fa-solid fa-clipboard-list"></i>}
                     value={stats.totalExamenes}
                     label="Exámenes"
                     color="#a855f7"
                 />
                 <StatCard
-                    icon="📊"
+                    icon={<i className="fa-solid fa-chart-pie"></i>}
                     value={`${stats.promedioGeneral}%`}
                     label="Promedio"
                     color={parseFloat(stats.promedioGeneral) >= 70 ? '#22c55e' : '#eab308'}
                 />
                 <StatCard
-                    icon="🏆"
+                    icon={<i className="fa-solid fa-trophy"></i>}
                     value={`${stats.mejorPuntaje}%`}
                     label="Mejor Puntaje"
                     color="#22c55e"
                 />
                 <StatCard
-                    icon="⏱️"
+                    icon={<i className="fa-solid fa-clock"></i>}
                     value={`${stats.tiempoTotal}m`}
                     label="Tiempo Total"
                     color="#3b82f6"
@@ -176,7 +176,7 @@ const StudentDashboard = ({ onBack }) => {
 
                 {examenes.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
-                        <p style={{ fontSize: '3rem', marginBottom: '15px' }}>📭</p>
+                        <p style={{ fontSize: '3rem', marginBottom: '15px' }}><i className="fa-regular fa-folder-open"></i></p>
                         <p>Aún no has realizado ningún examen.</p>
                         <p style={{ marginTop: '10px', fontSize: '0.9rem' }}>
                             ¡Empieza con un Quiz para ver tu progreso aquí!
@@ -279,7 +279,7 @@ const StudentDashboard = ({ onBack }) => {
                                 borderRadius: '10px',
                                 borderLeft: `4px solid ${p.modulos?.color || 'var(--accent-color)'}`
                             }}>
-                                <span style={{ fontSize: '1.5rem' }}>{p.modulos?.icon || '📖'}</span>
+                                <span style={{ fontSize: '1.5rem' }}>{p.modulos?.icon || <i className="fa-solid fa-book"></i>}</span>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ marginBottom: '8px', color: '#fff' }}>
                                         {p.modulos?.titulo || p.modulo}
@@ -307,7 +307,7 @@ const StudentDashboard = ({ onBack }) => {
                                     </div>
                                 </div>
                                 {p.completado && (
-                                    <span style={{ fontSize: '1.5rem' }}>✅</span>
+                                    <span style={{ fontSize: '1.5rem', color: 'var(--success-color)' }}><i className="fa-solid fa-circle-check"></i></span>
                                 )}
                             </div>
                         ))}

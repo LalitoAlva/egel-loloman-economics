@@ -603,7 +603,7 @@ const AdminPanel = ({ onBack }) => {
                         gap: '10px'
                     }}
                 >
-                    ← Volver al Inicio
+                    <i className="fa-solid fa-door-open"></i> Volver al Inicio
                 </button>
             </div>
 
@@ -1335,7 +1335,7 @@ const ContenidoPanel = ({ modulos, contenido, selectedModulo, onSelectModulo, on
                         {/* Audio URL */}
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
-                                <i className="fa-solid fa-headphones"></i> URL del Audio:
+                                <i className="fa-solid fa-music"></i> URL del Audio:
                             </label>
                             {editingAudio ? (
                                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -1381,7 +1381,7 @@ const ContenidoPanel = ({ modulos, contenido, selectedModulo, onSelectModulo, on
                         {/* Infografía URL */}
                         <div>
                             <label style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', display: 'block', marginBottom: '5px' }}>
-                                <i className="fa-solid fa-image"></i> URL de la Infografía:
+                                <i className="fa-solid fa-file-image"></i> URL de la Infografía:
                             </label>
                             {editingInfografia ? (
                                 <div style={{ display: 'flex', gap: '10px' }}>
@@ -1491,7 +1491,7 @@ const ContenidoPanel = ({ modulos, contenido, selectedModulo, onSelectModulo, on
                                         <div style={{ display: 'flex', gap: '8px', marginLeft: '15px' }}>
                                             <button
                                                 onClick={() => onEditContent(item)}
-                                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+                                                style={{ background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--accent-color)' }}
                                                 title="Editar"
                                             ><i className="fa-solid fa-pen-to-square"></i></button>
                                             <button
@@ -1703,13 +1703,20 @@ const UsersTable = ({ usuarios, roles, currentUserId, onToggleActive, onUpdateRo
                 {usuarios.map(u => (
                     <tr key={u.id} style={{ borderBottom: '1px solid var(--card-border)' }}>
                         <td style={tdStyle}>
-                            <span style={{ marginRight: '8px' }}>{u.avatar}</span>
+                            <span style={{ marginRight: '8px' }}>
+                                {u.id === currentUserId ? (
+                                    <i className="fa-solid fa-user-astronaut" style={{ color: 'var(--accent-color)', fontSize: '1.2rem' }}></i>
+                                ) : (
+                                    u.avatar
+                                )}
+                            </span>
                             {u.nombre}
                             {u.id === currentUserId && (
                                 <span style={{
                                     marginLeft: '8px',
                                     fontSize: '0.7rem',
                                     background: 'var(--accent-color)',
+                                    color: '#fff',
                                     padding: '2px 6px',
                                     borderRadius: '4px'
                                 }}>TÚ</span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAudio } from '../context/AudioContext';
 import AudioPromptModal from './AudioPromptModal';
+import VoiceReader from './VoiceReader';
 
 const LessonMode = ({ onBack }) => {
     const [modulos, setModulos] = useState([]);
@@ -445,6 +446,9 @@ const LessonMode = ({ onBack }) => {
                                 color: 'var(--text-secondary)',
                                 lineHeight: '1.7'
                             }}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+                                    <VoiceReader text={currentCard.contenido} />
+                                </div>
                                 {renderMarkdown(currentCard.contenido)}
                             </div>
                         )}
