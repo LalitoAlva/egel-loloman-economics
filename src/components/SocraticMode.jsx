@@ -173,7 +173,7 @@ const SocraticMode = ({ onBack }) => {
                 </div>
 
                 <header style={{ marginBottom: '30px', textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🧠 Ponte a Prueba</h1>
+                    <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}><i className="fa-solid fa-brain"></i> Ponte a Prueba</h1>
                     <p style={{ color: 'var(--text-secondary)' }}>
                         Método socrático: reflexiona y aprende
                     </p>
@@ -236,7 +236,7 @@ const SocraticMode = ({ onBack }) => {
         return (
             <div className="container fade-in" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>🧠</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}><i className="fa-solid fa-brain fa-pulse"></i></div>
                     <p>Preparando preguntas reflexivas...</p>
                 </div>
             </div>
@@ -313,7 +313,7 @@ const SocraticMode = ({ onBack }) => {
                     color: '#a855f7',
                     fontSize: '0.9rem'
                 }}>
-                    🧠 {selectedModulo.titulo}
+                    <i className="fa-solid fa-brain"></i> {selectedModulo.titulo}
                 </span>
             </div>
 
@@ -332,7 +332,7 @@ const SocraticMode = ({ onBack }) => {
                             display: 'inline-block',
                             marginBottom: '20px'
                         }}>
-                            🧠 REFLEXIONA
+                            <i className="fa-solid fa-brain"></i> REFLEXIONA
                         </div>
 
                         <h2 style={{ fontSize: '1.4rem', lineHeight: '1.7', marginBottom: '30px' }}>

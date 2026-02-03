@@ -233,7 +233,7 @@ const WeeklyTest = ({ onBack }) => {
                 </div>
 
                 <div className="slide-card" style={{ maxWidth: '600px', margin: '0 auto', textAlign: 'center' }}>
-                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}>📅</div>
+                    <div style={{ fontSize: '4rem', marginBottom: '20px' }}><i className="fa-solid fa-calendar-check"></i></div>
                     <h1 style={{ fontSize: '2rem', marginBottom: '15px' }}>Prueba Semanal</h1>
 
                     <div style={{
@@ -243,7 +243,7 @@ const WeeklyTest = ({ onBack }) => {
                         marginBottom: '25px',
                         borderLeft: '4px solid #3b82f6'
                     }}>
-                        <h3 style={{ color: '#3b82f6', marginBottom: '10px' }}>📋 Información del examen</h3>
+                        <h3 style={{ color: '#3b82f6', marginBottom: '10px' }}><i className="fa-solid fa-clipboard-list"></i> Información del examen</h3>
                         <ul style={{ textAlign: 'left', color: 'var(--text-secondary)', lineHeight: '1.8' }}>
                             <li><strong style={{ color: 'var(--text-primary)' }}>{TOTAL_QUESTIONS} preguntas</strong> tipo EGEL</li>
                             <li>Balance: 40% básico, 40% intermedio, 20% avanzado</li>
@@ -254,12 +254,12 @@ const WeeklyTest = ({ onBack }) => {
                     </div>
 
                     <button className="btn-primary" onClick={startTest} style={{ fontSize: '1.2rem', padding: '16px 50px' }}>
-                        🚀 Comenzar Prueba
+                        <i className="fa-solid fa-rocket"></i> Comenzar Prueba
                     </button>
 
                     {!user && (
                         <p style={{ marginTop: '20px', fontSize: '0.85rem', color: 'var(--warning-color)' }}>
-                            ⚠️ Inicia sesión para guardar tu resultado
+                            <i className="fa-solid fa-triangle-exclamation"></i> Inicia sesión para guardar tu resultado
                         </p>
                     )}
                 </div>
@@ -272,7 +272,7 @@ const WeeklyTest = ({ onBack }) => {
         return (
             <div className="container fade-in" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}><i className="fa-solid fa-spinner fa-spin"></i></div>
                     <p>Preparando tu prueba semanal...</p>
                 </div>
             </div>
@@ -351,7 +351,7 @@ const WeeklyTest = ({ onBack }) => {
             <div className="container fade-in" style={{ justifyContent: 'center' }}>
                 <div className="slide-card" style={{ textAlign: 'center', maxWidth: '550px' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '20px' }}>
-                        {percentage >= 70 ? '🎉' : percentage >= 50 ? '💪' : '📚'}
+                        {percentage >= 70 ? <i className="fa-solid fa-trophy"></i> : percentage >= 50 ? <i className="fa-solid fa-dumbbell"></i> : <i className="fa-solid fa-book-open"></i>}
                     </div>
                     <h1 style={{ marginBottom: '10px' }}>Prueba Completada</h1>
 
@@ -405,7 +405,7 @@ const WeeklyTest = ({ onBack }) => {
 
                     {user && (
                         <p style={{ marginTop: '20px', fontSize: '0.85rem', color: 'var(--success-color)' }}>
-                            ✓ Resultado guardado en tu historial
+                            <i className="fa-solid fa-check"></i> Resultado guardado en tu historial
                         </p>
                     )}
                 </div>
@@ -458,13 +458,13 @@ const WeeklyTest = ({ onBack }) => {
                     gap: '8px'
                 }}>
                     <span style={{ color: getTimeColor(), fontWeight: 'bold', fontSize: '1.1rem' }}>
-                        ⏱️ {formatTime(timeRemaining)}
+                        <i className="fa-solid fa-clock"></i> {formatTime(timeRemaining)}
                     </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <span style={{ color: 'var(--success-color)', fontSize: '0.9rem' }}>
-                        ✓ {answeredCount}/{preguntas.length}
+                        <i className="fa-solid fa-check-double"></i> {answeredCount}/{preguntas.length}
                     </span>
                 </div>
             </div>
