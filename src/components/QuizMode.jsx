@@ -310,7 +310,7 @@ const QuizMode = ({ onBack }) => {
                 </div>
 
                 <div className="slide-card" style={{ maxWidth: '650px', margin: '0 auto', textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📝 Quiz EGEL</h1>
+                    <h1 style={{ fontSize: '2.5rem', marginBottom: '10px' }}><i className="fa-solid fa-clipboard-question"></i> Quiz EGEL</h1>
                     <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>
                         Configura tu quiz personalizado
                     </p>
@@ -318,7 +318,7 @@ const QuizMode = ({ onBack }) => {
                     {/* Question Count */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 'bold' }}>
-                            📊 Cantidad de preguntas:
+                            <i className="fa-solid fa-layer-group"></i> Cantidad de preguntas:
                         </label>
                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {countOptions.map(count => (
@@ -345,7 +345,7 @@ const QuizMode = ({ onBack }) => {
                     {/* Time Limit */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 'bold' }}>
-                            ⏱️ Tiempo límite:
+                            <i className="fa-solid fa-stopwatch"></i> Tiempo límite:
                         </label>
                         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {timeOptions.map(time => (
@@ -372,7 +372,7 @@ const QuizMode = ({ onBack }) => {
                     {/* Module Filter */}
                     <div style={{ marginBottom: '25px' }}>
                         <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-primary)', fontSize: '1rem' }}>
-                            📚 Módulo:
+                            <i className="fa-solid fa-book"></i> Módulo:
                         </label>
                         <div style={{
                             display: 'grid',
@@ -447,14 +447,14 @@ const QuizMode = ({ onBack }) => {
                     {/* Difficulty Filter */}
                     <div style={{ marginBottom: '30px' }}>
                         <label style={{ display: 'block', marginBottom: '12px', color: 'var(--text-primary)', fontSize: '1rem' }}>
-                            🎯 Dificultad:
+                            <i className="fa-solid fa-bullseye"></i> Dificultad:
                         </label>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {[
-                                { value: null, label: '⚖️ Balanceado', color: 'var(--accent-color)' },
-                                { value: 'basico', label: '🟢 Básico', color: '#22c55e' },
-                                { value: 'intermedio', label: '🟡 Medio', color: '#eab308' },
-                                { value: 'avanzado', label: '🔴 Difícil', color: '#ef4444' }
+                                { value: null, label: <span><i className="fa-solid fa-scale-balanced"></i> Balanceado</span>, color: 'var(--accent-color)' },
+                                { value: 'basico', label: <span><i className="fa-solid fa-circle" style={{ fontSize: '0.8em' }}></i> Básico</span>, color: '#22c55e' },
+                                { value: 'intermedio', label: <span><i className="fa-solid fa-circle" style={{ fontSize: '0.8em' }}></i> Medio</span>, color: '#eab308' },
+                                { value: 'avanzado', label: <span><i className="fa-solid fa-circle" style={{ fontSize: '0.8em' }}></i> Difícil</span>, color: '#ef4444' }
                             ].map(opt => (
                                 <button
                                     key={opt.value || 'balanced'}
@@ -477,7 +477,7 @@ const QuizMode = ({ onBack }) => {
 
                     {/* Start Button */}
                     <button className="btn-primary" onClick={startQuiz} style={{ fontSize: '1.2rem', padding: '16px 50px' }}>
-                        🚀 Comenzar ({questionCount} preguntas, {timeLimit} min)
+                        <i className="fa-solid fa-rocket"></i> Comenzar ({questionCount} preguntas, {timeLimit} min)
                     </button>
 
                     <p style={{ marginTop: '15px', fontSize: '0.85rem', color: 'var(--text-secondary)', opacity: 0.7 }}>
@@ -493,7 +493,7 @@ const QuizMode = ({ onBack }) => {
         return (
             <div className="container fade-in" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}><i className="fa-solid fa-spinner fa-spin"></i></div>
                     <p>Cargando preguntas...</p>
                 </div>
             </div>
@@ -526,7 +526,7 @@ const QuizMode = ({ onBack }) => {
             <div className="container fade-in" style={{ justifyContent: 'center' }}>
                 <div className="slide-card" style={{ textAlign: 'center', maxWidth: '500px' }}>
                     <div style={{ fontSize: '4rem', marginBottom: '20px' }}>
-                        {percentage >= 70 ? '🎉' : percentage >= 50 ? '💪' : '📚'}
+                        {percentage >= 70 ? <i className="fa-solid fa-trophy"></i> : percentage >= 50 ? <i className="fa-solid fa-medal"></i> : <i className="fa-solid fa-book-open"></i>}
                     </div>
                     <h1 style={{ marginBottom: '10px' }}>Quiz Completado</h1>
 
@@ -543,12 +543,12 @@ const QuizMode = ({ onBack }) => {
                         {score.correct} de {preguntas.length} correctas
                     </p>
                     <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', marginBottom: '30px' }}>
-                        ⏱️ Tiempo: {minutos}:{segundos.toString().padStart(2, '0')}
+                        <i className="fa-solid fa-clock"></i> Tiempo: {minutos}:{segundos.toString().padStart(2, '0')}
                     </p>
 
                     <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
                         <button className="btn-primary" onClick={restartQuiz}>
-                            🔄 Nuevo Quiz
+                            <i className="fa-solid fa-rotate-right"></i> Nuevo Quiz
                         </button>
                         <button onClick={onBack} style={{
                             padding: '16px 24px',
@@ -565,7 +565,7 @@ const QuizMode = ({ onBack }) => {
                     </div>
 
                     <p style={{ marginTop: '20px', fontSize: '0.85rem', color: 'var(--success-color)' }}>
-                        ✓ Resultado guardado en tu historial
+                        <i className="fa-solid fa-check"></i> Resultado guardado en tu historial
                     </p>
                 </div>
             </div>
@@ -627,13 +627,13 @@ const QuizMode = ({ onBack }) => {
                     gap: '8px'
                 }}>
                     <span style={{ color: getTimeColor(), fontWeight: 'bold', fontSize: '1.1rem' }}>
-                        ⏱️ {formatTime(timeRemaining)}
+                        <i className="fa-solid fa-clock"></i> {formatTime(timeRemaining)}
                     </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <span style={{ color: 'var(--success-color)', fontSize: '0.9rem' }}>
-                        ✓ {answeredCount}/{preguntas.length}
+                        <i className="fa-solid fa-check-double"></i> {answeredCount}/{preguntas.length}
                     </span>
                 </div>
             </div>

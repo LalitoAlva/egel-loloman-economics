@@ -175,7 +175,7 @@ const LessonMode = ({ onBack }) => {
         return (
             <div className="container fade-in" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
                 <div style={{ textAlign: 'center' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>⏳</div>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}><i className="fa-solid fa-spinner fa-spin"></i></div>
                     <p>Cargando módulos...</p>
                 </div>
             </div>
@@ -209,7 +209,7 @@ const LessonMode = ({ onBack }) => {
                 </div>
 
                 <header style={{ textAlign: 'center', marginBottom: '20px' }}>
-                    <h1 style={{ fontSize: '1.8rem', marginBottom: '5px' }}>📚 Clases por Módulo</h1>
+                    <h1 style={{ fontSize: '1.8rem', marginBottom: '5px' }}><i className="fa-solid fa-book-open"></i> Clases por Módulo</h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Selecciona un módulo para estudiar</p>
                 </header>
 
@@ -232,10 +232,10 @@ const LessonMode = ({ onBack }) => {
 
                             <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
                                 {mod.audio_url && (
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>🎧 Audio</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-headphones"></i> Audio</span>
                                 )}
                                 {mod.infografia_url && (
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>🖼️ Infografía</span>
+                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-image"></i> Infografía</span>
                                 )}
                             </div>
                         </div>
@@ -321,7 +321,7 @@ const LessonMode = ({ onBack }) => {
                                 fontSize: '0.9rem'
                             }}
                         >
-                            🔍 <span className="hidden-on-mobile">Ver completa</span>
+                            <i className="fa-solid fa-expand"></i> <span className="hidden-on-mobile">Ver completa</span>
                         </button>
                     )}
                     {selectedModulo.audio_url && (
@@ -338,9 +338,9 @@ const LessonMode = ({ onBack }) => {
                             }}
                         >
                             {isCurrentModulePlaying ? (
-                                <>⏸️ <span className="hidden-on-mobile">Reproduciendo</span></>
+                                <><i className="fa-solid fa-pause"></i> <span className="hidden-on-mobile">Reproduciendo</span></>
                             ) : (
-                                <>🎧 <span className="hidden-on-mobile">Audio</span></>
+                                <><i className="fa-solid fa-headphones"></i> <span className="hidden-on-mobile">Audio</span></>
                             )}
                         </button>
                     )}
@@ -416,12 +416,12 @@ const LessonMode = ({ onBack }) => {
                                             onClick={() => setShowInfografiaModal(true)}
                                         />
                                         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
-                                            👆 Toca la imagen para verla en pantalla completa
+                                            <i className="fa-solid fa-hand-pointer"></i> Toca la imagen para verla en pantalla completa
                                         </p>
                                     </>
                                 ) : (
                                     <div style={{ padding: '40px', color: 'var(--text-secondary)' }}>
-                                        <p style={{ fontSize: '3rem', marginBottom: '15px' }}>🖼️</p>
+                                        <div style={{ fontSize: '3rem', marginBottom: '15px' }}><i className="fa-solid fa-image"></i></div>
                                         <p>Infografía no disponible para este módulo</p>
                                     </div>
                                 )}
