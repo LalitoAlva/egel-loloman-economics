@@ -702,7 +702,7 @@ const QuizMode = ({ onBack }) => {
                             color: pregunta.modulos.color,
                             fontSize: '0.8rem'
                         }}>
-                            {pregunta.modulos.icon} {pregunta.modulos.titulo}
+                            <i className={pregunta.modulos.icon}></i> {pregunta.modulos.titulo}
                         </span>
                     )}
                     <span style={{

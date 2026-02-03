@@ -213,7 +213,7 @@ const SocraticMode = ({ onBack }) => {
                                     transition: 'all 0.2s'
                                 }}
                             >
-                                <span style={{ fontSize: '2.5rem' }}>{modulo.icon}</span>
+                                <span style={{ fontSize: '2.5rem' }}><i className={modulo.icon}></i></span>
                                 <div>
                                     <h3 style={{ color: 'var(--text-primary)', marginBottom: '5px', fontSize: '1.2rem' }}>
                                         {modulo.titulo}

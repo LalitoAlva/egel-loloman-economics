@@ -48,7 +48,7 @@ const AudioPromptModal = ({ isOpen, onClose, onConfirm, moduleName, moduleIcon, 
                     marginBottom: '20px',
                     animation: 'pulse 2s infinite'
                 }}>
-                    🎧
+                    <i className="fa-solid fa-headphones"></i>
                 </div>
 
                 <h2 style={{
@@ -76,7 +76,7 @@ const AudioPromptModal = ({ isOpen, onClose, onConfirm, moduleName, moduleIcon, 
                         borderRadius: '20px',
                         color: moduleColor
                     }}>
-                        {moduleIcon} {moduleName}
+                        <i className={moduleIcon}></i> {moduleName}
                     </span>
                 </p>
 
@@ -121,7 +121,7 @@ const AudioPromptModal = ({ isOpen, onClose, onConfirm, moduleName, moduleIcon, 
                             fontSize: '1rem'
                         }}
                     >
-                        <span>▶️</span> Sí, reproducir
+                        <span><i className="fa-solid fa-play"></i></span> Sí, reproducir
                     </button>
                 </div>
 

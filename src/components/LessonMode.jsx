@@ -226,7 +226,7 @@ const LessonMode = ({ onBack }) => {
                             }}
                             onClick={() => selectModulo(mod)}
                         >
-                            <div style={{ fontSize: '2.5rem', marginBottom: '15px' }}>{mod.icon}</div>
+                            <div style={{ fontSize: '2.5rem', marginBottom: '15px' }}><i className={mod.icon}></i></div>
                             <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', marginBottom: '10px' }}>{mod.titulo}</h3>
                             <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{mod.descripcion || 'Contenido completo del módulo'}</p>
 
@@ -374,7 +374,7 @@ const LessonMode = ({ onBack }) => {
                     {/* Card header */}
                     <div style={{ marginBottom: '15px', flexShrink: 0 }}>
                         <span className="tag" style={{ background: `${selectedModulo.color}22`, color: 'var(--text-secondary)', marginBottom: '10px' }}>
-                            {selectedModulo.icon} {selectedModulo.titulo}
+                            <i className={selectedModulo.icon}></i> {selectedModulo.titulo}
                         </span>
                         <h2 style={{ fontSize: '1.5rem', marginTop: '12px', color: 'var(--text-primary)' }}>
                             {currentCard.titulo}
