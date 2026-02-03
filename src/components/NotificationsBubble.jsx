@@ -215,8 +215,8 @@ const NotificationsBubble = ({ isOpen, onToggle, onClose, inline, ...props }) =>
                             alignItems: 'center',
                             justifyContent: 'space-between'
                         }}>
-                            <h3 style={{ color: '#fff', fontSize: '1rem', margin: 0 }}>
-                                🔔 Notificaciones
+                            <h3 style={{ color: '#fff', fontSize: '1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <i className="fa-solid fa-bell"></i> Notificaciones
                             </h3>
                             {unreadCount > 0 && (
                                 <span style={{
