@@ -17,6 +17,41 @@ La economía moderna requiere dominar tanto el análisis individual (microeconom
 
 ### 1. Teoría del Consumidor
 
+#### 1.1 Axiomas de Preferencias y Curvas de Indiferencia
+
+**Axiomas Fundamentales** (Samuelson, 1938; Hicks & Allen, 1934):
+- **Completitud:** El consumidor puede comparar cualquier par de canastas (A > B, B > A, o A ~ B)
+- **Transitividad:** Si A > B y B > C, entonces A > C
+- **No Saciedad (Más es Mejor):** El consumidor siempre prefiere mayor cantidad
+
+**Curvas de Indiferencia** (Pareto, 1906; Edgeworth, 1881):
+Representan combinaciones de bienes que dan la misma satisfacción.
+- **Pendiente Negativa:** Para mantener utilidad constante, si consumes más X, debes consumir menos Y
+- **No Se Cruzan:** Violaría la transitividad
+- **Convexas al Origen:** Reflejan preferencia por combinaciones balanceadas
+
+**Tipos de Preferencias Reveladas:**
+
+1. **Sustitutos Perfectos:** U(X,Y) = aX + bY
+   - Curvas de indiferencia: líneas rectas
+   - RMS constante: RMS = a/b
+   - Ejemplos: café y té, gasolina de diferentes marcas
+   - Autores: Marshall, 1890
+
+2. **Complementos Perfectos:** U(X,Y) = min{aX, bY}
+   - Curvas de indiferencia: forma de L
+   - RMS indefinida en el codo, 0 o ∞ fuera
+   - Ejemplos: zapatos izquierdo y derecho, café y azúcar
+   - Función Leontief: Wassily Leontief, 1941
+
+3. **Cobb-Douglas:** U(X,Y) = X^α · Y^β
+   - Curvas de indiferencia: suaves y convexas
+   - RMS decreciente: RMS = (α/β)(Y/X)
+   - Elasticidades de sustitución unitarias
+   - Cobb & Douglas, 1928
+
+#### 1.2 Función de Utilidad y Utilidad Marginal
+
 El consumidor busca maximizar su utilidad sujeto a una restricción presupuestaria. Este problema de optimización se resuelve donde:
 - **Curvas de Indiferencia:** Representan combinaciones de bienes que dan la misma satisfacción
 - **Restricción Presupuestaria:** M = Px·X + Py·Y (donde M es el ingreso)
@@ -24,14 +59,41 @@ El consumidor busca maximizar su utilidad sujeto a una restricción presupuestar
 
 **Utilidad Marginal y Ley de Utilidades Marginales Decrecientes:**
 A medida que consumes más de un bien, la satisfacción adicional (utilidad marginal) disminuye.
+- **UMgₓ = ∂U/∂X:** Utilidad adicional de una unidad más de X
+- **Ley Fundamental:** UMg siempre decrece cuando aumenta el consumo del bien
+- **Implicación:** Segundo bien tiene mayor utilidad marginal cuando tienes poco de él
 
-### 2. Elasticidades de Demanda
+### 2. Demandas Marshallianas y Hicksianas
+
+#### 2.1 Demandas Marshallianas (Demandas Ordinarias)
+
+**Concepto** (Alfred Marshall, 1890 - Principles of Economics):
+El consumidor maximiza utilidad sujeto a restricción presupuestaria.
+- **Problema:** Max U(X,Y) s.a. M = Pₓ·X + Pᵧ·Y
+- **Solución:** X* = x(P, M) y Y* = y(P, M)
+- **Propiedades:** Muestran cómo cambia demanda ante cambios de precios e ingreso
+
+#### 2.2 Demandas Hicksianas (Demandas Compensadas)
+
+**Concepto** (John R. Hicks, 1939 - Value and Capital):
+El consumidor minimiza gasto para alcanzar un nivel de utilidad dado.
+- **Problema:** Min M s.a. U(X,Y) = Ū
+- **Solución:** X^h = h_x(P, Ū) y Y^h = h_y(P, Ū)
+- **Diferencia con Marshallianas:** Aíslan efecto sustitución puro (mantienen utilidad constante)
+
+**Relación Fundamental:**
+La descomposición de Hicks-Slutsky separa el efecto total en:
+- **Efecto Sustitución (ES):** Cambio manteniendo utilidad constante
+- **Efecto Ingreso (EI):** Cambio por variación del poder adquisitivo
+- **Ecuación de Slutsky:** ∂x/∂p = ∂x^h/∂p - x(∂x/∂M)
+
+#### 2.3 Elasticidades de Demanda
 
 **Elasticidad Precio de la Demanda (EPD):**
 $$EPD = \\frac{\\%\\Delta Q_d}{\\%\\Delta P}$$
 
 - **Elástica (|EPD| > 1):** Demanda sensible. ↑P → ↓Ingresos Totales
-- **Inelástica (|EPD| < 1):** Demanda insensible. ↑P → ↑Ingresos Totales  
+- **Inelástica (|EPD| < 1):** Demanda insensible. ↑P → ↑Ingresos Totales
 - **Unitaria (|EPD| = 1):** Cambio proporcional. Ingresos constantes
 
 **Elasticidad Precio Cruzada:**
@@ -44,11 +106,39 @@ $$EPD = \\frac{\\%\\Delta Q_d}{\\%\\Delta P}$$
 
 ### 3. Teoría del Productor
 
-**Función de Producción:** Q = f(L, K)
+#### 3.1 Funciones de Producción
+
+**Función General:** Q = f(L, K)
+
+**Tipos de Funciones:**
+
+1. **Cobb-Douglas** (Cobb & Douglas, 1928 - "A Theory of Production"):
+   - Forma: Q = A·K^α·L^β
+   - Propiedades: Elasticidades constantes, fácil estimación econométrica
+   - Rendimientos a escala: α + β > 1 (crecientes), = 1 (constantes), < 1 (decrecientes)
+   - Ejemplo: Q = 10K^0.4L^0.6
+
+2. **Lineal** (Sustitutos Perfectos):
+   - Forma: Q = aK + bL
+   - Propiedades: Productividades marginales constantes
+   - RMST constante
+   - Ejemplo: Q = 5K + 3L (máquinas y trabajo completamente intercambiables)
+
+3. **Leontief** (Wassily Leontief, 1941 - Complementos Perfectos):
+   - Forma: Q = min{aK, bL}
+   - Propiedades: Proporciones fijas, no hay sustitución
+   - RMST indefinida en el óptimo
+   - Ejemplo: Q = min{2K, 3L} (máquinas-trabajador en proporción fija)
+
+#### 3.2 Productividad Marginal y Media
 
 **Conceptos Clave:**
 - **Producto Marginal (PMg):** Producción adicional por unidad adicional de insumo
+  - PMgₗ = ∂Q/∂L (productividad marginal del trabajo)
+  - PMgₖ = ∂Q/∂K (productividad marginal del capital)
 - **Producto Medio (PMe):** Producción promedio por unidad de insumo
+  - PMeₗ = Q/L (productividad media del trabajo)
+  - PMeₖ = Q/K (productividad media del capital)
 - **Relación:** PMg corta a PMe en su máximo
 
 **Etapas de la Producción:**
@@ -56,57 +146,146 @@ $$EPD = \\frac{\\%\\Delta Q_d}{\\%\\Delta P}$$
 2. **Etapa II:** PMg y PMe decrecientes pero positivos (Zona Racional de Producción)
 3. **Etapa III:** PMg negativo (Ineficiente - Exceso de factor variable)
 
-**Rendimientos a Escala:**
+#### 3.3 Relación Marginal de Sustitución Técnica (RMST)
+
+**Definición:**
+Cuántas unidades de capital pueden sustituirse por una unidad de trabajo, manteniendo producción constante.
+- RMST = PMgₗ/PMgₖ = -dK/dL
+- Es la pendiente de la isocuanta
+- Decreciente: A más trabajo, menor RMST (ley de sustitución decreciente)
+
+#### 3.4 Rendimientos a Escala
+
 Si multiplicamos todos los inputs por λ > 1:
 - **Crecientes:** Q aumenta más que λ (economías de escala)
 - **Constantes:** Q aumenta exactamente λ (escala eficiente)
 - **Decrecientes:** Q aumenta menos que λ (deseconomías de escala)
 
-### 4. Costos de Producción
+**Para Cobb-Douglas:** Determinados por suma de exponentes
+- α + β > 1: Crecientes
+- α + β = 1: Constantes
+- α + β < 1: Decrecientes
 
-**Corto Plazo:**
-- Costo Fijo (CF): No varía con Q
-- Costo Variable (CV): Varía con Q  
-- Costo Total (CT) = CF + CV
-- Costo Marginal (CMg) = ΔCT/ΔQ
-- Costo Medio Total (CMe) = CT/Q
+### 4. Minimización de Costos y Teoría de Costos
+
+#### 4.1 Problema de Minimización de Costos
+
+**Concepto:**
+El productor elige combinación de K y L que minimiza costo para producir Q dado.
+- **Condición:** RMST = w/r (donde w = salario, r = renta del capital)
+- **Demandas Condicionadas:** L*(w, r, Q) y K*(w, r, Q)
+- **Función de Costo:** CT(w, r, Q)
+
+#### 4.2 Estructura de Costos - Corto Plazo
+
+**Corto Plazo:** (Factor fijo K, factor variable L)
+- **Costo Fijo (CF):** No varía con Q (renta, seguros, salarios administrativos)
+- **Costo Variable (CV):** Varía con Q (materias primas, mano de obra directa)
+- **Costo Total (CT):** CT = CF + CV
+- **Costo Marginal (CMg):** CMg = ∂CT/∂Q (costo de producir una unidad más)
+- **Costo Medio Total (CMe):** CMe = CT/Q
+- **Costo Medio Variable (CVMe):** CVMe = CV/Q
+- **Costo Medio Fijo (CFMe):** CFMe = CF/Q
 
 **Relación Importante:**
-CMg corta al CMe en su punto mínimo. Cuando CMg < CMe, el CMe está bajando.
+- CMg corta al CMe en su punto mínimo
+- Cuando CMg < CMe: CMe está bajando
+- Cuando CMg > CMe: CMe está subiendo
+- Cuando CMg = CMe: CMe está en su mínimo
 
-**Largo Plazo:**
-Todos los costos son variables. La curva de Costo Medio de Largo Plazo (CMeLP) es la envolvente de todas las curvas de CMeCP.
+#### 4.3 Estructura de Costos - Largo Plazo
+
+**Largo Plazo:** Todos los costos son variables
+- **Costo Medio de Largo Plazo (CMeLP):** Envolvente de todas las curvas de CMeCP
+- **Escala Mínima Eficiente:** Punto donde CMeLP es mínimo
+- **Relación con Rendimientos a Escala:**
+  - Rendimientos crecientes → CMeLP decreciente
+  - Rendimientos constantes → CMeLP horizontal
+  - Rendimientos decrecientes → CMeLP creciente
 
 ### 5. Estructuras de Mercado
 
-**Competencia Perfecta:**
+#### 5.1 Competencia Perfecta (Adam Smith, 1776; Marshall, 1890)
+
+**Características:**
 - Muchos compradores y vendedores
 - Producto homogéneo
 - Libre entrada y salida
 - Información perfecta
-- **Equilibrio:** P = CMg = CMe (largo plazo)
-- **Beneficio económico:** Cero en el largo plazo
+- Empresa es precio-aceptante
 
-**Monopolio:**
+**Condición de Equilibrio:** P = CMg (maximiza beneficio)
+
+**Equilibrio de Largo Plazo:**
+- P = CMg = CMe (beneficio económico = cero)
+- **Primer Teorema del Bienestar** (Arrow & Debreu, 1951): Equilibrio competitivo es Pareto eficiente
+
+#### 5.2 Monopolio (Cournot, 1838)
+
+**Características:**
 - Un solo vendedor
 - No hay sustitutos cercanos
 - Barreras a la entrada
-- **Maximización:** IMg = CMg (donde IMg < P)
-- **Pérdida Irrecuperable:** Área entre P monopolio y CMg
-- **Discriminación de Precios:** Captura excedente del consumidor
+- Empresa es precio-fijadora
 
-**Competencia Monopolística:**
+**Maximización:** IMg = CMg
+- **Nota Importante:** IMg < P (ingreso marginal menor que precio)
+- El monopolista restringe cantidad para subir precio
+
+**Ineficiencia:** Pérdida Irrecuperable de Eficiencia
+- Hay transacciones beneficiosas (valor > costo) que no ocurren
+- El monopolista produce menos que la cantidad socialmente óptima
+- **Estimación empírica:** Harberger (1954) mide pérdida de bienestar
+
+**Discriminación de Precios:**
+- Perfecto: Cobra a cada cliente su disposición a pagar
+- Elimina pérdida irrecuperable
+- Problema práctico: Difícil identificar disposiciones a pagar
+
+#### 5.3 Competencia Monopolística
+
+**Características:**
 - Muchos vendedores
 - Productos diferenciados
 - Libre entrada
-- **Largo plazo:** P > CMg, beneficio económico = 0
+- Poder de mercado limitado
 
-**Oligopolio:**
-- Pocos vendedores
-- Interdependencia estratégica
-- **Modelo de Cournot:** Competencia en cantidades
-- **Modelo de Bertrand:** Competencia en precios
-- **Modelo de Stackelberg:** Líder y seguidor
+**Largo Plazo:**
+- P > CMg (tiene poder de mercado)
+- P = CMe (beneficio económico = 0 por libre entrada)
+
+#### 5.4 Oligopolio - Modelos de Competencia Estratégica
+
+**Modelo de Cournot** (Cournot, 1838 - "Recherches sur les Principes Mathématiques"):
+- Competencia en **cantidades**
+- Empresas eligen cantidad simultáneamente
+- Cada empresa anticipa cantidad de rivales (expectativas)
+- Equilibrio de Nash: Ninguna puede mejorar unilateralmente
+
+**Modelo de Bertrand** (Bertrand, 1883):
+- Competencia en **precios**
+- Empresas eligen precio simultáneamente
+- **Paradoja de Bertrand:** Con 2 empresas idénticas, P = CMg
+- Resultado: casi competencia perfecta
+
+**Modelo de Stackelberg** (Stackelberg, 1934 - "Marktform und Gleichgewicht"):
+- **Líder-Seguidor**
+- Empresa líder elige cantidad primero
+- Empresa seguidora observa y responde
+- Ventaja del primer movimiento: Líder gana más beneficio que en Cournot
+- Modelado con ecuaciones de reacción secuenciales
+
+#### 5.5 Teoremas Fundamentales del Bienestar
+
+**Primer Teorema** (Arrow & Debreu, 1951):
+Todo equilibrio competitivo es Pareto eficiente.
+
+**Segundo Teorema** (Arrow & Debreu, 1951):
+Cualquier asignación Pareto eficiente puede lograrse como equilibrio competitivo con redistribución apropiada de riqueza.
+
+**Implicaciones:**
+- Eficiencia y equidad pueden separarse
+- Usar mercados para eficiencia, impuestos para equidad
 
 ### 6. Teoría de Juegos
 
@@ -266,23 +445,28 @@ $$i = r^* + \\pi + 0.5(\\pi - \\pi^*) + 0.5(Y - Y^*)$$
             // ============ MICROECONOMÍA ============
             {
                 id: 't1-micro-consumidor',
-                title: '1. Equilibrio del Consumidor',
-                content: 'Maximización de utilidad con restricción presupuestaria',
+                title: '1. Equilibrio del Consumidor (Axiomas y Demandas Marshallianas)',
+                content: 'Maximización de utilidad con restricción presupuestaria. Axiomas de Samuelson-Hicks. Demandas Marshallianas.',
                 lesson: {
-                    explanation: "El consumidor maximiza su utilidad eligiendo la cesta de bienes donde la Tasa Marginal de Sustitución (TMS) se iguala a la relación de precios. TMS mide cuánto estás dispuesto a sacrificar de un bien por obtener más del otro. En equilibrio, tu valoración subjetiva (TMS) coincide con el precio relativo del mercado (Px/Py).",
-                    example_title: "Tacos vs Pizza: Tu Dilema del Viernes",
-                    example: "Tienes $200. Los tacos cuestan $20 y la pizza $40. Tu TMS es 3 (darías 3 tacos por 1 pizza). Pero el mercado pide Px/Py = 40/20 = 2. Como valoras la pizza más (3) de lo que cuesta (2), debes comprar MÁS pizza. Al hacerlo, tu TMS baja (ley de utilidad marginal decreciente) hasta que TMS = 2. Ahí maximizas tu felicidad gastronómica."
+                    explanation: "El consumidor maximiza su utilidad eligiendo la cesta de bienes donde la Tasa Marginal de Sustitución (TMS) se iguala a la relación de precios. El problema se fundamenta en axiomas de completitud, transitividad y no saciedad (Samuelson, 1938; Hicks & Allen, 1934). La TMS mide cuánto estás dispuesto a sacrificar de un bien por obtener más del otro. En equilibrio, tu valoración subjetiva (TMS) coincide con el precio relativo del mercado (Px/Py). Las demandas marshallianas (Marshall, 1890) muestran cómo cambia la cantidad demandada ante variaciones de precios e ingreso.",
+                    example_title: "Tacos vs Pizza: Tu Dilema del Viernes (Análisis de Preferencias Reveladas)",
+                    example: "Tienes $200. Los tacos cuestan $20 y la pizza $40. Tu TMS es 3 (darías 3 tacos por 1 pizza). Pero el mercado pide Px/Py = 40/20 = 2. Como valoras la pizza más (3) de lo que cuesta (2), debes comprar MÁS pizza (preferencia revelada: eligirías pizza). Al hacerlo, tu TMS baja (ley de utilidad marginal decreciente de Samuelson) hasta que TMS = 2. Ahí maximizas tu felicidad gastronómica. Este proceso revela tus preferencias a través de tus decisiones de compra (Teoría de Preferencias Reveladas, Samuelson 1938)."
                 },
                 socratic_questions: [
                     {
                         q: "Si TMS = 4 y Px/Py = 2, ¿qué bien debes consumir más y por qué?",
-                        hint: "Compara tu valoración subjetiva con el costo de mercado",
-                        answer: "Debes consumir más X. Valoras X el doble de lo que cuesta en términos de Y. Estás 'subvaluando' Y. Al comprar más X, su utilidad marginal baja hasta que TMS = 2."
+                        hint: "Compara tu valoración subjetiva con el costo de mercado. Usa el axioma de no saciedad.",
+                        answer: "Debes consumir más X. Valoras X el doble de lo que cuesta en términos de Y. Estás 'subvaluando' Y. Al comprar más X, su utilidad marginal baja hasta que TMS = 2 (ley de utilidad marginal decreciente)."
                     },
                     {
                         q: "¿Por qué las curvas de indiferencia no pueden cruzarse?",
-                        hint: "Piensa en las preferencias transitivas",
-                        answer: "Si se cruzaran, un punto estaría en dos niveles de utilidad diferentes. Esto violaría la transitividad: si A~B y B~C, entonces A~C. Es una contradicción lógica."
+                        hint: "Piensa en las preferencias transitivas (Axioma 2 de Samuelson)",
+                        answer: "Si se cruzaran, un punto estaría en dos niveles de utilidad diferentes. Esto violaría la transitividad: si A~B y B~C, entonces A~C. Es una contradicción lógica. El axioma de transitividad garantiza que puedes ordenar todas las canastas consistentemente."
+                    },
+                    {
+                        q: "¿Qué diferencia hay entre una demanda Marshalliana y una Hicksiana?",
+                        hint: "Marshalliana: max U s.a. M. Hicksiana: min M s.a. U = Ū",
+                        answer: "Marshalliana (Marshall, 1890) muestra cómo cambia demanda al variar precios CON ingreso fijo. Incluye efectos ingreso y sustitución. Hicksiana (Hicks, 1939) muestra demanda al mantener utilidad constante - solo efecto sustitución puro. La descomposición de Slutsky separa ambos efectos."
                     }
                 ]
             },
@@ -310,45 +494,55 @@ $$i = r^* + \\pi + 0.5(\\pi - \\pi^*) + 0.5(Y - Y^*)$$
             },
             {
                 id: 't3-micro-productor',
-                title: '3. Teoría del Productor - Función de Producción',
-                content: 'Relación técnica entre insumos y producto',
+                title: '3. Teoría del Productor - Funciones de Producción y Productividad',
+                content: 'Relación técnica entre insumos y producto. Cobb-Douglas, Lineal, Leontief. PMg y PMe.',
                 lesson: {
-                    explanation: "La función de producción Q = f(L,K) muestra el máximo output que puedes obtener con cada combinación de trabajo (L) y capital (K). El Producto Marginal (PMg) mide cuánto produces DE MÁS con una unidad adicional de insumo. PMg decreciente es una ley universal: el primer trabajador es productivo, el décimo ya se estorba con los demás.",
-                    example_title: "La Taquería con 1 Comal",
-                    example: "Tienes 1 comal (K fijo). Primer taquero: hace 50 tacos/hora (PMgL=50). Segundo: 40 tacos más (PMgL=40, rendimientos decrecientes). Tercer taquero: solo 25 más (se estorban en el comal). Cuarto: solo 10 tacos adicionales. Quinto: -5 tacos (¡ya ni caben! PMgL negativo = Etapa III). Zona racional: contratar entre el 2° y 4° taquero."
+                    explanation: "La función de producción Q = f(L,K) muestra el máximo output que puedes obtener con cada combinación de trabajo (L) y capital (K). El Producto Marginal (PMg) mide cuánto produces DE MÁS con una unidad adicional de insumo. Existen varios tipos de funciones: Cobb-Douglas (Cobb & Douglas, 1928) con elasticidades constantes, funciones lineales con sustitución perfecta, y funciones Leontief (Leontief, 1941) con complementos perfectos. PMg decreciente es una ley universal: el primer trabajador es productivo, el décimo ya se estorba con los demás.",
+                    example_title: "La Taquería con 1 Comal: Etapas de Producción",
+                    example: "Tienes 1 comal (K fijo). Función aproximada: Q = 50L + 10L² - 2L³. Primer taquero: PMgL = 50 (alta productividad). Segundo: PMgL = 40 tacos más (rendimientos decrecientes). Tercer taquero: PMgL = 25 más (se estorban). Cuarto: PMgL = 10 tacos. Quinto: PMgL = -5 (¡negativo! Etapa III). Zona racional II: contratar entre 2° y donde PMgL = CMgL. Demonstración de ley de utilidad/productividad marginal decreciente."
                 },
                 socratic_questions: [
                     {
                         q: "Si PMg = 0, ¿qué significa y en qué etapa de producción estás?",
-                        hint: "¿Aumenta la producción total?",
-                        answer: "Significa que agregar una unidad más de factor NO aumenta la producción. Es el límite entre Etapa II (eficiente) y Etapa III (ineficiente). Estás saturando el factor fijo."
+                        hint: "¿Aumenta la producción total? ¿Se cumple la ley de rendimientos decrecientes?",
+                        answer: "Significa que agregar una unidad más de factor NO aumenta la producción total. Es exactamente el límite entre Etapa II (eficiente) y Etapa III (ineficiente). Estás saturando el factor fijo. El PMe está en su máximo cuando PMg = PMe."
                     },
                     {
-                        q: "¿Por qué ninguna empresa racional opera en la Etapa I?",
-                        hint: "Piensa en el factor fijo",
-                        answer: "Porque el factor fijo está SUBUTILIZADO. El PMe está creciendo, lo que significa que puedes aumentar la productividad promedio simplemente usando más del factor variable. Hay 'espacio libre' en la fábrica."
+                        q: "¿Por qué ninguna empresa racional opera en la Etapa I? Usa el concepto de PMe creciente.",
+                        hint: "Piensa en el factor fijo y la ley de productividad marginal decreciente",
+                        answer: "Porque el factor fijo está SUBUTILIZADO. El PMe está creciendo (PMg > PMe), lo que significa que puedes aumentar la productividad promedio simplemente usando más del factor variable. Hay 'espacio libre' en la fábrica. Es ineficiente en sentido productivo."
+                    },
+                    {
+                        q: "¿Cuál es la diferencia entre una función Cobb-Douglas y una función Leontief en términos de flexibilidad?",
+                        hint: "Sustitución de factores. Cobb-Douglas tiene elasticidad de sustitución = 1",
+                        answer: "Cobb-Douglas (α+β=1): Factores parcialmente sustituibles con elasticidad unitaria. Es flexible: puedes cambiar combinación K/L. Leontief (min): Proporciones fijas, NO hay sustitución. Es rígido: debes usar K y L en proporción exacta. En realidad, Cobb-Douglas es más realista para muchas industrias."
                     }
                 ]
             },
             {
                 id: 't4-micro-costos',
-                title: '4. Estructura de Costos',
-                content: 'Costos fijos, variables, marginales y medios',
+                title: '4. Estructura de Costos y Minimización de Costos',
+                content: 'Costos fijos, variables, marginales y medios. Minimización de costos. CMeLP como envolvente.',
                 lesson: {
-                    explanation: "En el CORTO plazo tienes Costos Fijos (CF, no cambian con Q, ej. renta) y Variables (CV, aumentan con Q, ej. materia prima). El Costo Marginal (CMg = ΔCT/ΔQ) es el costo de producir UNA unidad más. El Costo Medio (CMe = CT/Q) es el costo promedio por unidad. Relación CLAVE: CMg corta al CMe en su mínimo. Si CMg < CMe, producir la siguiente unidad BAJA el promedio.",
-                    example_title: "Tu Calificación en el Semestre",
-                    example: "Llevas promedio de 8.5 (CMe). Sacas 9 en el siguiente examen (CMg=9). Como CMg > CMe, tu promedio SUBE. Pero si sacas 7 (CMg=7 < CMe=8.5), tu promedio BAJA. Cuando CMg = CMe, el promedio se mantiene (punto mínimo del CMe)."
+                    explanation: "En el CORTO plazo tienes Costos Fijos (CF, no cambian con Q, ej. renta) y Variables (CV, aumentan con Q, ej. materia prima). El Costo Marginal (CMg = ∂CT/∂Q) es el costo de producir UNA unidad más. El Costo Medio (CMe = CT/Q) es el costo promedio por unidad. Relación CLAVE: CMg corta al CMe en su mínimo. En minimización de costos, el productor elige K y L donde RMST = w/r. En el LARGO plazo, todos los costos son variables y la CMeLP es la envolvente de todas las curvas de CMeCP, relacionada directamente con los rendimientos a escala.",
+                    example_title: "Tamaño de Planta y Economías de Escala",
+                    example: "En corto plazo con planta pequeña (K₁ fijo), CMeCP₁ es alta en Q=100. Al expandir a planta grande (K₂), CMeCP₂ es más baja en Q=100 porque CMg baja. La CMeLP es la envolvente: elige tamaño de planta que minimiza costo para cada Q. Si hay rendimientos constantes a escala, CMeLP es horizontal. Si hay crecientes, CMeLP es decreciente (economías de escala - industrias jóvenes). Si decrecientes, CMeLP es creciente (deseconomías - cuando supervisa muchas plantas)."
                 },
                 socratic_questions: [
                     {
                         q: "¿Por qué el CMg siempre corta al CMe en su punto mínimo?",
-                        hint: "Piensa en la lógica del promedio",
-                        answer: "Si CMg < CMe, producir una más BAJA el promedio (CMe bajando). Si CMg > CMe, producir una más SUBE el promedio (CMe subiendo). El único punto donde CMe deja de bajar y empieza a subir es cuando CMg = CMe. Es el mínimo."
+                        hint: "Piensa en la lógica del promedio. Usa la lógica de marginal vs promedio.",
+                        answer: "Si CMg < CMe, producir una más BAJA el promedio (CMe bajando). Si CMg > CMe, producir una más SUBE el promedio (CMe subiendo). El único punto donde CMe deja de bajar y empieza a subir es cuando CMg = CMe. Es el mínimo matemático."
                     },
                     {
                         q: "Si tu CF = $1000 y produces 0 unidades, ¿cuánto pierdes?",
-                        hint: "Los costos fijos se pagan aunque no produzcas",
-                        answer: "Pierdes exactamente $1000. Los costos fijos son un 'costo hundido' en el corto plazo. Incluso sin producir, debes pagarlos (renta, seguros, etc.). Por eso, en el corto plazo, solo cierras si P < CVMe."
+                        hint: "Los costos fijos se pagan aunque no produzcas. ¿Son 'costos hundidos'?",
+                        answer: "Pierdes exactamente $1000. Los costos fijos son un 'costo hundido' en el corto plazo. Incluso sin producir, debes pagarlos (renta, seguros, etc.). Por eso, en el corto plazo, solo cierras si P < CVMe (no cubre costos variables, entonces no compensa seguir operando)."
+                    },
+                    {
+                        q: "¿Qué relación hay entre Rendimientos a Escala y la forma de CMeLP?",
+                        hint: "Rendimientos crecientes vs CMeLP decreciente",
+                        answer: "Directa: Rendimientos crecientes (α+β>1) → CMeLP decreciente (economías de escala). Constantes → CMeLP horizontal (costos promedio constante al escalar). Decrecientes → CMeLP creciente (deseconomías). La relación viene del Lema de Shephard y la función de gasto e(w,r,Q)."
                     }
                 ]
             },
@@ -376,45 +570,109 @@ $$i = r^* + \\pi + 0.5(\\pi - \\pi^*) + 0.5(Y - Y^*)$$
             },
             {
                 id: 't6-micro-monopolio',
-                title: '6. Monopolio y Poder de Mercado',
-                content: 'Único vendedor que fija precio y cantidad',
+                title: '6. Monopolio y Discriminación de Precios',
+                content: 'Poder de mercado. IMg < P. Pérdida Irrecuperable. Discriminación de precios.',
                 lesson: {
-                    explanation: "El monopolista ES el mercado. Enfrenta toda la curva de demanda (no solo un precio). Para vender más, debe BAJAR el precio de TODAS las unidades (no puede discriminar). Por eso su Ingreso Marginal (IMg) es MENOR que el Precio. Maximiza beneficio donde IMg = CMg, pero COBRA un precio P > CMg (usando la curva de demanda). Esto crea una Pérdida Irrecuperable de Eficiencia.",
-                    example_title: "CFE (Monopolio Eléctrico)",
-                    example: "CFE es el único que vende luz. Produce 100 millones de kWh donde IMg = CMg = $2/kWh. Pero COBRA $5/kWh (usando la demanda). Hay gente que pagaría $4/kWh (más del costo $2) pero NO lo hacen porque el precio es $5. Esa transacción beneficiosa (valor social de $4 - costo $2 = ganancia social $2) se PIERDE. Es la ineficiencia del monopolio."
+                    explanation: "El monopolista ES el mercado. Enfrenta toda la curva de demanda (no solo un precio). Para vender más, debe BAJAR el precio de TODAS las unidades. Por eso su Ingreso Marginal (IMg) es MENOR que el Precio: IMg < P. Maximiza beneficio donde IMg = CMg, pero COBRA un precio P > CMg (usando la curva de demanda). Esto crea una Pérdida Irrecuperable de Eficiencia (Harberger, 1954 estimó empíricamente). La discriminación de precios (primer grado = perfecta, segundo grado = volumen, tercero = mercados) puede eliminar la ineficiencia redistribuyendo el excedente.",
+                    example_title: "CFE y Pérdida Irrecuperable: Comparación Monopolio vs Competencia",
+                    example: "CFE (monopolio): Demanda P = 10 - Q, CMg = 2. IMg = 10 - 2Q. Óptimo: IMg = CMg → 10 - 2Q = 2 → Q* = 4, P* = 6. Beneficio = (6-2)×4 = $16. Competencia: P = CMg → 10 - Q = 2 → Q** = 8, P** = 2. PIE se perdió: Precio 6 vs 2 (↑3000%). Hay Q de 4 a 8 donde P (disposición a pagar) > CMg ($2), pero no se produce. Pérdida irrecuperable = área de ese triángulo = 0.5×(8-4)×(6-2) = $8. Con discriminación perfecta, CFE cobra a cada cliente su disposición pagar, produce Q=8, π=$16 (todo el excedente), sin ineficiencia."
                 },
                 socratic_questions: [
                     {
                         q: "¿Por qué el monopolista NUNCA produce en la zona inelástica de la demanda?",
-                        hint: "¿Qué pasa con los ingresos si subes precio en zona inelástica?",
-                        answer: "Porque en la zona inelástica (|EPD| < 1), si sube el precio, sus ingresos SUBEN (la cantidad cae menos que proporcionalmente). Como los costos BAJAN al producir menos, el beneficio aumenta. Seguirá subiendo precio hasta entrar a la zona elástica."
+                        hint: "¿Qué pasa con los ingresos totales si subes precio cuando |EPD|<1?",
+                        answer: "Porque en la zona inelástica (|EPD| < 1), si sube el precio, sus ingresos SUBEN (la cantidad cae menos que proporcionalmente). IT sube, pero Q baja → CT baja. Ambos aumentan el beneficio. Seguirá subiendo precio hasta entrar a la zona elástica donde IT empieza a caer."
                     },
                     {
-                        q: "Si un monopolio puede discriminar precios perfectamente (cobrar a cada cliente su disposición a pagar), ¿hay pérdida irrecuperable?",
-                        hint: "¿Se pierden transacciones beneficiosas?",
-                        answer: "NO. La discriminación perfecta elimina la pérdida irrecuperable porque TODAS las transacciones con valor social positivo se realizan. El monopolista captura TODO el excedente del consumidor, pero no hay ineficiencia. Es redistributivo, no ineficiente."
+                        q: "Si un monopolio puede discriminar precios perfectamente, ¿hay pérdida irrecuperable de eficiencia?",
+                        hint: "¿Se pierden transacciones beneficiosas? ¿Qué nivel de Q se produce?",
+                        answer: "NO. La discriminación perfecta (cada cliente paga su disposición a pagar) elimina la pérdida irrecuperable porque TODAS las transacciones con valor social positivo (P ≥ CMg) se realizan. Produce Q donde P = CMg (eficiente). El monopolista captura TODO el excedente del consumidor, pero no hay ineficiencia Pareto (solo redistributiva)."
+                    },
+                    {
+                        q: "¿Por qué IMg < P en monopolio pero IMg = P en competencia perfecta?",
+                        hint: "¿Cuántas unidades debe bajar precio para vender una más?",
+                        answer: "En competencia, la empresa es precio-aceptante, vende todas las que quiere al P del mercado. La unidad adicional se vende sin bajar precio → IMg = P. En monopolio, para vender una unidad más, DEBE bajar precio de TODAS las unidades (no puede discriminar perfectamente). Entonces IMg = ΔIT/ΔQ < P porque IT crece menos que P×ΔQ."
                     }
                 ]
             },
             {
-                id: 't7-micro-juegos',
-                title: '7. Teoría de Juegos - Equilibrio de Nash',
-                content: 'Toma de decisiones estratégicas interdependientes',
+                id: 't7-micro-demandas',
+                title: '7. Demandas Marshallianas y Hicksianas',
+                content: 'Descomposición de Slutsky. Efectos ingreso y sustitución. Demandas compensadas.',
                 lesson: {
-                    explanation: "En un Equilibrio de Nash, cada jugador elige su mejor respuesta dada la estrategia del otro. NADIE puede mejorar unilateralmente cambiando de estrategia. No es necesariamente el mejor resultado para todos (ver Dilema del Prisionero), pero es estable. Busca la estrategia donde, cuando tu rival juega X, tú juegas Y, y cuando tú juegas Y, él juega X.",
-                    example_title: "Dilema del Prisionero - Dos Cárteles",
-                    example: "Pemex y Exxon pueden cooperar (producir poco, precio alto) o traicionar (producir mucho). Matriz de pagos: (Cooperar, Cooperar) = (50, 50). (Traicionar, Cooperar) = (80, 10). (Cooperar, Traicionar) = (10, 80). (Traicionar, Traicionar) = (30, 30). Equilibrio de Nash: (Traicionar, Traicionar) aunque (50,50) sería mejor para AMBOS. La traición es estrategia dominante."
+                    explanation: "Las Demandas Marshallianas (Marshall, 1890) muestran cómo cambia la cantidad demandada cuando varían precios e ingreso: x(p,M). Las Demandas Hicksianas (Hicks, 1939) muestran la demanda manteniendo utilidad constante: x^h(p,Ū). La descomposición de Slutsky (1915) separa cualquier cambio de demanda ante un cambio de precio en: (1) Efecto Sustitución (ES) - cambio manteniendo utilidad constante, (2) Efecto Ingreso (EI) - cambio por variación del poder adquisitivo. Matemáticamente: ∂x/∂p = ∂x^h/∂p - x(∂x/∂M). Para bienes normales, ambos efectos son negativos (demanda baja cuando sube precio). Para bienes inferiores, el EI es positivo pero el ES domina (excepto en bienes Giffen).",
+                    example_title: "Cambio de Precio del Bien X: Descomposición de Hicks",
+                    example: "Consumidor con U(X,Y)=XY, Pₓ=$2, Pᵧ=$4, M=$40. Óptimo inicial: X*=10, Y*=5. Precio de X sube a Pₓ'=$4. Marshalliana: Nueva demanda X**=5 (ET=-5). Hicksiana con Ū original: El consumidor necesitaría más ingreso para mantener U=50. A precios nuevos, M'=$60 daría X^h=7.5. ES = X^h - X* = 7.5 - 10 = -2.5 (puro efecto sustitución). EI = X** - X^h = 5 - 7.5 = -2.5 (efecto ingreso). ET = -5 = -2.5 + (-2.5). Bien normal: ambos efectos negativos."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué la Demanda Hicksiana es importante si la Marshalliana es más observable en la práctica?",
+                        hint: "Efecto sustitución puro vs efecto total",
+                        answer: "Porque aísla el efecto sustitución puro - cómo cambiarías tu cesta si mantuvieras la misma satisfacción. La Marshalliana mezcla dos efectos. Entender el efecto sustitución es importante para política: saber cuánto cambio es sustitución (reasignación) vs cambio de poder adquisitivo."
+                    },
+                    {
+                        q: "Un bien es Giffen si EI > |ES| cuando sube el precio. ¿Por qué esto es raro en la realidad?",
+                        hint: "Necesita ser bien inferior Y el efecto ingreso muy grande",
+                        answer: "Porque requiere ser bien inferior (consumo baja cuando ingreso sube) Y además el efecto ingreso debe superar al de sustitución. Teóricamente posible (papas en hambruna irlandesa), pero empíricamente raro. Giffen (1862) fue quien lo propuso."
+                    },
+                    {
+                        q: "Si un bien es normal, ¿puede el efecto ingreso ser positivo?",
+                        hint: "¿Qué pasa con la demanda cuando sube el ingreso?",
+                        answer: "No. Bien normal → ∂x/∂M > 0 (más demanda con más ingreso). Si sube precio, baja el poder adquisitivo (como si bajara M), entonces EI < 0. Solo bienes inferiores tienen EI > 0."
+                    }
+                ]
+            },
+            {
+                id: 't8-micro-reveladas',
+                title: '8. Preferencias Reveladas e Índices de Precios',
+                content: 'Teoría de Samuelson. Axioma Débil. Índices Laspeyres, Paasche, Fisher.',
+                lesson: {
+                    explanation: "La Teoría de Preferencias Reveladas (Samuelson, 1938) permite inferir preferencias a partir de decisiones de compra observadas sin asumir utilidad cardinal. El Axioma Débil de Preferencia Revelada: si un consumidor elige A cuando B era asequible, entonces A es preferido a B (A ≻ B revelado). Los Índices de Precios miden cambios en el nivel de precios: (1) Laspeyres (1871) usa cantidades del período base - tiende a sobreestimar inflación, (2) Paasche (1874) usa cantidades actuales - tiende a subestimar, (3) Fisher (1922) es media geométrica de ambos - 'índice ideal'. La relación Laspeyres > Paasche es casi siempre cierta (sesgo de sustitución).",
+                    example_title: "Preferencia Revelada: De Compras Observadas a Preferencias",
+                    example: "Observación 1: Con Pₓ=$2, Pᵧ=$3, M=$18, consumidor elige (X=6, Y=2). Gasto: $18. Observación 2: Con Pₓ=$3, Pᵧ=$2, M=$18, elige (X=2, Y=6). Gasto: $18. En obs 1, ¿era (2,6) asequible? Costo: 2(3)+6(2)=$18 → SÍ. Eligió (6,2) → Prefiere A a B (A ≻ B revelado por Axioma Débil). En obs 2, ¿era (6,2) asequible? Costo: 6(3)+2(2)=$22 → NO. Sin contradicción, Axioma Débil se cumple."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué Samuelson (1938) desarrolló Preferencias Reveladas si ya existía la teoría de utilidad cardinal?",
+                        hint: "Utilidad observable vs utilidad cardinal inmensurable",
+                        answer: "Porque la utilidad cardinal (números de satisfacción) es inobservable. Las preferencias reveladas solo necesitan asumir que el consumidor elige lo mejor que puede darse. No requiere medir utilidad, solo observar elecciones. Es más fundamental matemáticamente."
+                    },
+                    {
+                        q: "¿Cuál índice de precios (Laspeyres o Paasche) es mejor para medir inflación al consumidor?",
+                        hint: "Sesgo de sustitución. Índice de Fisher como solución.",
+                        answer: "Laspeyres (oficial en muchos países) tiende a sobrestimar porque no refleja cómo los consumidores sustituyen bienes que encarecen. Paasche subestima. Fisher (media geométrica) es más exacto pero costoso de calcular. En práctica: usar Laspeyres pero reconocer su sesgo, o usar Fisher para temas de distribución/salarios."
+                    },
+                    {
+                        q: "Si IL = 150 (precios subieron 50% según Laspeyres) e IP = 140, ¿cuál es el sesgo de sustitución?",
+                        hint: "Laspeyres - Paasche = sesgo",
+                        answer: "Sesgo = 150 - 140 = 10 puntos. Laspeyres sobrestima inflación en 10 puntos. Esto significa que el consumidor IS adaptando sus compras para los nuevos precios relativos. El Índice de Fisher sería √(150×140)=145, intermedio entre ambos."
+                    }
+                ]
+            },
+            {
+                id: 't9-micro-juegos',
+                title: '9. Teoría de Juegos - Equilibrio de Nash y Modelos de Oligopolio',
+                content: 'Toma de decisiones estratégicas. Nash. Cournot, Bertrand, Stackelberg.',
+                lesson: {
+                    explanation: "En un Equilibrio de Nash (Nash, 1950), cada jugador elige su mejor respuesta dada la estrategia del otro. NADIE puede mejorar unilateralmente cambiando de estrategia. En oligopolios: (1) Cournot (1838) - competencia en cantidades, (2) Bertrand (1883) - competencia en precios (paradoja: P=CMg con solo 2 empresas), (3) Stackelberg (1934) - modelo líder-seguidor donde líder tiene ventaja. El Dilema del Prisionero muestra que el equilibrio de Nash puede ser ineficiente (Pareto inferior).",
+                    example_title: "Oligopolio Cournot: Dos Gasolineras en una Esquina",
+                    example: "Gasolinera A y B compiten en cantidades. Demanda: P = 10 - (QA + QB). Ambas con CMg=0. En Cournot, cada una elige cantidad anticipando la del rival. Curvas de reacción: QA = 5 - QB/2, QB = 5 - QA/2. Equilibrio de Nash: QA* = QB* = 10/3 ≈ 3.33, P* = 10/3 ≈ 3.33, πA = πB ≈ 11.1 cada una. Si cooperaran (colusión): QA = QB = 2.5, P = 5, π = 6.25 cada una (mejor, pero menos que monopolio 100% = 12.5). Stackelberg: Líder elige primero Q_L = 5, seguidora responde Q_S = 2.5, líder obtiene π_L = 12.5, seguidora π_S = 6.25 (ventaja de mover primero)."
                 },
                 socratic_questions: [
                     {
                         q: "¿Puede haber más de un Equilibrio de Nash en un juego?",
-                        hint: "Piensa en el juego de 'Battle of the Sexes'",
-                        answer: "SÍ. Ejemplo: tú y tu pareja eligen entre Fútbol o Teatro. Ambos prefieren estar juntos que separados. Hay DOS equilibrios de Nash: (Fútbol, Fútbol) y (Teatro, Teatro). Requieren coordinación para elegir uno."
+                        hint: "Piensa en el juego de 'Battle of the Sexes' o coordinar en Redes",
+                        answer: "SÍ. Ejemplo: tú y tu pareja eligen entre Fútbol o Teatro. Ambos prefieren estar juntos que separados. Hay DOS equilibrios de Nash puros: (Fútbol, Fútbol) y (Teatro, Teatro). También hay equilibrio mixto. Requieren coordinación para elegir uno (Schelling, 1960 - focal points)."
                     },
                     {
-                        q: "En el Dilema del Prisionero, ¿por qué no cooperan si ambos estarían mejor?",
-                        hint: "¿Qué pasa si el otro traiciona y tú cooperas?",
-                        answer: "Porque traicionar es estrategia dominante. Si el otro coopera, yo gano más traicionando (80 > 50). Si el otro traiciona, yo pierdo menos traicionando (30 > 10). Racionalmente, ambos traicionan aunque cooperar sería Pareto superior."
+                        q: "En Bertrand con dos empresas idénticas y productos homogéneos, ¿por qué P = CMg?",
+                        hint: "Si una empresa sube precio, ¿qué pasa?",
+                        answer: "Paradoja de Bertrand: Si P > CMg, la otra empresa puede bajar P ligeramente y capturar TODO el mercado (productos homogéneos). Esto incentiva bajar precios. El equilibrio es P = CMg donde ninguna puede mejorar bajando más (pérdidas) o subiendo (pierden mercado)."
+                    },
+                    {
+                        q: "En Stackelberg, ¿por qué el líder obtiene más beneficio que en Cournot?",
+                        hint: "Ventaja de mover primero. Puede comprometerse con mayor cantidad.",
+                        answer: "Porque puede comprometerse creíblemente a una cantidad mayor, sabiendo que el seguidor responderá con menor cantidad. El líder captura la porción de mercado más grande. En Cournot, son simétricas. Stackelberg demuestra el valor de liderazgo/ventaja de primer movimiento."
                     }
                 ]
             },

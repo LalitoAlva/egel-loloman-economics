@@ -20,12 +20,38 @@ const QuizMode = ({ onBack }) => {
     const [startTime, setStartTime] = useState(null);
     const [examenId, setExamenId] = useState(null);
     const [timeRemaining, setTimeRemaining] = useState(null);
+    const [showResumeModal, setShowResumeModal] = useState(false);
+    const [resumeData, setResumeData] = useState(null);
+    const [isResumingExam, setIsResumingExam] = useState(false);
     const timerRef = useRef(null);
 
     // Load modules from preguntas table (unique modulo values)
     useEffect(() => {
         loadModulos();
+        checkForResumeableExam();
     }, []);
+
+    // Check for a saved exam in localStorage when component mounts
+    const checkForResumeableExam = () => {
+        if (!user) return;
+
+        // Check localStorage for any saved exams
+        const savedExams = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('egel_exam_progress_')) {
+                const examenId = key.replace('egel_exam_progress_', '');
+                const data = JSON.parse(localStorage.getItem(key));
+                savedExams.push({ examenId, ...data });
+            }
+        }
+
+        if (savedExams.length > 0) {
+            // Show resume modal with the first saved exam
+            setResumeData(savedExams[0]);
+            setShowResumeModal(true);
+        }
+    };
 
     // Timer effect
     useEffect(() => {
@@ -43,6 +69,20 @@ const QuizMode = ({ onBack }) => {
 
             return () => clearInterval(timerRef.current);
         }
+    }, [quizStarted, quizCompleted]);
+
+    // beforeunload handler to warn user when leaving during active quiz
+    useEffect(() => {
+        const handleBeforeUnload = (e) => {
+            if (quizStarted && !quizCompleted) {
+                e.preventDefault();
+                e.returnValue = 'Si abandona el examen, su progreso se guardará automáticamente. ¿Desea salir?';
+                return e.returnValue;
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [quizStarted, quizCompleted]);
 
     // Save partial progress periodically
@@ -166,6 +206,58 @@ const QuizMode = ({ onBack }) => {
         loadPreguntas();
     };
 
+    const resumeExam = async () => {
+        if (!resumeData) return;
+
+        setIsResumingExam(true);
+        setLoading(true);
+
+        try {
+            // Fetch the questions by their IDs
+            const { data: fetchedQuestions, error } = await supabase
+                .from('preguntas')
+                .select('*, modulos(id, titulo, icon, color)')
+                .in('id', resumeData.questionIds);
+
+            if (error) {
+                console.error('Error loading questions:', error);
+                setIsResumingExam(false);
+                setLoading(false);
+                return;
+            }
+
+            // Restore the questions in the original order
+            const orderedQuestions = resumeData.questionIds
+                .map(id => fetchedQuestions.find(q => q.id === id))
+                .filter(Boolean);
+
+            setPreguntas(orderedQuestions);
+            setExamenId(resumeData.examenId);
+            setAnswers(resumeData.answers);
+            setTimeRemaining(resumeData.timeRemaining);
+            setCurrentIndex(resumeData.currentQuestionIndex);
+            setSelectedAnswer(resumeData.answers[resumeData.currentQuestionIndex]?.letter || null);
+            setStartTime(Date.now() - (resumeData.timeLimit * 60 * 1000 - resumeData.timeRemaining * 1000));
+            setQuizStarted(true);
+            setShowResumeModal(false);
+            setIsResumingExam(false);
+            setLoading(false);
+        } catch (err) {
+            console.error('Error resuming exam:', err);
+            setIsResumingExam(false);
+            setLoading(false);
+        }
+    };
+
+    const startNewExam = () => {
+        if (resumeData) {
+            // Clear the saved progress
+            localStorage.removeItem(`egel_exam_progress_${resumeData.examenId}`);
+        }
+        setShowResumeModal(false);
+        setResumeData(null);
+    };
+
     const handleAnswer = async (letter) => {
         if (answers[currentIndex]) return;
 
@@ -207,6 +299,27 @@ const QuizMode = ({ onBack }) => {
                 updated_at: new Date().toISOString()
             })
             .eq('id', examenId);
+
+        // Also save to localStorage for resume functionality
+        saveExamProgressToLocalStorage();
+    };
+
+    const saveExamProgressToLocalStorage = () => {
+        if (!examenId || !quizStarted || quizCompleted) return;
+
+        const progressData = {
+            examenId,
+            currentQuestionIndex: currentIndex,
+            answers: answers,
+            timeRemaining: timeRemaining,
+            questionIds: preguntas.map(p => p.id),
+            filters: filters,
+            questionCount: preguntas.length,
+            timeLimit: timeLimit,
+            savedAt: new Date().toISOString()
+        };
+
+        localStorage.setItem(`egel_exam_progress_${examenId}`, JSON.stringify(progressData));
     };
 
     const finishQuiz = async (timeUp = false) => {
@@ -231,6 +344,9 @@ const QuizMode = ({ onBack }) => {
                     tiempo_agotado: timeUp
                 })
                 .eq('id', examenId);
+
+            // Clear saved progress from localStorage
+            localStorage.removeItem(`egel_exam_progress_${examenId}`);
         }
     };
 
@@ -258,6 +374,10 @@ const QuizMode = ({ onBack }) => {
 
     const restartQuiz = () => {
         clearInterval(timerRef.current);
+        // Clear saved progress when restarting
+        if (examenId) {
+            localStorage.removeItem(`egel_exam_progress_${examenId}`);
+        }
         setQuizStarted(false);
         setQuizCompleted(false);
         setPreguntas([]);
@@ -282,6 +402,65 @@ const QuizMode = ({ onBack }) => {
     const countOptions = [30, 50, 80, 100];
     const timeOptions = [30, 45, 60];
     const answeredCount = Object.keys(answers).length;
+
+    // Resume modal
+    if (showResumeModal && resumeData) {
+        return (
+            <div className="container fade-in" style={{ justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+                <div className="slide-card" style={{ maxWidth: '500px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '3rem', marginBottom: '20px' }}>
+                        <i className="fa-solid fa-exclamation-circle" style={{ color: 'var(--accent-color)' }}></i>
+                    </div>
+                    <h2 style={{ marginBottom: '15px' }}>Examen sin Terminar</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '10px', fontSize: '1.1rem' }}>
+                        Tienes un examen sin terminar. ¿Deseas continuarlo?
+                    </p>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '30px', fontSize: '0.9rem' }}>
+                        Progreso: {Object.keys(resumeData.answers).length} de {resumeData.questionCount} preguntas respondidas
+                    </p>
+
+                    <div style={{ display: 'flex', gap: '15px', justifyContent: 'center' }}>
+                        <button
+                            onClick={resumeExam}
+                            disabled={isResumingExam}
+                            className="btn-primary"
+                            style={{
+                                flex: 1,
+                                opacity: isResumingExam ? 0.7 : 1,
+                                cursor: isResumingExam ? 'not-allowed' : 'pointer'
+                            }}
+                        >
+                            {isResumingExam ? (
+                                <>
+                                    <i className="fa-solid fa-spinner fa-spin"></i> Cargando...
+                                </>
+                            ) : (
+                                <>
+                                    <i className="fa-solid fa-play"></i> Continuar
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={startNewExam}
+                            style={{
+                                flex: 1,
+                                padding: '16px 24px',
+                                background: 'transparent',
+                                border: '2px solid var(--text-secondary)',
+                                color: 'var(--text-secondary)',
+                                borderRadius: '16px',
+                                cursor: 'pointer',
+                                fontSize: '1rem',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            <i className="fa-solid fa-rotate-right"></i> Nuevo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Setup screen
     if (!quizStarted) {
@@ -600,6 +779,7 @@ const QuizMode = ({ onBack }) => {
             }}>
                 <button
                     onClick={() => {
+                        saveExamProgressToLocalStorage();
                         savePartialProgress();
                         onBack();
                     }}

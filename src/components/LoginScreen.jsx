@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
+import md5 from '../lib/md5';
 
 const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
     const [isLogin, setIsLogin] = useState(true);
@@ -27,22 +28,9 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
     const { login } = useAuth();
     const { theme } = useTheme();
 
-    // MD5 hash function
-    const hashPassword = async (password) => {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(password);
-        const hashBuffer = await crypto.subtle.digest('MD5', data).catch(() => {
-            // Fallback if MD5 not supported - use simple alternative
-            let hash = 0;
-            for (let i = 0; i < password.length; i++) {
-                const char = password.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            return new Uint8Array([hash]);
-        });
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Use consistent MD5 hash function shared across the app
+    const hashPassword = (password) => {
+        return md5(password);
     };
 
     const handleSubmit = async (e) => {
@@ -115,7 +103,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                 }
 
                 // Create account request
-                const hashedPassword = await hashPassword(password);
+                const hashedPassword = hashPassword(password);
                 const { error: insertError } = await supabase
                     .from('solicitudes_cuenta')
                     .insert([{

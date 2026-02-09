@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import md5 from '../lib/md5';
 
 const AuthContext = createContext();
 
@@ -50,8 +51,7 @@ export const AuthProvider = ({ children }) => {
             let userData = null;
 
             if (rpcError || !rpcData || rpcData.length === 0) {
-                // Fallback: Try direct MD5 comparison using raw SQL
-                // Note: This requires the pgcrypto extension or MD5 function
+                // Fallback: Try direct MD5 comparison client-side
                 const { data: directData, error: directError } = await supabase
                     .from('usuarios')
                     .select('*, roles(*)')
@@ -62,9 +62,8 @@ export const AuthProvider = ({ children }) => {
                     return { success: false, error: 'Credenciales inválidas' };
                 }
 
-                // Check password with simple hash comparison
-                // For demo: try MD5 hash client-side and compare
-                const md5Hash = await generateMD5(password);
+                // Use consistent MD5 hash for comparison
+                const md5Hash = md5(password);
                 const matchedUser = directData.find(u => u.password_hash === md5Hash);
 
                 if (!matchedUser) {
@@ -108,26 +107,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Simple MD5 hash function for client-side
-    const generateMD5 = async (text) => {
-        // Using SubtleCrypto API with SHA-256 as fallback (MD5 not available in browsers)
-        // For actual MD5, we'd need a library. This is a simple hash for demo.
-        const encoder = new TextEncoder();
-        const data = encoder.encode(text);
-
-        // Simple hash function (not cryptographically secure, just for demo matching)
-        let hash = 0;
-        for (let i = 0; i < text.length; i++) {
-            const char = text.charCodeAt(i);
-            hash = ((hash << 5) - hash) + char;
-            hash = hash & hash;
-        }
-
-        // Convert to hex-like string (32 chars to match MD5 length)
-        const hex = Math.abs(hash).toString(16).padStart(8, '0');
-        return (hex + hex + hex + hex).substring(0, 32);
-    };
-
     const logout = () => {
         setUser(null);
         setRole(null);
@@ -136,12 +115,13 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (email, nombre, password) => {
         try {
+            const passwordHash = md5(password);
             const { data, error } = await supabase
                 .from('usuarios')
                 .insert([{
                     email,
                     nombre,
-                    password_hash: password, // In production, hash this!
+                    password_hash: passwordHash,
                     rol_id: 2 // Default: estudiante
                 }])
                 .select('*, roles(*)')

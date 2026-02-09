@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import md5 from '../lib/md5';
 
 const AdminPanel = ({ onBack }) => {
     const { user, isAdmin } = useAuth();
@@ -275,20 +276,8 @@ const AdminPanel = ({ onBack }) => {
                 // Generate a simple UUID for the user
                 const userId = crypto.randomUUID();
 
-                // Create a basic MD5 hash
-                // In production use bcrypt on the backend
-                const encoder = new TextEncoder();
-                const data = encoder.encode(updatedData.password);
-                // Use MD5 (with SHA-1 fallback if not supported)
-                let hashBuffer;
-                try {
-                    hashBuffer = await crypto.subtle.digest('MD5', data);
-                } catch {
-                    // Fallback to SHA-1 if MD5 not supported
-                    hashBuffer = await crypto.subtle.digest('SHA-1', data);
-                }
-                const hashArray = Array.from(new Uint8Array(hashBuffer));
-                const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                // Use consistent MD5 hash function shared across the app
+                const passwordHash = md5(updatedData.password);
 
                 // Insert directly into usuarios table
                 const { error } = await supabase
@@ -316,17 +305,7 @@ const AdminPanel = ({ onBack }) => {
 
                 // Update password if provided
                 if (updatedData.password && updatedData.password.length >= 6) {
-                    const encoder = new TextEncoder();
-                    const data = encoder.encode(updatedData.password);
-                    // Use MD5 (with SHA-1 fallback)
-                    let hashBuffer;
-                    try {
-                        hashBuffer = await crypto.subtle.digest('MD5', data);
-                    } catch {
-                        hashBuffer = await crypto.subtle.digest('SHA-1', data);
-                    }
-                    const hashArray = Array.from(new Uint8Array(hashBuffer));
-                    updateData.password_hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    updateData.password_hash = md5(updatedData.password);
                 }
 
                 const { error } = await supabase
@@ -577,10 +556,7 @@ const AdminPanel = ({ onBack }) => {
     const tabs = [
         { id: 'solicitudes', label: 'Solicitudes', icon: 'fa-solid fa-clipboard-list', badge: solicitudes.filter(s => s.estado === 'pendiente').length },
         { id: 'usuarios', label: 'Usuarios', icon: 'fa-solid fa-users' },
-        { id: 'roles', label: 'Roles', icon: 'fa-solid fa-key' },
-        { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-book' },
-        { id: 'contenido', label: 'Contenido', icon: 'fa-solid fa-file-lines' },
-        { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-circle-question' }
+        { id: 'roles', label: 'Roles', icon: 'fa-solid fa-key' }
     ];
 
     return (
@@ -702,6 +678,7 @@ const AdminPanel = ({ onBack }) => {
                                         const rolId = rolData?.id || 2; // Default a 2 si no encuentra
 
                                         // 2. Crear el usuario
+                                        // Use the password_hash as-is from the request (already hashed with md5)
                                         const userId = crypto.randomUUID();
                                         const { error: userError } = await supabase
                                             .from('usuarios')

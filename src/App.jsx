@@ -16,6 +16,7 @@ import Sidebar from './components/Sidebar';
 import GlobalAudioPlayer from './components/GlobalAudioPlayer';
 import LoginScreen from './components/LoginScreen';
 import AdminPanel from './components/AdminPanel';
+import ContentManager from './components/ContentManager';
 import StudentDashboard from './components/StudentDashboard';
 import WeeklyTest from './components/WeeklyTest';
 import NotificationsBubble from './components/NotificationsBubble';
@@ -402,6 +403,11 @@ function AppContent() {
                     <StudentDashboard onBack={() => handleModeChange('home')} />
                 )}
 
+                {/* Content Manager - Independent section */}
+                {currentMode === 'content-manager' && (
+                    <ContentManager onBack={() => handleModeChange('home')} />
+                )}
+
                 {/* Admin Panel */}
                 {currentMode === 'admin' && (
                     <AdminPanel onBack={() => handleModeChange('home')} />
@@ -428,6 +434,7 @@ const getModeLabel = (mode) => {
         class: { icon: 'fa-solid fa-chalkboard-user', text: 'Clase' },
         login: { icon: 'fa-solid fa-lock', text: 'Login' },
         admin: { icon: 'fa-solid fa-gear', text: 'Admin' },
+        'content-manager': { icon: 'fa-solid fa-sliders', text: 'Administrar Contenido' },
         profile: { icon: 'fa-solid fa-user', text: 'Perfil' }
     };
     const label = labels[mode];

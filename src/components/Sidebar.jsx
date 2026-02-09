@@ -276,6 +276,36 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                             </div>
                             <button
                                 onClick={() => {
+                                    onSetMode('content-manager');
+                                    onClose();
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    width: '100%',
+                                    padding: '12px 20px',
+                                    background: currentMode === 'content-manager'
+                                        ? 'rgba(168, 85, 247, 0.15)'
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderLeft: currentMode === 'content-manager'
+                                        ? '3px solid #a855f7'
+                                        : '3px solid transparent',
+                                    color: currentMode === 'content-manager'
+                                        ? 'var(--accent-color)'
+                                        : 'var(--text-secondary)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'left',
+                                    fontSize: '0.95rem'
+                                }}
+                            >
+                                <i className="fa-solid fa-sliders" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
+                                Administrar Contenido
+                            </button>
+                            <button
+                                onClick={() => {
                                     onSetMode('admin');
                                     onClose();
                                 }}
@@ -286,11 +316,11 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                     width: '100%',
                                     padding: '12px 20px',
                                     background: currentMode === 'admin' || currentMode.startsWith('admin-')
-                                        ? 'var(--bg-secondary)'
+                                        ? 'rgba(168, 85, 247, 0.15)'
                                         : 'transparent',
                                     border: 'none',
                                     borderLeft: currentMode === 'admin' || currentMode.startsWith('admin-')
-                                        ? '3px solid var(--accent-color)'
+                                        ? '3px solid #a855f7'
                                         : '3px solid transparent',
                                     color: currentMode === 'admin' || currentMode.startsWith('admin-')
                                         ? 'var(--accent-color)'
