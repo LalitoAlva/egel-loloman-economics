@@ -19,7 +19,26 @@ const WeeklyTest = ({ onBack }) => {
     const [examenId, setExamenId] = useState(null);
     const [showReview, setShowReview] = useState(false);
     const [timeRemaining, setTimeRemaining] = useState(null);
+    const [showResumeModal, setShowResumeModal] = useState(false);
+    const [savedProgress, setSavedProgress] = useState(null);
     const timerRef = useRef(null);
+
+    // Check for saved progress on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('egel_weekly_progress');
+        if (saved) {
+            const data = JSON.parse(saved);
+            // Check if less than 24 hours old
+            const savedAt = new Date(data.savedAt);
+            const hoursDiff = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+            if (hoursDiff < 24) {
+                setSavedProgress(data);
+                setShowResumeModal(true);
+            } else {
+                localStorage.removeItem('egel_weekly_progress');
+            }
+        }
+    }, []);
 
     // Timer effect
     useEffect(() => {
@@ -101,9 +120,9 @@ const WeeklyTest = ({ onBack }) => {
     const balanceQuestions = (allQuestions, count) => {
         if (!allQuestions || allQuestions.length === 0) return [];
 
-        const basico = allQuestions.filter(q => q.dificultad === 'basico');
-        const intermedio = allQuestions.filter(q => q.dificultad === 'intermedio');
-        const avanzado = allQuestions.filter(q => q.dificultad === 'avanzado');
+        const basico = allQuestions.filter(q => q.nivel === 'basico');
+        const intermedio = allQuestions.filter(q => q.nivel === 'intermedio');
+        const avanzado = allQuestions.filter(q => q.nivel === 'avanzado');
 
         const basicoCount = Math.floor(count * 0.4);
         const intermedioCount = Math.floor(count * 0.4);
@@ -130,6 +149,28 @@ const WeeklyTest = ({ onBack }) => {
             [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
         return shuffled;
+    };
+
+    const handleBack = () => {
+        if (testStarted && !testCompleted) {
+            if (window.confirm('¿Deseas guardar tu progreso? Podrás continuar después.')) {
+                saveProgress();
+                // Also save partial to DB
+                if (user && examenId) {
+                    const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
+                    supabase.from('examenes').update({
+                        correctas: correctCount,
+                        incorrectas: Object.keys(answers).length - correctCount,
+                        porcentaje: Object.keys(answers).length > 0 ? (correctCount / Object.keys(answers).length) * 100 : 0,
+                        updated_at: new Date().toISOString()
+                    }).eq('id', examenId);
+                }
+            } else {
+                // Clear progress if they don't want to save
+                localStorage.removeItem('egel_weekly_progress');
+            }
+        }
+        onBack();
     };
 
     const startTest = () => {
@@ -178,7 +219,48 @@ const WeeklyTest = ({ onBack }) => {
         setSelectedAnswer(answers[index]?.letter || null);
     };
 
+    const saveProgress = () => {
+        if (!examenId || testCompleted) return;
+        const progressData = {
+            examenId,
+            currentQuestionIndex: currentIndex,
+            answers,
+            timeRemaining,
+            questionIds: preguntas.map(p => p.id),
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`egel_weekly_progress`, JSON.stringify(progressData));
+    };
+
+    const resumeTest = async () => {
+        if (!savedProgress) return;
+        setLoading(true);
+
+        // Load the same questions by IDs
+        const { data } = await supabase
+            .from('preguntas')
+            .select('*, modulos(titulo, icon, color)')
+            .in('id', savedProgress.questionIds);
+
+        if (data) {
+            // Maintain original order
+            const ordered = savedProgress.questionIds.map(id => data.find(q => q.id === id)).filter(Boolean);
+            setPreguntas(ordered);
+            setCurrentIndex(savedProgress.currentQuestionIndex);
+            setAnswers(savedProgress.answers);
+            setTimeRemaining(savedProgress.timeRemaining);
+            setExamenId(savedProgress.examenId);
+            setTestStarted(true);
+            setStartTime(Date.now());
+        }
+
+        setShowResumeModal(false);
+        setSavedProgress(null);
+        setLoading(false);
+    };
+
     const finishTest = async () => {
+        localStorage.removeItem('egel_weekly_progress');
         const correctCount = Object.values(answers).filter(a => a.isCorrect).length;
         const totalAnswered = Object.keys(answers).length;
 
@@ -212,7 +294,7 @@ const WeeklyTest = ({ onBack }) => {
             <div className="container fade-in">
                 <div style={{ maxWidth: '600px', margin: '0 auto 20px auto' }}>
                     <button
-                        onClick={onBack}
+                        onClick={handleBack}
                         style={{
                             width: '100%',
                             padding: '15px',
@@ -398,7 +480,7 @@ const WeeklyTest = ({ onBack }) => {
                         >
                             📋 Ver respuestas
                         </button>
-                        <button className="btn-primary" onClick={onBack}>
+                        <button className="btn-primary" onClick={handleBack}>
                             ← Volver al inicio
                         </button>
                     </div>
@@ -430,10 +512,53 @@ const WeeklyTest = ({ onBack }) => {
 
     return (
         <div className="container fade-in">
+            {showResumeModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.7)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'var(--bg-secondary)', borderRadius: '16px',
+                        padding: '30px', maxWidth: '400px', width: '90%',
+                        textAlign: 'center', border: '1px solid var(--card-border)'
+                    }}>
+                        <i className="fa-solid fa-clock-rotate-left" style={{
+                            fontSize: '3rem', color: 'var(--accent-color)', marginBottom: '15px', display: 'block'
+                        }}></i>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Examen en progreso</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                            Tienes un examen sin terminar con {Object.keys(savedProgress?.answers || {}).length} preguntas contestadas.
+                            ¿Deseas continuar?
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button onClick={() => {
+                                localStorage.removeItem('egel_weekly_progress');
+                                setShowResumeModal(false);
+                                setSavedProgress(null);
+                            }} style={{
+                                flex: 1, padding: '12px', borderRadius: '8px',
+                                background: 'var(--error-color)', color: '#fff',
+                                border: 'none', cursor: 'pointer', fontWeight: '600'
+                            }}>
+                                Nuevo examen
+                            </button>
+                            <button onClick={resumeTest} style={{
+                                flex: 1, padding: '12px', borderRadius: '8px',
+                                background: 'var(--accent-color)', color: '#fff',
+                                border: 'none', cursor: 'pointer', fontWeight: '600'
+                            }}>
+                                Continuar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
                 <button
-                    onClick={onBack}
+                    onClick={handleBack}
                     style={{
                         background: 'var(--bg-secondary)',
                         color: 'var(--text-secondary)',
@@ -519,11 +644,11 @@ const WeeklyTest = ({ onBack }) => {
                     <span style={{
                         padding: '4px 10px',
                         borderRadius: '6px',
-                        background: `${nivelColors[pregunta.dificultad]}22`,
-                        color: nivelColors[pregunta.dificultad],
+                        background: `${nivelColors[pregunta.nivel]}22`,
+                        color: nivelColors[pregunta.nivel],
                         fontSize: '0.8rem'
                     }}>
-                        {pregunta.dificultad?.toUpperCase()}
+                        {pregunta.nivel?.toUpperCase()}
                     </span>
                     {pregunta.modulos && (
                         <span style={{

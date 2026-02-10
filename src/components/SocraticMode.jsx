@@ -14,9 +14,26 @@ const SocraticMode = ({ onBack }) => {
     const [testStarted, setTestStarted] = useState(false);
     const [score, setScore] = useState({ mastered: 0, total: 0 });
     const [examenId, setExamenId] = useState(null);
+    const [showResumeModal, setShowResumeModal] = useState(false);
+    const [savedProgress, setSavedProgress] = useState(null);
 
     useEffect(() => {
         loadModulos();
+
+        // Check for saved progress
+        const saved = localStorage.getItem('egel_socratic_progress');
+        if (saved) {
+            const data = JSON.parse(saved);
+            // Check if less than 24 hours old
+            const savedAt = new Date(data.savedAt);
+            const hoursDiff = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
+            if (hoursDiff < 24) {
+                setSavedProgress(data);
+                setShowResumeModal(true);
+            } else {
+                localStorage.removeItem('egel_socratic_progress');
+            }
+        }
     }, []);
 
     const loadModulos = async () => {
@@ -122,7 +139,67 @@ const SocraticMode = ({ onBack }) => {
         }
     };
 
+    const saveProgress = () => {
+        if (!examenId || !testStarted) return;
+        const progressData = {
+            examenId,
+            moduloId: selectedModulo?.id,
+            currentIndex,
+            score,
+            questionIds: preguntas.map(p => p.id),
+            savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(`egel_socratic_progress`, JSON.stringify(progressData));
+    };
+
+    const handleBack = () => {
+        if (testStarted && currentIndex < preguntas.length) {
+            if (window.confirm('¿Deseas guardar tu progreso? Podrás continuar después.')) {
+                saveProgress();
+                if (user && examenId) {
+                    supabase.from('examenes').update({
+                        correctas: score.mastered,
+                        incorrectas: score.total - score.mastered,
+                        porcentaje: score.total > 0 ? (score.mastered / score.total) * 100 : 0,
+                        updated_at: new Date().toISOString()
+                    }).eq('id', examenId);
+                }
+            } else {
+                localStorage.removeItem('egel_socratic_progress');
+            }
+        }
+        onBack();
+    };
+
+    const resumeTest = async () => {
+        if (!savedProgress) return;
+        setLoading(true);
+
+        // Load the same questions by IDs
+        const { data } = await supabase
+            .from('preguntas')
+            .select('*, modulos(titulo, icon, color)')
+            .in('id', savedProgress.questionIds);
+
+        if (data) {
+            // Maintain original order
+            const ordered = savedProgress.questionIds.map(id => data.find(q => q.id === id)).filter(Boolean);
+            setPreguntas(ordered);
+            setCurrentIndex(savedProgress.currentIndex);
+            setScore(savedProgress.score);
+            setExamenId(savedProgress.examenId);
+            setSelectedModulo(data[0]?.modulos || savedProgress.moduloId);
+            setTestStarted(true);
+            setStep('question');
+        }
+
+        setShowResumeModal(false);
+        setSavedProgress(null);
+        setLoading(false);
+    };
+
     const finishTest = async (mastered, total) => {
+        localStorage.removeItem('egel_socratic_progress');
         if (user && examenId) {
             await supabase
                 .from('examenes')
@@ -153,7 +230,7 @@ const SocraticMode = ({ onBack }) => {
             <div className="container fade-in">
                 <div style={{ maxWidth: '600px', margin: '0 auto 20px auto' }}>
                     <button
-                        onClick={onBack}
+                        onClick={handleBack}
                         style={{
                             width: '100%',
                             padding: '15px',
@@ -186,7 +263,7 @@ const SocraticMode = ({ onBack }) => {
                     </div>
                 ) : modulos.length === 0 ? (
                     <div className="slide-card" style={{ textAlign: 'center' }}>
-                        <button className="close-btn" onClick={onBack} title="Salir">×</button>
+                        <button className="close-btn" onClick={handleBack} title="Salir">×</button>
                         <p style={{ fontSize: '3rem', marginBottom: '15px' }}>📭</p>
                         <h2>No hay módulos disponibles</h2>
                         <p style={{ color: 'var(--text-secondary)' }}>
@@ -232,6 +309,54 @@ const SocraticMode = ({ onBack }) => {
         );
     }
 
+    // Show resume modal if needed and test hasn't started yet
+    if (showResumeModal && !testStarted) {
+        return (
+            <div className="container fade-in">
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.7)', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', zIndex: 1000
+                }}>
+                    <div style={{
+                        background: 'var(--bg-secondary)', borderRadius: '16px',
+                        padding: '30px', maxWidth: '400px', width: '90%',
+                        textAlign: 'center', border: '1px solid var(--card-border)'
+                    }}>
+                        <i className="fa-solid fa-clock-rotate-left" style={{
+                            fontSize: '3rem', color: 'var(--accent-color)', marginBottom: '15px', display: 'block'
+                        }}></i>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>Práctica en progreso</h3>
+                        <p style={{ color: 'var(--text-secondary)', marginBottom: '20px' }}>
+                            Tienes una práctica sin terminar con {savedProgress?.score?.total || 0} preguntas contestadas.
+                            ¿Deseas continuar?
+                        </p>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button onClick={() => {
+                                localStorage.removeItem('egel_socratic_progress');
+                                setShowResumeModal(false);
+                                setSavedProgress(null);
+                            }} style={{
+                                flex: 1, padding: '12px', borderRadius: '8px',
+                                background: 'var(--error-color)', color: '#fff',
+                                border: 'none', cursor: 'pointer', fontWeight: '600'
+                            }}>
+                                Nueva práctica
+                            </button>
+                            <button onClick={resumeTest} style={{
+                                flex: 1, padding: '12px', borderRadius: '8px',
+                                background: 'var(--accent-color)', color: '#fff',
+                                border: 'none', cursor: 'pointer', fontWeight: '600'
+                            }}>
+                                Continuar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     // Loading
     if (loading) {
         return (
@@ -269,7 +394,7 @@ const SocraticMode = ({ onBack }) => {
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <button
-                    onClick={restartTest}
+                    onClick={handleBack}
                     style={{
                         background: 'var(--bg-secondary)',
                         color: 'var(--text-secondary)',
@@ -320,7 +445,7 @@ const SocraticMode = ({ onBack }) => {
 
             {/* Question Card */}
             <div className="slide-card" style={{ maxWidth: '700px', margin: '0 auto', borderTop: `6px solid ${selectedModulo.color}` }}>
-                <button className="close-btn" onClick={restartTest} title="Salir de la prueba">×</button>
+                <button className="close-btn" onClick={handleBack} title="Salir de la prueba">×</button>
                 {/* Question Phase */}
                 {step === 'question' && (
                     <>

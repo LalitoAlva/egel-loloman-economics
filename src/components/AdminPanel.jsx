@@ -678,7 +678,13 @@ const AdminPanel = ({ onBack }) => {
                                         const rolId = rolData?.id || 2; // Default a 2 si no encuentra
 
                                         // 2. Crear el usuario
-                                        // Use the password_hash as-is from the request (already hashed with md5)
+                                        // Ensure password_hash is proper MD5 format (32 hex chars)
+                                        let passwordHash = solicitud.password_hash;
+                                        if (!passwordHash || !/^[a-f0-9]{32}$/i.test(passwordHash)) {
+                                            // If not a valid MD5 hash, hash it with MD5
+                                            passwordHash = md5(passwordHash || '');
+                                        }
+
                                         const userId = crypto.randomUUID();
                                         const { error: userError } = await supabase
                                             .from('usuarios')
@@ -686,7 +692,7 @@ const AdminPanel = ({ onBack }) => {
                                                 id: userId,
                                                 nombre: solicitud.nombre,
                                                 email: solicitud.email,
-                                                password_hash: solicitud.password_hash,
+                                                password_hash: passwordHash,
                                                 rol_id: rolId,
                                                 activo: true,
                                                 created_at: new Date().toISOString()

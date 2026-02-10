@@ -1,27 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
 /**
  * ContentManager Component
- * Standalone content administration section with tabs for:
- * - Contenido de Clase (lesson content with advanced ordering)
- * - Módulos (module CRUD)
- * - Preguntas (question management)
+ * Standalone content administration with:
+ * - Drag-and-drop reordering by title
+ * - Rich HTML editor with toolbar
+ * - Multimedia support (audio, video, images)
+ * - Tabs: Contenido de Clase, Módulos, Preguntas
  */
 
 const ContentManager = ({ onBack }) => {
   const { user } = useAuth();
   const { theme } = useTheme();
 
-  // ============================================
-  // STATE MANAGEMENT
-  // ============================================
-
+  // STATE
   const [activeTab, setActiveTab] = useState('contenido');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
 
   // Contenido Tab
   const [modules, setModules] = useState([]);
@@ -29,9 +28,11 @@ const ContentManager = ({ onBack }) => {
   const [contentItems, setContentItems] = useState([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
-  const [orderFilter, setOrderFilter] = useState('by-order');
   const [typeFilter, setTypeFilter] = useState('all');
-  const [orderChanged, setOrderChanged] = useState(false);
+
+  // Drag state
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
 
   // Módulos Tab
   const [modulesList, setModulesList] = useState([]);
@@ -40,48 +41,26 @@ const ContentManager = ({ onBack }) => {
 
   // Preguntas Tab
   const [preguntas, setPreguntas] = useState([]);
-  const [preguntaFilter, setPreguntaFilter] = useState({ modulo: null, nivel: null, subtema: null });
+  const [preguntaFilter, setPreguntaFilter] = useState({ modulo: null, nivel: null });
   const [isPreguntaModalOpen, setIsPreguntaModalOpen] = useState(false);
   const [editingPregunta, setEditingPregunta] = useState(null);
 
-  const dragStartPos = useRef(null);
-
-  // ============================================
-  // AUTHORIZATION CHECK
-  // ============================================
-
+  // AUTH CHECK
   if (user?.roles?.nombre !== 'admin') {
     return (
       <div style={{ padding: '40px', textAlign: 'center', color: 'var(--error-color)' }}>
         <i className="fa-solid fa-lock" style={{ fontSize: '2rem', marginBottom: '20px', display: 'block' }}></i>
         <h2>Acceso Denegado</h2>
         <p>Solo los administradores pueden acceder a esta sección.</p>
-        <button
-          onClick={onBack}
-          style={{
-            marginTop: '20px',
-            background: 'var(--accent-color)',
-            color: '#fff',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            border: 'none',
-            fontSize: '1rem'
-          }}
-        >
+        <button onClick={onBack} style={{ marginTop: '20px', background: 'var(--accent-color)', color: '#fff', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', border: 'none', fontSize: '1rem' }}>
           Volver
         </button>
       </div>
     );
   }
 
-  // ============================================
-  // LOAD DATA EFFECTS
-  // ============================================
-
-  useEffect(() => {
-    loadModules();
-  }, []);
+  // EFFECTS
+  useEffect(() => { loadModules(); }, []);
 
   useEffect(() => {
     if (activeTab === 'contenido') {
@@ -93,26 +72,23 @@ const ContentManager = ({ onBack }) => {
     }
   }, [activeTab, selectedModule]);
 
-  // ============================================
-  // DATA LOADING FUNCTIONS
-  // ============================================
+  useEffect(() => {
+    if (successMsg) {
+      const t = setTimeout(() => setSuccessMsg(null), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [successMsg]);
 
+  // DATA LOADING
   const loadModules = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('modulos')
-        .select('*')
-        .order('numero', { ascending: true });
-
+      const { data, error } = await supabase.from('modulos').select('*').order('numero', { ascending: true });
       if (error) throw error;
       setModules(data || []);
-      if (data && data.length > 0 && !selectedModule) {
-        setSelectedModule(data[0]);
-      }
+      if (data?.length > 0 && !selectedModule) setSelectedModule(data[0]);
     } catch (err) {
       setError('Error cargando módulos: ' + err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -121,16 +97,11 @@ const ContentManager = ({ onBack }) => {
   const loadModulesList = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('modulos')
-        .select('*')
-        .order('numero', { ascending: true });
-
+      const { data, error } = await supabase.from('modulos').select('*').order('numero', { ascending: true });
       if (error) throw error;
       setModulesList(data || []);
     } catch (err) {
       setError('Error cargando módulos: ' + err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -141,17 +112,12 @@ const ContentManager = ({ onBack }) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('contenido_clase')
-        .select('*')
-        .eq('modulo_id', selectedModule.id)
+        .from('contenido_clase').select('*').eq('modulo_id', selectedModule.id)
         .order('orden', { ascending: true });
-
       if (error) throw error;
       setContentItems(data || []);
-      setOrderChanged(false);
     } catch (err) {
       setError('Error cargando contenido: ' + err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -161,265 +127,135 @@ const ContentManager = ({ onBack }) => {
     try {
       setLoading(true);
       let query = supabase.from('preguntas').select('*');
-
-      if (preguntaFilter.modulo) {
-        query = query.eq('modulo_id', preguntaFilter.modulo);
-      }
-      if (preguntaFilter.nivel) {
-        query = query.eq('nivel', preguntaFilter.nivel);
-      }
-      if (preguntaFilter.subtema) {
-        query = query.eq('subtema', preguntaFilter.subtema);
-      }
-
+      if (preguntaFilter.modulo) query = query.eq('modulo_id', preguntaFilter.modulo);
+      if (preguntaFilter.nivel) query = query.eq('nivel', preguntaFilter.nivel);
       const { data, error } = await query.order('created_at', { ascending: false });
-
       if (error) throw error;
       setPreguntas(data || []);
     } catch (err) {
       setError('Error cargando preguntas: ' + err.message);
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  // ============================================
-  // CONTENIDO TAB - HELPER FUNCTIONS
-  // ============================================
-
+  // CONTENT HELPERS
   const parseMediaFromContent = (contenido) => {
     if (!contenido) return { text: '', media: {} };
-
-    const mediaSeparator = '\n\n---MEDIA---\n';
-    const parts = contenido.split(mediaSeparator);
-
-    const text = parts[0];
+    const sep = '\n\n---MEDIA---\n';
+    const parts = contenido.split(sep);
     let media = {};
-
-    if (parts[1]) {
-      try {
-        media = JSON.parse(parts[1]);
-      } catch (e) {
-        console.error('Failed to parse media JSON:', e);
-      }
-    }
-
-    return { text, media };
+    if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
+    return { text: parts[0], media };
   };
 
   const buildContentWithMedia = (text, media) => {
-    if (!media || (Object.keys(media).length === 0 || (!media.audio_url && !media.video_url && !media.imagen_url))) {
-      return text;
-    }
-
+    if (!media || (!media.audio_url && !media.video_url && !media.imagen_url)) return text;
     return `${text}\n\n---MEDIA---\n${JSON.stringify(media)}`;
   };
 
   const getTipoOptions = () => [
-    { value: 'guia', label: 'Guía' },
-    { value: 'informe', label: 'Informe' },
-    { value: 'audio', label: 'Audio' },
-    { value: 'video', label: 'Video' },
-    { value: 'imagen', label: 'Imagen' },
-    { value: 'otro', label: 'Otro' }
+    { value: 'guia', label: 'Guía' }, { value: 'informe', label: 'Informe' },
+    { value: 'audio', label: 'Audio' }, { value: 'video', label: 'Video' },
+    { value: 'imagen', label: 'Imagen' }, { value: 'otro', label: 'Otro' }
   ];
 
   const getTipoIcon = (tipo) => {
-    const icons = {
-      guia: 'fa-solid fa-book-open',
-      informe: 'fa-solid fa-file-lines',
-      audio: 'fa-solid fa-headphones',
-      video: 'fa-solid fa-video',
-      imagen: 'fa-solid fa-image',
-      otro: 'fa-solid fa-cube'
-    };
+    const icons = { guia: 'fa-solid fa-book-open', informe: 'fa-solid fa-file-lines', audio: 'fa-solid fa-headphones', video: 'fa-solid fa-video', imagen: 'fa-solid fa-image', otro: 'fa-solid fa-cube' };
     return icons[tipo] || icons.otro;
   };
 
   const getTipoBadgeColor = (tipo) => {
-    const colors = {
-      guia: '#8b5cf6',
-      informe: '#3b82f6',
-      audio: '#ec4899',
-      video: '#f59e0b',
-      imagen: '#10b981',
-      otro: '#6b7280'
-    };
+    const colors = { guia: '#8b5cf6', informe: '#3b82f6', audio: '#ec4899', video: '#f59e0b', imagen: '#10b981', otro: '#6b7280' };
     return colors[tipo] || colors.otro;
   };
 
-  const getFilteredAndSortedContent = () => {
-    let filtered = contentItems;
-
-    // Type filter
-    if (typeFilter !== 'all') {
-      filtered = filtered.filter(item => item.tipo === typeFilter);
-    }
-
-    // Order filter
-    if (orderFilter === 'by-order') {
-      filtered.sort((a, b) => a.orden - b.orden);
-    } else if (orderFilter === 'by-type') {
-      filtered.sort((a, b) => a.tipo.localeCompare(b.tipo));
-    } else if (orderFilter === 'by-title') {
-      filtered.sort((a, b) => a.titulo.localeCompare(b.titulo));
-    }
-
+  const getFilteredContent = () => {
+    let filtered = [...contentItems];
+    if (typeFilter !== 'all') filtered = filtered.filter(item => item.tipo === typeFilter);
+    filtered.sort((a, b) => a.orden - b.orden);
     return filtered;
   };
 
-  const handleMoveUp = async (index) => {
-    const filtered = getFilteredAndSortedContent();
-    if (index === 0) return;
-
-    const item1 = filtered[index];
-    const item2 = filtered[index - 1];
-
-    const newOrder1 = item2.orden;
-    const newOrder2 = item1.orden;
-
-    const newItems = contentItems.map(item => {
-      if (item.id === item1.id) return { ...item, orden: newOrder1 };
-      if (item.id === item2.id) return { ...item, orden: newOrder2 };
-      return item;
-    });
-
-    setContentItems(newItems);
-    setOrderChanged(true);
-
-    try {
-      await Promise.all([
-        supabase.from('contenido_clase').update({ orden: newOrder1 }).eq('id', item1.id),
-        supabase.from('contenido_clase').update({ orden: newOrder2 }).eq('id', item2.id)
-      ]);
-    } catch (err) {
-      setError('Error al reordenar: ' + err.message);
-      console.error(err);
-    }
+  // DRAG AND DROP
+  const handleDragStart = (e, index) => {
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', index.toString());
+    setTimeout(() => { if (e.target) e.target.style.opacity = '0.4'; }, 0);
   };
 
-  const handleMoveDown = async (index) => {
-    const filtered = getFilteredAndSortedContent();
-    if (index === filtered.length - 1) return;
-
-    const item1 = filtered[index];
-    const item2 = filtered[index + 1];
-
-    const newOrder1 = item2.orden;
-    const newOrder2 = item1.orden;
-
-    const newItems = contentItems.map(item => {
-      if (item.id === item1.id) return { ...item, orden: newOrder1 };
-      if (item.id === item2.id) return { ...item, orden: newOrder2 };
-      return item;
-    });
-
-    setContentItems(newItems);
-    setOrderChanged(true);
-
-    try {
-      await Promise.all([
-        supabase.from('contenido_clase').update({ orden: newOrder1 }).eq('id', item1.id),
-        supabase.from('contenido_clase').update({ orden: newOrder2 }).eq('id', item2.id)
-      ]);
-    } catch (err) {
-      setError('Error al reordenar: ' + err.message);
-      console.error(err);
-    }
+  const handleDragEnd = (e) => {
+    e.target.style.opacity = '1';
+    setDraggedIndex(null);
+    setDragOverIndex(null);
   };
 
-  const handleSetOrder = async (itemId, newOrder) => {
-    const newItems = contentItems.map(item => {
-      if (item.id === itemId) return { ...item, orden: parseInt(newOrder) };
-      return item;
-    });
+  const handleDragOver = (e, index) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (index !== dragOverIndex) setDragOverIndex(index);
+  };
 
-    setContentItems(newItems);
-    setOrderChanged(true);
+  const handleDragLeave = () => { setDragOverIndex(null); };
 
-    try {
-      await supabase.from('contenido_clase').update({ orden: parseInt(newOrder) }).eq('id', itemId);
-    } catch (err) {
-      setError('Error al actualizar orden: ' + err.message);
-      console.error(err);
+  const handleDrop = async (e, dropIndex) => {
+    e.preventDefault();
+    const fromIndex = draggedIndex;
+    if (fromIndex === null || fromIndex === dropIndex) {
+      setDraggedIndex(null); setDragOverIndex(null); return;
     }
+    const filtered = getFilteredContent();
+    const newItems = [...filtered];
+    const [movedItem] = newItems.splice(fromIndex, 1);
+    newItems.splice(dropIndex, 0, movedItem);
+    const updates = newItems.map((item, idx) => ({ ...item, orden: idx + 1 }));
+    setContentItems(prev => {
+      const map = new Map(updates.map(u => [u.id, u.orden]));
+      return prev.map(item => map.has(item.id) ? { ...item, orden: map.get(item.id) } : item);
+    });
+    setDraggedIndex(null); setDragOverIndex(null);
+    try {
+      for (const item of updates) {
+        await supabase.from('contenido_clase').update({ orden: item.orden }).eq('id', item.id);
+      }
+      setSuccessMsg('Orden actualizado correctamente');
+    } catch (err) { setError('Error al reordenar: ' + err.message); }
   };
 
   const handleAutoReorder = async () => {
     if (!window.confirm('¿Reordenar items de 1 a N?')) return;
-
-    const filtered = getFilteredAndSortedContent();
-    const updates = filtered.map((item, idx) => ({
-      ...item,
-      orden: idx + 1
-    }));
-
-    const newItems = contentItems.map(item => {
-      const updated = updates.find(u => u.id === item.id);
-      return updated || item;
+    const filtered = getFilteredContent();
+    const updates = filtered.map((item, idx) => ({ ...item, orden: idx + 1 }));
+    setContentItems(prev => {
+      const map = new Map(updates.map(u => [u.id, u.orden]));
+      return prev.map(item => map.has(item.id) ? { ...item, orden: map.get(item.id) } : item);
     });
-
-    setContentItems(newItems);
-    setOrderChanged(true);
-
     try {
-      for (const update of updates) {
-        await supabase.from('contenido_clase').update({ orden: update.orden }).eq('id', update.id);
-      }
-      setError(null);
-    } catch (err) {
-      setError('Error al reordenar: ' + err.message);
-      console.error(err);
-    }
+      for (const u of updates) await supabase.from('contenido_clase').update({ orden: u.orden }).eq('id', u.id);
+      setSuccessMsg('Reordenamiento completado');
+    } catch (err) { setError('Error al reordenar: ' + err.message); }
   };
 
+  // CONTENT CRUD
   const handleAddContent = () => {
-    setEditingItem({
-      id: null,
-      modulo_id: selectedModule.id,
-      orden: contentItems.length + 1,
-      tipo: 'guia',
-      titulo: '',
-      contenido: ''
-    });
+    setEditingItem({ id: null, modulo_id: selectedModule.id, orden: contentItems.length + 1, tipo: 'guia', titulo: '', contenido: '' });
     setIsEditModalOpen(true);
   };
 
-  const handleEditContent = (item) => {
-    setEditingItem(item);
-    setIsEditModalOpen(true);
-  };
+  const handleEditContent = (item) => { setEditingItem(item); setIsEditModalOpen(true); };
 
   const handleDeleteContent = async (id) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este contenido?')) return;
-
     try {
-      const { error } = await supabase
-        .from('contenido_clase')
-        .delete()
-        .eq('id', id);
-
+      const { error } = await supabase.from('contenido_clase').delete().eq('id', id);
       if (error) throw error;
-
       const remaining = contentItems.filter(item => item.id !== id);
-      const reordered = remaining.map((item, idx) => ({
-        ...item,
-        orden: idx + 1
-      }));
-
+      const reordered = remaining.map((item, idx) => ({ ...item, orden: idx + 1 }));
       setContentItems(reordered);
-
-      for (let i = 0; i < reordered.length; i++) {
-        await supabase
-          .from('contenido_clase')
-          .update({ orden: reordered[i].orden })
-          .eq('id', reordered[i].id);
-      }
-    } catch (err) {
-      setError('Error eliminando contenido: ' + err.message);
-      console.error(err);
-    }
+      for (const r of reordered) await supabase.from('contenido_clase').update({ orden: r.orden }).eq('id', r.id);
+      setSuccessMsg('Contenido eliminado');
+    } catch (err) { setError('Error eliminando contenido: ' + err.message); }
   };
 
   const handleSaveContent = async (itemData) => {
@@ -427,301 +263,114 @@ const ContentManager = ({ onBack }) => {
       const { text, audio_url, video_url, imagen_url } = itemData;
       const media = { audio_url, video_url, imagen_url };
       const contenido = buildContentWithMedia(text, media);
-
       if (itemData.id) {
-        const { error } = await supabase
-          .from('contenido_clase')
-          .update({
-            tipo: itemData.tipo,
-            titulo: itemData.titulo,
-            contenido: contenido,
-            orden: itemData.orden
-          })
-          .eq('id', itemData.id);
-
+        const { error } = await supabase.from('contenido_clase')
+          .update({ tipo: itemData.tipo, titulo: itemData.titulo, contenido, orden: itemData.orden }).eq('id', itemData.id);
         if (error) throw error;
-
-        const updatedItems = contentItems.map(item =>
-          item.id === itemData.id
-            ? { ...item, ...itemData, contenido }
-            : item
-        );
-        setContentItems(updatedItems);
+        setContentItems(prev => prev.map(item => item.id === itemData.id ? { ...item, ...itemData, contenido } : item));
       } else {
-        const { data, error } = await supabase
-          .from('contenido_clase')
-          .insert([{
-            modulo_id: selectedModule.id,
-            tipo: itemData.tipo,
-            titulo: itemData.titulo,
-            contenido: contenido,
-            orden: itemData.orden
-          }])
-          .select();
-
+        const { data, error } = await supabase.from('contenido_clase')
+          .insert([{ modulo_id: selectedModule.id, tipo: itemData.tipo, titulo: itemData.titulo, contenido, orden: itemData.orden }]).select();
         if (error) throw error;
-        setContentItems([...contentItems, data[0]]);
+        setContentItems(prev => [...prev, data[0]]);
       }
-
-      setIsEditModalOpen(false);
-      setEditingItem(null);
-    } catch (err) {
-      setError('Error guardando contenido: ' + err.message);
-      console.error(err);
-    }
+      setIsEditModalOpen(false); setEditingItem(null);
+      setSuccessMsg('Contenido guardado correctamente');
+    } catch (err) { setError('Error guardando contenido: ' + err.message); }
   };
 
-  // ============================================
-  // MÓDULOS TAB - FUNCTIONS
-  // ============================================
-
+  // MODULE CRUD
   const handleAddModule = () => {
-    setEditingModule({
-      titulo: '',
-      descripcion: '',
-      numero: modulesList.length + 1,
-      color: '#a855f7',
-      icon: 'fa-solid fa-book'
-    });
+    setEditingModule({ titulo: '', descripcion: '', numero: modulesList.length + 1, color: '#a855f7', icon: 'fa-solid fa-book', audio_url: '', infografia_url: '' });
     setIsModuleModalOpen(true);
   };
 
-  const handleEditModuleItem = (module) => {
-    setEditingModule(module);
-    setIsModuleModalOpen(true);
-  };
+  const handleEditModuleItem = (module) => { setEditingModule(module); setIsModuleModalOpen(true); };
 
   const handleSaveModule = async (moduleData) => {
     try {
       if (moduleData.id) {
-        const { error } = await supabase
-          .from('modulos')
-          .update({
-            titulo: moduleData.titulo,
-            descripcion: moduleData.descripcion,
-            color: moduleData.color,
-            icon: moduleData.icon,
-            audio_url: moduleData.audio_url || null,
-            infografia_url: moduleData.infografia_url || null,
-            activo: moduleData.activo !== undefined ? moduleData.activo : true
-          })
+        const { error } = await supabase.from('modulos')
+          .update({ titulo: moduleData.titulo, descripcion: moduleData.descripcion, color: moduleData.color, icon: moduleData.icon, audio_url: moduleData.audio_url || null, infografia_url: moduleData.infografia_url || null, activo: moduleData.activo !== undefined ? moduleData.activo : true })
           .eq('id', moduleData.id);
-
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('modulos')
-          .insert([{
-            titulo: moduleData.titulo,
-            descripcion: moduleData.descripcion,
-            numero: moduleData.numero,
-            color: moduleData.color,
-            icon: moduleData.icon,
-            slug: moduleData.titulo.toLowerCase().replace(/ /g, '-'),
-            activo: true
-          }]);
-
+        const { error } = await supabase.from('modulos')
+          .insert([{ titulo: moduleData.titulo, descripcion: moduleData.descripcion, numero: moduleData.numero, color: moduleData.color, icon: moduleData.icon, slug: moduleData.titulo.toLowerCase().replace(/ /g, '-'), activo: true, audio_url: moduleData.audio_url || null, infografia_url: moduleData.infografia_url || null }]);
         if (error) throw error;
       }
-
-      loadModulesList();
-      loadModules();
-      setIsModuleModalOpen(false);
-      setEditingModule(null);
-    } catch (err) {
-      setError('Error guardando módulo: ' + err.message);
-      console.error(err);
-    }
+      loadModulesList(); loadModules();
+      setIsModuleModalOpen(false); setEditingModule(null);
+      setSuccessMsg('Módulo guardado');
+    } catch (err) { setError('Error guardando módulo: ' + err.message); }
   };
 
   const handleToggleModuleActive = async (moduleId, currentStatus) => {
     try {
-      const { error } = await supabase
-        .from('modulos')
-        .update({ activo: !currentStatus })
-        .eq('id', moduleId);
-
+      const { error } = await supabase.from('modulos').update({ activo: !currentStatus }).eq('id', moduleId);
       if (error) throw error;
       loadModulesList();
-    } catch (err) {
-      setError('Error actualizando módulo: ' + err.message);
-      console.error(err);
-    }
+    } catch (err) { setError('Error actualizando módulo: ' + err.message); }
   };
 
   const handleDeleteModule = async (moduleId) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este módulo?')) return;
-
     try {
-      const { error } = await supabase
-        .from('modulos')
-        .delete()
-        .eq('id', moduleId);
-
+      const { error } = await supabase.from('modulos').delete().eq('id', moduleId);
       if (error) throw error;
-      loadModulesList();
-      loadModules();
-    } catch (err) {
-      setError('Error eliminando módulo: ' + err.message);
-      console.error(err);
-    }
+      loadModulesList(); loadModules();
+      setSuccessMsg('Módulo eliminado');
+    } catch (err) { setError('Error eliminando módulo: ' + err.message); }
   };
 
-  // ============================================
-  // PREGUNTAS TAB - FUNCTIONS
-  // ============================================
-
+  // PREGUNTA CRUD
   const handleAddPregunta = () => {
-    setEditingPregunta({
-      pregunta: '',
-      subtema: '',
-      nivel: 'basico',
-      tema: '',
-      opcion_a: '',
-      opcion_b: '',
-      opcion_c: '',
-      opcion_d: '',
-      respuesta_correcta: 'a',
-      explicacion: '',
-      formula: '',
-      modulo_id: preguntaFilter.modulo || (modules[0]?.id)
-    });
+    setEditingPregunta({ pregunta: '', subtema: '', nivel: 'basico', tema: '', opcion_a: '', opcion_b: '', opcion_c: '', opcion_d: '', respuesta_correcta: 'a', explicacion: '', formula: '', modulo_id: preguntaFilter.modulo || (modules[0]?.id) });
     setIsPreguntaModalOpen(true);
   };
 
-  const handleEditPreguntaItem = (pregunta) => {
-    setEditingPregunta(pregunta);
-    setIsPreguntaModalOpen(true);
-  };
+  const handleEditPreguntaItem = (pregunta) => { setEditingPregunta(pregunta); setIsPreguntaModalOpen(true); };
 
   const handleSavePregunta = async (preguntaData) => {
     try {
       if (preguntaData.id) {
-        const { error } = await supabase
-          .from('preguntas')
-          .update({
-            pregunta: preguntaData.pregunta,
-            subtema: preguntaData.subtema,
-            nivel: preguntaData.nivel,
-            tema: preguntaData.tema,
-            opcion_a: preguntaData.opcion_a,
-            opcion_b: preguntaData.opcion_b,
-            opcion_c: preguntaData.opcion_c,
-            opcion_d: preguntaData.opcion_d,
-            respuesta_correcta: preguntaData.respuesta_correcta,
-            explicacion: preguntaData.explicacion,
-            formula: preguntaData.formula || null,
-            modulo_id: preguntaData.modulo_id,
-            activo: preguntaData.activo !== undefined ? preguntaData.activo : true
-          })
+        const { error } = await supabase.from('preguntas')
+          .update({ pregunta: preguntaData.pregunta, subtema: preguntaData.subtema, nivel: preguntaData.nivel, tema: preguntaData.tema, opcion_a: preguntaData.opcion_a, opcion_b: preguntaData.opcion_b, opcion_c: preguntaData.opcion_c, opcion_d: preguntaData.opcion_d, respuesta_correcta: preguntaData.respuesta_correcta, explicacion: preguntaData.explicacion, formula: preguntaData.formula || null, modulo_id: preguntaData.modulo_id, activo: preguntaData.activo !== undefined ? preguntaData.activo : true })
           .eq('id', preguntaData.id);
-
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('preguntas')
-          .insert([{
-            pregunta: preguntaData.pregunta,
-            subtema: preguntaData.subtema,
-            nivel: preguntaData.nivel,
-            tema: preguntaData.tema,
-            opcion_a: preguntaData.opcion_a,
-            opcion_b: preguntaData.opcion_b,
-            opcion_c: preguntaData.opcion_c,
-            opcion_d: preguntaData.opcion_d,
-            respuesta_correcta: preguntaData.respuesta_correcta,
-            explicacion: preguntaData.explicacion,
-            formula: preguntaData.formula || null,
-            modulo_id: preguntaData.modulo_id,
-            modulo: preguntaData.modulo || null,
-            activo: true
-          }]);
-
+        const { error } = await supabase.from('preguntas')
+          .insert([{ pregunta: preguntaData.pregunta, subtema: preguntaData.subtema, nivel: preguntaData.nivel, tema: preguntaData.tema, opcion_a: preguntaData.opcion_a, opcion_b: preguntaData.opcion_b, opcion_c: preguntaData.opcion_c, opcion_d: preguntaData.opcion_d, respuesta_correcta: preguntaData.respuesta_correcta, explicacion: preguntaData.explicacion, formula: preguntaData.formula || null, modulo_id: preguntaData.modulo_id, activo: true }]);
         if (error) throw error;
       }
-
-      loadPreguntas();
-      setIsPreguntaModalOpen(false);
-      setEditingPregunta(null);
-    } catch (err) {
-      setError('Error guardando pregunta: ' + err.message);
-      console.error(err);
-    }
-  };
-
-  const handleTogglePreguntaActive = async (preguntaId, currentStatus) => {
-    try {
-      const { error } = await supabase
-        .from('preguntas')
-        .update({ activo: !currentStatus })
-        .eq('id', preguntaId);
-
-      if (error) throw error;
-      loadPreguntas();
-    } catch (err) {
-      setError('Error actualizando pregunta: ' + err.message);
-      console.error(err);
-    }
+      loadPreguntas(); setIsPreguntaModalOpen(false); setEditingPregunta(null);
+      setSuccessMsg('Pregunta guardada');
+    } catch (err) { setError('Error guardando pregunta: ' + err.message); }
   };
 
   const handleDeletePregunta = async (preguntaId) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta pregunta?')) return;
-
+    if (!window.confirm('¿Eliminar esta pregunta?')) return;
     try {
-      const { error } = await supabase
-        .from('preguntas')
-        .delete()
-        .eq('id', preguntaId);
-
+      const { error } = await supabase.from('preguntas').delete().eq('id', preguntaId);
       if (error) throw error;
-      loadPreguntas();
-    } catch (err) {
-      setError('Error eliminando pregunta: ' + err.message);
-      console.error(err);
-    }
+      loadPreguntas(); setSuccessMsg('Pregunta eliminada');
+    } catch (err) { setError('Error eliminando pregunta: ' + err.message); }
   };
 
-  // ============================================
-  // MAIN RENDER
-  // ============================================
+  // Shared styles
+  const inputStyle = { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)', padding: '12px 15px', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600', fontSize: '0.95rem' };
+  const btnPrimary = { background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '10px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.3s' };
+  const btnSuccess = { ...btnPrimary, background: 'var(--success-color)' };
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', padding: '40px 20px' }}>
       {/* HEADER */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '40px',
-        maxWidth: '1400px',
-        margin: '0 auto 40px'
-      }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '40px', maxWidth: '1400px', margin: '0 auto 40px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <button
-            onClick={onBack}
-            style={{
-              background: 'transparent',
-              border: '2px solid var(--accent-color)',
-              color: 'var(--accent-color)',
-              width: '50px',
-              height: '50px',
-              borderRadius: '50%',
-              fontSize: '1.3rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'var(--accent-color)';
-              e.target.style.color = '#fff';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-              e.target.style.color = 'var(--accent-color)';
-            }}
-          >
+          <button onClick={onBack} style={{ background: 'transparent', border: '2px solid var(--accent-color)', color: 'var(--accent-color)', width: '50px', height: '50px', borderRadius: '50%', fontSize: '1.3rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}
+            onMouseEnter={(e) => { e.target.style.background = 'var(--accent-color)'; e.target.style.color = '#fff'; }}
+            onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.color = 'var(--accent-color)'; }}>
             <i className="fa-solid fa-arrow-left"></i>
           </button>
           <div>
@@ -729,596 +378,126 @@ const ContentManager = ({ onBack }) => {
               <i className="fa-solid fa-sliders" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>
               Administración de Contenido
             </h1>
-            <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>
-              Gestiona módulos, contenido y preguntas de EGEL
-            </p>
+            <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0' }}>Gestiona módulos, contenido y preguntas de EGEL</p>
           </div>
         </div>
       </div>
 
-      {/* ERROR MESSAGE */}
+      {/* MESSAGES */}
       {error && (
-        <div style={{
-          maxWidth: '1400px',
-          margin: '0 auto 20px',
-          background: 'rgba(244, 63, 94, 0.1)',
-          border: '1px solid var(--error-color)',
-          color: 'var(--error-color)',
-          padding: '15px 20px',
-          borderRadius: '12px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '10px'
-        }}>
-          <i className="fa-solid fa-circle-exclamation"></i>
-          <span>{error}</span>
-          <button
-            onClick={() => setError(null)}
-            style={{
-              marginLeft: 'auto',
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--error-color)',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            <i className="fa-solid fa-xmark"></i>
-          </button>
+        <div style={{ maxWidth: '1400px', margin: '0 auto 20px', background: 'rgba(244, 63, 94, 0.1)', border: '1px solid var(--error-color)', color: 'var(--error-color)', padding: '15px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <i className="fa-solid fa-circle-exclamation"></i><span>{error}</span>
+          <button onClick={() => setError(null)} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', color: 'var(--error-color)', cursor: 'pointer', fontSize: '1rem' }}><i className="fa-solid fa-xmark"></i></button>
+        </div>
+      )}
+      {successMsg && (
+        <div style={{ maxWidth: '1400px', margin: '0 auto 20px', background: 'rgba(74, 222, 128, 0.1)', border: '1px solid var(--success-color)', color: 'var(--success-color)', padding: '15px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <i className="fa-solid fa-circle-check"></i><span>{successMsg}</span>
         </div>
       )}
 
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* TABS */}
-        <div style={{
-          display: 'flex',
-          gap: '8px',
-          marginBottom: '30px',
-          borderBottom: '1px solid var(--card-border)',
-          flexWrap: 'wrap'
-        }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', borderBottom: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
           {[
             { id: 'contenido', label: 'Contenido de Clase', icon: 'fa-solid fa-book-open', count: selectedModule ? contentItems.length : 0 },
             { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-cubes', count: modulesList.length },
             { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-question', count: preguntas.length }
           ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '12px 24px',
-                background: activeTab === tab.id ? 'var(--accent-color)' : 'transparent',
-                color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)',
-                border: activeTab === tab.id ? 'none' : '1px solid var(--card-border)',
-                borderBottom: activeTab === tab.id ? 'none' : '1px solid var(--card-border)',
-                borderRadius: '8px 8px 0 0',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseEnter={(e) => {
-                if (activeTab !== tab.id) {
-                  e.target.style.background = 'rgba(168, 85, 247, 0.1)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab.id) {
-                  e.target.style.background = 'transparent';
-                }
-              }}
-            >
-              <i className={tab.icon}></i>
-              {tab.label}
-              <span style={{
-                background: 'rgba(255,255,255,0.2)',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                fontSize: '0.8rem',
-                fontWeight: '700'
-              }}>
-                {tab.count}
-              </span>
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              style={{ padding: '12px 24px', background: activeTab === tab.id ? 'var(--accent-color)' : 'transparent', color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)', border: activeTab === tab.id ? 'none' : '1px solid var(--card-border)', borderBottom: 'none', borderRadius: '8px 8px 0 0', cursor: 'pointer', fontSize: '1rem', fontWeight: '600', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <i className={tab.icon}></i>{tab.label}
+              <span style={{ background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700' }}>{tab.count}</span>
             </button>
           ))}
         </div>
 
-        {/* ============================================ */}
-        {/* TAB 1: CONTENIDO DE CLASE */}
-        {/* ============================================ */}
+        {/* TAB 1: CONTENIDO */}
         {activeTab === 'contenido' && (
           <div>
-            {/* Module Selection */}
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--card-border)',
-              borderRadius: '16px',
-              padding: '25px',
-              marginBottom: '30px'
-            }}>
+            <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '25px', marginBottom: '30px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', alignItems: 'end' }}>
                 <div>
-                  <label style={{
-                    display: 'block',
-                    color: 'var(--text-secondary)',
-                    fontSize: '0.9rem',
-                    marginBottom: '8px',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    fontWeight: '600'
-                  }}>
-                    <i className="fa-solid fa-folder-open" style={{ marginRight: '8px' }}></i>
-                    Selecciona un Módulo
+                  <label style={{ ...labelStyle, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                    <i className="fa-solid fa-folder-open" style={{ marginRight: '8px' }}></i>Selecciona un Módulo
                   </label>
-                  <select
-                    value={selectedModule?.id || ''}
-                    onChange={(e) => {
-                      const module = modules.find(m => m.id === parseInt(e.target.value));
-                      setSelectedModule(module);
-                    }}
-                    style={{
-                      width: '100%',
-                      background: 'var(--input-bg)',
-                      border: '1px solid var(--input-border)',
-                      color: 'var(--text-primary)',
-                      padding: '12px 15px',
-                      borderRadius: '10px',
-                      fontSize: '1rem',
-                      cursor: 'pointer',
-                      fontFamily: 'inherit'
-                    }}
-                  >
-                    {modules.map(mod => (
-                      <option key={mod.id} value={mod.id}>
-                        {mod.numero}. {mod.titulo}
-                      </option>
-                    ))}
+                  <select value={selectedModule?.id || ''} onChange={(e) => { const m = modules.find(mod => mod.id === parseInt(e.target.value)); setSelectedModule(m); }} style={{ ...inputStyle, cursor: 'pointer' }}>
+                    {modules.map(mod => (<option key={mod.id} value={mod.id}>{mod.numero}. {mod.titulo}</option>))}
                   </select>
                 </div>
-
-                <button
-                  onClick={handleAddContent}
-                  style={{
-                    background: 'var(--success-color)',
-                    color: '#fff',
-                    padding: '12px 24px',
-                    borderRadius: '10px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.95rem',
-                    fontWeight: '600',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px',
-                    transition: 'all 0.3s',
-                    height: '44px'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.opacity = '0.85';
-                    e.target.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.opacity = '1';
-                    e.target.style.transform = 'translateY(0)';
-                  }}
-                >
-                  <i className="fa-solid fa-plus"></i>
-                  Agregar Contenido
+                <button onClick={handleAddContent} style={{ ...btnSuccess, height: '44px' }}>
+                  <i className="fa-solid fa-plus"></i> Agregar Contenido
                 </button>
               </div>
             </div>
 
             {selectedModule && (
               <div>
-                {/* Filters and Controls */}
-                <div style={{
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--card-border)',
-                  borderRadius: '16px',
-                  padding: '20px',
-                  marginBottom: '25px',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '16px',
-                  alignItems: 'end'
-                }}>
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.85rem',
-                      marginBottom: '6px',
-                      fontWeight: '600'
-                    }}>
-                      <i className="fa-solid fa-arrow-up-arrow-down" style={{ marginRight: '6px' }}></i>
-                      Ordenar por
-                    </label>
-                    <select
-                      value={orderFilter}
-                      onChange={(e) => setOrderFilter(e.target.value)}
-                      style={{
-                        width: '100%',
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.95rem',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit'
-                      }}
-                    >
-                      <option value="by-order">Por Orden</option>
-                      <option value="by-type">Por Tipo</option>
-                      <option value="by-title">Por Título</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style={{
-                      display: 'block',
-                      color: 'var(--text-secondary)',
-                      fontSize: '0.85rem',
-                      marginBottom: '6px',
-                      fontWeight: '600'
-                    }}>
-                      <i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i>
-                      Filtrar Tipo
-                    </label>
-                    <select
-                      value={typeFilter}
-                      onChange={(e) => setTypeFilter(e.target.value)}
-                      style={{
-                        width: '100%',
-                        background: 'var(--input-bg)',
-                        border: '1px solid var(--input-border)',
-                        color: 'var(--text-primary)',
-                        padding: '10px 12px',
-                        borderRadius: '8px',
-                        fontSize: '0.95rem',
-                        cursor: 'pointer',
-                        fontFamily: 'inherit'
-                      }}
-                    >
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px', marginBottom: '25px', display: 'flex', gap: '16px', alignItems: 'end', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '1 1 200px' }}>
+                    <label style={{ ...labelStyle, fontSize: '0.85rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-filter" style={{ marginRight: '6px' }}></i> Filtrar Tipo</label>
+                    <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={{ ...inputStyle, cursor: 'pointer', padding: '10px 12px' }}>
                       <option value="all">Todos</option>
-                      {getTipoOptions().map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
-                      ))}
+                      {getTipoOptions().map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
                     </select>
                   </div>
-
-                  <button
-                    onClick={handleAutoReorder}
-                    style={{
-                      background: 'var(--warning-color)',
-                      color: '#000',
-                      padding: '10px 20px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      transition: 'all 0.3s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.opacity = '0.85';
-                      e.target.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.opacity = '1';
-                      e.target.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    <i className="fa-solid fa-shuffle"></i>
-                    Auto-reordenar
+                  <button onClick={handleAutoReorder} style={{ background: 'var(--warning-color)', color: '#000', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <i className="fa-solid fa-shuffle"></i> Auto-reordenar
                   </button>
                 </div>
 
-                {/* Content Title */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  marginBottom: '20px'
-                }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                   <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem' }}>
-                    <i className="fa-solid fa-list" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>
-                    Contenido
+                    <i className="fa-solid fa-list" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>Contenido
                   </h2>
-                  <span style={{
-                    background: 'var(--accent-color)',
-                    color: '#fff',
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    fontSize: '0.85rem',
-                    fontWeight: '600'
-                  }}>
-                    {contentItems.length}
+                  <span style={{ background: 'var(--accent-color)', color: '#fff', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '600' }}>{contentItems.length}</span>
+                  <span style={{ marginLeft: 'auto', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                    <i className="fa-solid fa-grip-vertical" style={{ marginRight: '4px' }}></i> Arrastra para reordenar
                   </span>
                 </div>
 
-                {/* Content Items */}
                 {loading ? (
-                  <div style={{
-                    textAlign: 'center',
-                    padding: '60px 20px',
-                    color: 'var(--text-secondary)'
-                  }}>
-                    <i className="fa-solid fa-spinner fa-spin" style={{
-                      fontSize: '2.5rem',
-                      marginBottom: '20px',
-                      display: 'block',
-                      color: 'var(--accent-color)'
-                    }}></i>
-                    <p>Cargando contenido...</p>
+                  <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
+                    <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2.5rem', marginBottom: '20px', display: 'block', color: 'var(--accent-color)' }}></i><p>Cargando contenido...</p>
                   </div>
                 ) : contentItems.length === 0 ? (
-                  <div style={{
-                    background: 'var(--bg-secondary)',
-                    border: '2px dashed var(--card-border)',
-                    borderRadius: '16px',
-                    padding: '60px 20px',
-                    textAlign: 'center',
-                    color: 'var(--text-secondary)'
-                  }}>
-                    <i className="fa-solid fa-inbox" style={{
-                      fontSize: '3rem',
-                      marginBottom: '15px',
-                      display: 'block',
-                      opacity: '0.5'
-                    }}></i>
-                    <p style={{ fontSize: '1.1rem', margin: 0 }}>
-                      No hay contenido en este módulo
-                    </p>
+                  <div style={{ background: 'var(--bg-secondary)', border: '2px dashed var(--card-border)', borderRadius: '16px', padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                    <i className="fa-solid fa-inbox" style={{ fontSize: '3rem', marginBottom: '15px', display: 'block', opacity: '0.5' }}></i>
+                    <p style={{ fontSize: '1.1rem', margin: 0 }}>No hay contenido en este módulo</p>
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    {getFilteredAndSortedContent().map((item, index) => {
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {getFilteredContent().map((item, index) => {
                       const { text, media } = parseMediaFromContent(item.contenido);
-                      const hasAudio = media?.audio_url;
-                      const hasVideo = media?.video_url;
-                      const hasImage = media?.imagen_url;
-
+                      const isDragging = draggedIndex === index;
+                      const isDragOver = dragOverIndex === index;
                       return (
-                        <div
-                          key={item.id}
-                          style={{
-                            background: 'var(--bg-secondary)',
-                            border: '1px solid var(--card-border)',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            display: 'grid',
-                            gridTemplateColumns: '80px 1fr auto',
-                            gap: '20px',
-                            alignItems: 'start',
-                            transition: 'all 0.2s'
-                          }}
-                        >
-                          {/* Order Section */}
-                          <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'center',
-                            gap: '12px'
-                          }}>
-                            <div style={{
-                              background: 'var(--accent-color)',
-                              color: '#fff',
-                              width: '60px',
-                              height: '60px',
-                              borderRadius: '50%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '1.5rem',
-                              fontWeight: 'bold'
-                            }}>
-                              {item.orden}
-                            </div>
-                            <div style={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '4px',
-                              width: '100%'
-                            }}>
-                              <button
-                                onClick={() => handleMoveUp(index)}
-                                disabled={index === 0}
-                                style={{
-                                  background: index === 0 ? 'rgba(168, 85, 247, 0.2)' : 'var(--accent-color)',
-                                  color: '#fff',
-                                  border: 'none',
-                                  padding: '4px',
-                                  borderRadius: '4px',
-                                  cursor: index === 0 ? 'not-allowed' : 'pointer',
-                                  fontSize: '0.8rem',
-                                  opacity: index === 0 ? 0.5 : 1
-                                }}
-                              >
-                                <i className="fa-solid fa-chevron-up"></i>
-                              </button>
-                              <button
-                                onClick={() => handleMoveDown(index)}
-                                disabled={index === getFilteredAndSortedContent().length - 1}
-                                style={{
-                                  background: index === getFilteredAndSortedContent().length - 1 ? 'rgba(168, 85, 247, 0.2)' : 'var(--accent-color)',
-                                  color: '#fff',
-                                  border: 'none',
-                                  padding: '4px',
-                                  borderRadius: '4px',
-                                  cursor: index === getFilteredAndSortedContent().length - 1 ? 'not-allowed' : 'pointer',
-                                  fontSize: '0.8rem',
-                                  opacity: index === getFilteredAndSortedContent().length - 1 ? 0.5 : 1
-                                }}
-                              >
-                                <i className="fa-solid fa-chevron-down"></i>
-                              </button>
-                            </div>
-                            <input
-                              type="number"
-                              value={item.orden}
-                              onChange={(e) => handleSetOrder(item.id, e.target.value)}
-                              min="1"
-                              style={{
-                                width: '100%',
-                                background: 'var(--input-bg)',
-                                border: '1px solid var(--input-border)',
-                                color: 'var(--text-primary)',
-                                padding: '4px 6px',
-                                borderRadius: '4px',
-                                fontSize: '0.8rem',
-                                textAlign: 'center'
-                              }}
-                            />
+                        <div key={item.id} draggable
+                          onDragStart={(e) => handleDragStart(e, index)} onDragEnd={handleDragEnd}
+                          onDragOver={(e) => handleDragOver(e, index)} onDragLeave={handleDragLeave}
+                          onDrop={(e) => handleDrop(e, index)}
+                          style={{ background: isDragOver ? 'rgba(168, 85, 247, 0.1)' : 'var(--bg-secondary)', border: isDragOver ? '2px dashed var(--accent-color)' : '1px solid var(--card-border)', borderRadius: '12px', padding: '14px 16px', display: 'grid', gridTemplateColumns: '40px 50px 1fr auto', gap: '16px', alignItems: 'center', opacity: isDragging ? 0.4 : 1, transition: 'all 0.15s', cursor: 'grab' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)', fontSize: '1.2rem', cursor: 'grab' }}>
+                            <i className="fa-solid fa-grip-vertical"></i>
                           </div>
-
-                          {/* Content Info */}
-                          <div>
-                            <div style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              marginBottom: '8px',
-                              flexWrap: 'wrap'
-                            }}>
-                              <span style={{
-                                background: getTipoBadgeColor(item.tipo),
-                                color: '#fff',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600',
-                                textTransform: 'uppercase',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px'
-                              }}>
-                                <i className={getTipoIcon(item.tipo)}></i>
-                                {item.tipo}
+                          <div style={{ background: 'var(--accent-color)', color: '#fff', width: '44px', height: '44px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', fontWeight: 'bold', flexShrink: 0 }}>{item.orden}</div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                              <span style={{ background: getTipoBadgeColor(item.tipo), color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <i className={getTipoIcon(item.tipo)}></i> {item.tipo}
                               </span>
-                              {hasAudio && (
-                                <span style={{
-                                  background: 'rgba(236, 72, 153, 0.2)',
-                                  color: '#ec4899',
-                                  padding: '4px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '0.75rem'
-                                }}>
-                                  <i className="fa-solid fa-headphones"></i>
-                                </span>
-                              )}
-                              {hasVideo && (
-                                <span style={{
-                                  background: 'rgba(245, 158, 11, 0.2)',
-                                  color: '#f59e0b',
-                                  padding: '4px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '0.75rem'
-                                }}>
-                                  <i className="fa-solid fa-video"></i>
-                                </span>
-                              )}
-                              {hasImage && (
-                                <span style={{
-                                  background: 'rgba(16, 185, 129, 0.2)',
-                                  color: '#10b981',
-                                  padding: '4px 8px',
-                                  borderRadius: '6px',
-                                  fontSize: '0.75rem'
-                                }}>
-                                  <i className="fa-solid fa-image"></i>
-                                </span>
-                              )}
+                              {media?.audio_url && <span style={{ color: '#ec4899', fontSize: '0.8rem' }}><i className="fa-solid fa-headphones"></i></span>}
+                              {media?.video_url && <span style={{ color: '#f59e0b', fontSize: '0.8rem' }}><i className="fa-solid fa-video"></i></span>}
+                              {media?.imagen_url && <span style={{ color: '#10b981', fontSize: '0.8rem' }}><i className="fa-solid fa-image"></i></span>}
                             </div>
-                            <h3 style={{
-                              margin: 0,
-                              color: 'var(--text-primary)',
-                              fontSize: '1.1rem',
-                              fontWeight: '600'
-                            }}>
-                              {item.titulo}
-                            </h3>
-                            <p style={{
-                              margin: '6px 0 0',
-                              color: 'var(--text-secondary)',
-                              fontSize: '0.9rem',
-                              lineHeight: '1.4',
-                              maxHeight: '3em',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
-                            }}>
-                              {text.substring(0, 150)}...
-                            </p>
+                            <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.titulo}</h3>
+                            <p style={{ margin: '2px 0 0', color: 'var(--text-secondary)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text.substring(0, 120)}</p>
                           </div>
-
-                          {/* Actions */}
-                          <div style={{
-                            display: 'flex',
-                            gap: '8px',
-                            flexDirection: 'column'
-                          }}>
-                            <button
-                              onClick={() => handleEditContent(item)}
-                              style={{
-                                background: 'var(--accent-color)',
-                                color: '#fff',
-                                border: 'none',
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'all 0.2s',
-                                fontSize: '1rem'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.background = 'var(--accent-hover)';
-                                e.target.style.transform = 'scale(1.05)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.background = 'var(--accent-color)';
-                                e.target.style.transform = 'scale(1)';
-                              }}
-                              title="Editar"
-                            >
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button onClick={(e) => { e.stopPropagation(); handleEditContent(item); }} style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }} title="Editar">
                               <i className="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button
-                              onClick={() => handleDeleteContent(item.id)}
-                              style={{
-                                background: 'var(--error-color)',
-                                color: '#fff',
-                                border: 'none',
-                                width: '40px',
-                                height: '40px',
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                transition: 'all 0.2s',
-                                fontSize: '1rem'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.opacity = '0.85';
-                                e.target.style.transform = 'scale(1.05)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.opacity = '1';
-                                e.target.style.transform = 'scale(1)';
-                              }}
-                              title="Eliminar"
-                            >
+                            <button onClick={(e) => { e.stopPropagation(); handleDeleteContent(item.id); }} style={{ background: 'var(--error-color)', color: '#fff', border: 'none', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }} title="Eliminar">
                               <i className="fa-solid fa-trash"></i>
                             </button>
                           </div>
@@ -1332,624 +511,194 @@ const ContentManager = ({ onBack }) => {
           </div>
         )}
 
-        {/* ============================================ */}
         {/* TAB 2: MÓDULOS */}
-        {/* ============================================ */}
         {activeTab === 'modulos' && (
           <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '25px'
-            }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
               <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem' }}>
-                <i className="fa-solid fa-cubes" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>
-                Módulos
+                <i className="fa-solid fa-cubes" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>Módulos
               </h2>
-              <button
-                onClick={handleAddModule}
-                style={{
-                  background: 'var(--success-color)',
-                  color: '#fff',
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.95rem',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.opacity = '0.85';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                <i className="fa-solid fa-plus"></i>
-                Agregar Módulo
-              </button>
+              <button onClick={handleAddModule} style={btnSuccess}><i className="fa-solid fa-plus"></i> Agregar Módulo</button>
             </div>
-
             {loading ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
-                <i className="fa-solid fa-spinner fa-spin" style={{
-                  fontSize: '2.5rem',
-                  marginBottom: '20px',
-                  display: 'block',
-                  color: 'var(--accent-color)'
-                }}></i>
-                Cargando módulos...
+                <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2.5rem', marginBottom: '20px', display: 'block', color: 'var(--accent-color)' }}></i>Cargando módulos...
               </div>
             ) : modulesList.length === 0 ? (
-              <div style={{
-                background: 'var(--bg-secondary)',
-                border: '2px dashed var(--card-border)',
-                borderRadius: '16px',
-                padding: '60px 20px',
-                textAlign: 'center',
-                color: 'var(--text-secondary)'
-              }}>
-                <i className="fa-solid fa-cubes" style={{
-                  fontSize: '3rem',
-                  marginBottom: '15px',
-                  display: 'block',
-                  opacity: '0.5'
-                }}></i>
-                <p style={{ fontSize: '1.1rem', margin: 0 }}>
-                  No hay módulos creados
-                </p>
+              <div style={{ background: 'var(--bg-secondary)', border: '2px dashed var(--card-border)', borderRadius: '16px', padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
+                <p style={{ fontSize: '1.1rem', margin: 0 }}>No hay módulos creados</p>
               </div>
             ) : (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: '20px'
-              }}>
-                {modulesList.map(module => {
-                  const contentCount = contentItems.filter(c => c.modulo_id === module.id).length;
-                  return (
-                    <div
-                      key={module.id}
-                      style={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--card-border)',
-                        borderRadius: '12px',
-                        padding: '20px',
-                        transition: 'all 0.3s'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-4px)';
-                        e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.3)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = 'none';
-                      }}
-                    >
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '12px',
-                        marginBottom: '16px'
-                      }}>
-                        <div style={{
-                          width: '50px',
-                          height: '50px',
-                          background: module.color || 'var(--accent-color)',
-                          borderRadius: '8px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: '#fff',
-                          fontSize: '1.5rem'
-                        }}>
-                          <i className={module.icon || 'fa-solid fa-book'}></i>
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <h3 style={{
-                            margin: '0 0 4px',
-                            color: 'var(--text-primary)',
-                            fontSize: '1.1rem',
-                            fontWeight: '700'
-                          }}>
-                            {module.numero}. {module.titulo}
-                          </h3>
-                          <p style={{
-                            margin: 0,
-                            color: 'var(--text-secondary)',
-                            fontSize: '0.85rem'
-                          }}>
-                            {module.descripcion}
-                          </p>
-                        </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+                {modulesList.map(module => (
+                  <div key={module.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '20px', transition: 'all 0.3s' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 30px rgba(0,0,0,0.3)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{ width: '50px', height: '50px', background: module.color || 'var(--accent-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem', flexShrink: 0 }}>
+                        <i className={module.icon || 'fa-solid fa-book'}></i>
                       </div>
-
-                      <div style={{
-                        display: 'flex',
-                        gap: '8px',
-                        marginBottom: '12px',
-                        flexWrap: 'wrap'
-                      }}>
-                        <span style={{
-                          background: 'var(--accent-color)',
-                          color: '#fff',
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '0.8rem',
-                          fontWeight: '600'
-                        }}>
-                          <i className="fa-solid fa-book-open" style={{ marginRight: '4px' }}></i>
-                          {contentCount} contenidos
-                        </span>
-                        <span style={{
-                          background: module.activo ? 'rgba(74, 222, 128, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-                          color: module.activo ? '#4ade80' : '#f87171',
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '0.8rem',
-                          fontWeight: '600'
-                        }}>
-                          {module.activo ? 'Activo' : 'Inactivo'}
-                        </span>
-                      </div>
-
-                      <div style={{
-                        display: 'flex',
-                        gap: '8px',
-                        paddingTop: '12px',
-                        borderTop: '1px solid var(--card-border)'
-                      }}>
-                        <button
-                          onClick={() => handleEditModuleItem(module)}
-                          style={{
-                            flex: 1,
-                            background: 'var(--accent-color)',
-                            color: '#fff',
-                            border: 'none',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.opacity = '0.85';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.opacity = '1';
-                          }}
-                        >
-                          <i className="fa-solid fa-pen-to-square"></i> Editar
-                        </button>
-                        <button
-                          onClick={() => handleToggleModuleActive(module.id, module.activo)}
-                          style={{
-                            flex: 1,
-                            background: module.activo ? 'rgba(244, 63, 94, 0.2)' : 'rgba(74, 222, 128, 0.2)',
-                            color: module.activo ? '#f87171' : '#4ade80',
-                            border: '1px solid currentColor',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.opacity = '0.85';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.opacity = '1';
-                          }}
-                        >
-                          <i className={`fa-solid ${module.activo ? 'fa-ban' : 'fa-check'}`}></i>
-                          {module.activo ? 'Desactivar' : 'Activar'}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteModule(module.id)}
-                          style={{
-                            background: 'var(--error-color)',
-                            color: '#fff',
-                            border: 'none',
-                            padding: '8px 12px',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            transition: 'all 0.2s',
-                            width: '44px'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.target.style.opacity = '0.85';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.target.style.opacity = '1';
-                          }}
-                        >
-                          <i className="fa-solid fa-trash"></i>
-                        </button>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <h3 style={{ margin: '0 0 4px', color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '700' }}>{module.numero}. {module.titulo}</h3>
+                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{module.descripcion}</p>
                       </div>
                     </div>
-                  );
-                })}
+                    <div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                      <span style={{ background: module.activo ? 'rgba(74, 222, 128, 0.2)' : 'rgba(244, 63, 94, 0.2)', color: module.activo ? '#4ade80' : '#f87171', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '600' }}>{module.activo ? 'Activo' : 'Inactivo'}</span>
+                      {module.infografia_url && <span style={{ background: 'rgba(59,130,246,0.2)', color: '#3b82f6', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem' }}><i className="fa-solid fa-image" style={{ marginRight: '4px' }}></i>Infografía</span>}
+                      {module.audio_url && <span style={{ background: 'rgba(236,72,153,0.2)', color: '#ec4899', padding: '4px 10px', borderRadius: '12px', fontSize: '0.8rem' }}><i className="fa-solid fa-headphones" style={{ marginRight: '4px' }}></i>Audio</span>}
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', paddingTop: '12px', borderTop: '1px solid var(--card-border)' }}>
+                      <button onClick={() => handleEditModuleItem(module)} style={{ flex: 1, background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}><i className="fa-solid fa-pen-to-square"></i> Editar</button>
+                      <button onClick={() => handleToggleModuleActive(module.id, module.activo)} style={{ flex: 1, background: module.activo ? 'rgba(244, 63, 94, 0.2)' : 'rgba(74, 222, 128, 0.2)', color: module.activo ? '#f87171' : '#4ade80', border: '1px solid currentColor', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: '600' }}>
+                        <i className={`fa-solid ${module.activo ? 'fa-ban' : 'fa-check'}`}></i>{module.activo ? ' Desactivar' : ' Activar'}
+                      </button>
+                      <button onClick={() => handleDeleteModule(module.id)} style={{ background: 'var(--error-color)', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '6px', cursor: 'pointer', width: '44px' }}><i className="fa-solid fa-trash"></i></button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
 
-        {/* ============================================ */}
         {/* TAB 3: PREGUNTAS */}
-        {/* ============================================ */}
         {activeTab === 'preguntas' && (
           <div>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '25px'
-            }}>
-              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem' }}>
-                <i className="fa-solid fa-question" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>
-                Preguntas
-              </h2>
-              <button
-                onClick={handleAddPregunta}
-                style={{
-                  background: 'var(--success-color)',
-                  color: '#fff',
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.95rem',
-                  fontWeight: '600',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.opacity = '0.85';
-                  e.target.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.opacity = '1';
-                  e.target.style.transform = 'translateY(0)';
-                }}
-              >
-                <i className="fa-solid fa-plus"></i>
-                Agregar Pregunta
-              </button>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+              <h2 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.5rem' }}><i className="fa-solid fa-question" style={{ marginRight: '12px', color: 'var(--accent-color)' }}></i>Preguntas</h2>
+              <button onClick={handleAddPregunta} style={btnSuccess}><i className="fa-solid fa-plus"></i> Agregar Pregunta</button>
             </div>
-
-            {/* Filters */}
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--card-border)',
-              borderRadius: '16px',
-              padding: '20px',
-              marginBottom: '25px',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '16px',
-              alignItems: 'end'
-            }}>
+            <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', padding: '20px', marginBottom: '25px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', alignItems: 'end' }}>
               <div>
-                <label style={{
-                  display: 'block',
-                  color: 'var(--text-secondary)',
-                  fontSize: '0.85rem',
-                  marginBottom: '6px',
-                  fontWeight: '600'
-                }}>
-                  Módulo
-                </label>
-                <select
-                  value={preguntaFilter.modulo || ''}
-                  onChange={(e) => setPreguntaFilter({ ...preguntaFilter, modulo: e.target.value ? parseInt(e.target.value) : null })}
-                  style={{
-                    width: '100%',
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--input-border)',
-                    color: 'var(--text-primary)',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit'
-                  }}
-                >
+                <label style={{ ...labelStyle, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Módulo</label>
+                <select value={preguntaFilter.modulo || ''} onChange={(e) => setPreguntaFilter(prev => ({ ...prev, modulo: e.target.value ? parseInt(e.target.value) : null }))} style={{ ...inputStyle, cursor: 'pointer', padding: '10px 12px' }}>
                   <option value="">Todos</option>
-                  {modules.map(mod => (
-                    <option key={mod.id} value={mod.id}>
-                      {mod.titulo}
-                    </option>
-                  ))}
+                  {modules.map(mod => (<option key={mod.id} value={mod.id}>{mod.titulo}</option>))}
                 </select>
               </div>
-
               <div>
-                <label style={{
-                  display: 'block',
-                  color: 'var(--text-secondary)',
-                  fontSize: '0.85rem',
-                  marginBottom: '6px',
-                  fontWeight: '600'
-                }}>
-                  Nivel
-                </label>
-                <select
-                  value={preguntaFilter.nivel || ''}
-                  onChange={(e) => setPreguntaFilter({ ...preguntaFilter, nivel: e.target.value || null })}
-                  style={{
-                    width: '100%',
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--input-border)',
-                    color: 'var(--text-primary)',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
-                    fontFamily: 'inherit'
-                  }}
-                >
+                <label style={{ ...labelStyle, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Nivel</label>
+                <select value={preguntaFilter.nivel || ''} onChange={(e) => setPreguntaFilter(prev => ({ ...prev, nivel: e.target.value || null }))} style={{ ...inputStyle, cursor: 'pointer', padding: '10px 12px' }}>
                   <option value="">Todos</option>
-                  <option value="basico">Básico</option>
-                  <option value="intermedio">Intermedio</option>
-                  <option value="avanzado">Avanzado</option>
+                  <option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option>
                 </select>
               </div>
+              <button onClick={loadPreguntas} style={{ ...btnPrimary, padding: '10px 20px' }}><i className="fa-solid fa-magnifying-glass"></i> Buscar</button>
             </div>
-
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}>
-                <i className="fa-solid fa-spinner fa-spin" style={{
-                  fontSize: '2.5rem',
-                  marginBottom: '20px',
-                  display: 'block',
-                  color: 'var(--accent-color)'
-                }}></i>
-                Cargando preguntas...
-              </div>
+              <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-secondary)' }}><i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2.5rem', display: 'block', color: 'var(--accent-color)' }}></i></div>
             ) : preguntas.length === 0 ? (
-              <div style={{
-                background: 'var(--bg-secondary)',
-                border: '2px dashed var(--card-border)',
-                borderRadius: '16px',
-                padding: '60px 20px',
-                textAlign: 'center',
-                color: 'var(--text-secondary)'
-              }}>
-                <i className="fa-solid fa-question" style={{
-                  fontSize: '3rem',
-                  marginBottom: '15px',
-                  display: 'block',
-                  opacity: '0.5'
-                }}></i>
-                <p style={{ fontSize: '1.1rem', margin: 0 }}>
-                  No hay preguntas
-                </p>
-              </div>
+              <div style={{ background: 'var(--bg-secondary)', border: '2px dashed var(--card-border)', borderRadius: '16px', padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}><p style={{ fontSize: '1.1rem', margin: 0 }}>No hay preguntas</p></div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {preguntas.map(pregunta => {
-                  const modulo = modules.find(m => m.id === pregunta.modulo_id);
-                  return (
-                    <div
-                      key={pregunta.id}
-                      style={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--card-border)',
-                        borderRadius: '12px',
-                        padding: '16px',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr auto',
-                        gap: '20px',
-                        alignItems: 'start'
-                      }}>
-                        <div>
-                          <div style={{
-                            display: 'flex',
-                            gap: '8px',
-                            marginBottom: '8px',
-                            flexWrap: 'wrap'
-                          }}>
-                            {modulo && (
-                              <span style={{
-                                background: modulo.color || 'var(--accent-color)',
-                                color: '#fff',
-                                padding: '4px 10px',
-                                borderRadius: '6px',
-                                fontSize: '0.75rem',
-                                fontWeight: '600'
-                              }}>
-                                {modulo.titulo}
-                              </span>
-                            )}
-                            <span style={{
-                              background: pregunta.nivel === 'basico' ? 'rgba(74, 222, 128, 0.2)' : pregunta.nivel === 'intermedio' ? 'rgba(245, 158, 11, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-                              color: pregunta.nivel === 'basico' ? '#4ade80' : pregunta.nivel === 'intermedio' ? '#f59e0b' : '#f87171',
-                              padding: '4px 10px',
-                              borderRadius: '6px',
-                              fontSize: '0.75rem',
-                              fontWeight: '600',
-                              textTransform: 'capitalize'
-                            }}>
-                              {pregunta.nivel}
-                            </span>
-                            <span style={{
-                              background: pregunta.activo ? 'rgba(74, 222, 128, 0.2)' : 'rgba(244, 63, 94, 0.2)',
-                              color: pregunta.activo ? '#4ade80' : '#f87171',
-                              padding: '4px 10px',
-                              borderRadius: '6px',
-                              fontSize: '0.75rem',
-                              fontWeight: '600'
-                            }}>
-                              {pregunta.activo ? 'Activo' : 'Inactivo'}
-                            </span>
-                          </div>
-                          <h4 style={{
-                            margin: '0 0 8px',
-                            color: 'var(--text-primary)',
-                            fontSize: '1rem',
-                            fontWeight: '600'
-                          }}>
-                            {pregunta.pregunta}
-                          </h4>
-                          {pregunta.subtema && (
-                            <p style={{
-                              margin: 0,
-                              color: 'var(--text-secondary)',
-                              fontSize: '0.85rem'
-                            }}>
-                              Subtema: {pregunta.subtema}
-                            </p>
-                          )}
-                        </div>
-
-                        <div style={{
-                          display: 'flex',
-                          gap: '8px'
-                        }}>
-                          <button
-                            onClick={() => handleEditPreguntaItem(pregunta)}
-                            style={{
-                              background: 'var(--accent-color)',
-                              color: '#fff',
-                              border: 'none',
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '1rem',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.background = 'var(--accent-hover)';
-                              e.target.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.background = 'var(--accent-color)';
-                              e.target.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <i className="fa-solid fa-pen-to-square"></i>
-                          </button>
-                          <button
-                            onClick={() => handleTogglePreguntaActive(pregunta.id, pregunta.activo)}
-                            style={{
-                              background: pregunta.activo ? 'rgba(244, 63, 94, 0.2)' : 'rgba(74, 222, 128, 0.2)',
-                              color: pregunta.activo ? '#f87171' : '#4ade80',
-                              border: '1px solid currentColor',
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '1rem',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.opacity = '0.85';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.opacity = '1';
-                            }}
-                          >
-                            <i className={`fa-solid ${pregunta.activo ? 'fa-ban' : 'fa-check'}`}></i>
-                          </button>
-                          <button
-                            onClick={() => handleDeletePregunta(pregunta.id)}
-                            style={{
-                              background: 'var(--error-color)',
-                              color: '#fff',
-                              border: 'none',
-                              width: '40px',
-                              height: '40px',
-                              borderRadius: '8px',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '1rem',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.target.style.opacity = '0.85';
-                              e.target.style.transform = 'scale(1.05)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.target.style.opacity = '1';
-                              e.target.style.transform = 'scale(1)';
-                            }}
-                          >
-                            <i className="fa-solid fa-trash"></i>
-                          </button>
-                        </div>
+                {preguntas.map(pregunta => (
+                  <div key={pregunta.id} style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '12px', padding: '16px', display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'start' }}>
+                    <div>
+                      <div style={{ display: 'flex', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <span style={{ background: pregunta.nivel === 'basico' ? '#22c55e' : pregunta.nivel === 'intermedio' ? '#eab308' : '#ef4444', color: '#fff', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '600', textTransform: 'uppercase' }}>{pregunta.nivel}</span>
+                        {pregunta.tipo && <span style={{ background: 'rgba(168,85,247,0.2)', color: '#a855f7', padding: '3px 8px', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '600' }}>{pregunta.tipo}</span>}
+                        {pregunta.subtema && <span style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{pregunta.subtema}</span>}
                       </div>
+                      <p style={{ margin: 0, color: 'var(--text-primary)', fontSize: '0.95rem', lineHeight: '1.4', maxHeight: '3em', overflow: 'hidden', textOverflow: 'ellipsis' }}>{pregunta.pregunta}</p>
                     </div>
-                  );
-                })}
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <button onClick={() => handleEditPreguntaItem(pregunta)} style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Editar"><i className="fa-solid fa-pen-to-square"></i></button>
+                      <button onClick={() => handleDeletePregunta(pregunta.id)} style={{ background: 'var(--error-color)', color: '#fff', border: 'none', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Eliminar"><i className="fa-solid fa-trash"></i></button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* ============================================ */}
       {/* MODALS */}
-      {/* ============================================ */}
+      {isEditModalOpen && editingItem && <ContentEditModal item={editingItem} tipoOptions={getTipoOptions()} onSave={handleSaveContent} onClose={() => { setIsEditModalOpen(false); setEditingItem(null); }} />}
+      {isModuleModalOpen && editingModule && <ModuleEditModal module={editingModule} onSave={handleSaveModule} onClose={() => { setIsModuleModalOpen(false); setEditingModule(null); }} />}
+      {isPreguntaModalOpen && editingPregunta && <PreguntaEditModal pregunta={editingPregunta} modules={modules} onSave={handleSavePregunta} onClose={() => { setIsPreguntaModalOpen(false); setEditingPregunta(null); }} />}
+    </div>
+  );
+};
 
-      {isEditModalOpen && editingItem && (
-        <ContentEditModal
-          item={editingItem}
-          tipoOptions={getTipoOptions()}
-          onSave={handleSaveContent}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setEditingItem(null);
-          }}
-        />
-      )}
+// ============================================
+// RICH HTML EDITOR
+// ============================================
+const RichHTMLEditor = ({ value, onChange }) => {
+  const editorRef = useRef(null);
+  const [showSource, setShowSource] = useState(false);
+  const [sourceCode, setSourceCode] = useState(value || '');
 
-      {isModuleModalOpen && editingModule && (
-        <ModuleEditModal
-          module={editingModule}
-          onSave={handleSaveModule}
-          onClose={() => {
-            setIsModuleModalOpen(false);
-            setEditingModule(null);
-          }}
-        />
-      )}
+  useEffect(() => {
+    if (editorRef.current && !showSource && editorRef.current.innerHTML !== value) {
+      editorRef.current.innerHTML = value || '';
+    }
+  }, [value, showSource]);
 
-      {isPreguntaModalOpen && editingPregunta && (
-        <PreguntaEditModal
-          pregunta={editingPregunta}
-          modules={modules}
-          onSave={handleSavePregunta}
-          onClose={() => {
-            setIsPreguntaModalOpen(false);
-            setEditingPregunta(null);
-          }}
-        />
+  const execCmd = (command, val = null) => {
+    document.execCommand(command, false, val);
+    if (editorRef.current) onChange(editorRef.current.innerHTML);
+  };
+
+  const handleInput = () => { if (editorRef.current) onChange(editorRef.current.innerHTML); };
+
+  const toggleSource = () => {
+    if (showSource) { if (editorRef.current) editorRef.current.innerHTML = sourceCode; }
+    else { setSourceCode(editorRef.current?.innerHTML || value || ''); }
+    setShowSource(!showSource);
+  };
+
+  const insertLink = () => { const url = prompt('URL del enlace:'); if (url) execCmd('createLink', url); };
+  const insertImage = () => { const url = prompt('URL de la imagen:'); if (url) execCmd('insertImage', url); };
+  const insertVideo = () => {
+    const url = prompt('URL del video (YouTube, Vimeo, etc.):');
+    if (url) {
+      let embedUrl = url;
+      const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+      if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+      execCmd('insertHTML', `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;margin:10px 0"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0" allowfullscreen></iframe></div>`);
+    }
+  };
+  const insertAudio = () => { const url = prompt('URL del audio:'); if (url) execCmd('insertHTML', `<audio controls src="${url}" style="width:100%;margin:10px 0"></audio>`); };
+
+  const tbtn = { background: 'var(--bg-primary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', width: '34px', height: '34px', borderRadius: '6px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', transition: 'all 0.15s', flexShrink: 0 };
+  const sep = { width: '1px', height: '24px', background: 'var(--card-border)', margin: '0 4px' };
+
+  return (
+    <div style={{ border: '1px solid var(--input-border)', borderRadius: '10px', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--bg-primary)', borderBottom: '1px solid var(--input-border)', padding: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <button type="button" onClick={() => execCmd('bold')} style={tbtn} title="Negrita"><i className="fa-solid fa-bold"></i></button>
+        <button type="button" onClick={() => execCmd('italic')} style={tbtn} title="Cursiva"><i className="fa-solid fa-italic"></i></button>
+        <button type="button" onClick={() => execCmd('underline')} style={tbtn} title="Subrayado"><i className="fa-solid fa-underline"></i></button>
+        <div style={sep}></div>
+        <button type="button" onClick={() => execCmd('formatBlock', 'h1')} style={tbtn} title="H1"><strong style={{ fontSize: '0.7rem' }}>H1</strong></button>
+        <button type="button" onClick={() => execCmd('formatBlock', 'h2')} style={tbtn} title="H2"><strong style={{ fontSize: '0.7rem' }}>H2</strong></button>
+        <button type="button" onClick={() => execCmd('formatBlock', 'h3')} style={tbtn} title="H3"><strong style={{ fontSize: '0.7rem' }}>H3</strong></button>
+        <button type="button" onClick={() => execCmd('formatBlock', 'p')} style={tbtn} title="Párrafo"><i className="fa-solid fa-paragraph"></i></button>
+        <div style={sep}></div>
+        <button type="button" onClick={() => execCmd('insertUnorderedList')} style={tbtn} title="Lista"><i className="fa-solid fa-list-ul"></i></button>
+        <button type="button" onClick={() => execCmd('insertOrderedList')} style={tbtn} title="Lista numerada"><i className="fa-solid fa-list-ol"></i></button>
+        <div style={sep}></div>
+        <button type="button" onClick={insertLink} style={tbtn} title="Enlace"><i className="fa-solid fa-link"></i></button>
+        <button type="button" onClick={insertImage} style={tbtn} title="Imagen"><i className="fa-solid fa-image"></i></button>
+        <button type="button" onClick={insertVideo} style={tbtn} title="Video"><i className="fa-solid fa-video"></i></button>
+        <button type="button" onClick={insertAudio} style={tbtn} title="Audio"><i className="fa-solid fa-headphones"></i></button>
+        <div style={sep}></div>
+        <button type="button" onClick={() => execCmd('formatBlock', 'pre')} style={tbtn} title="Código"><i className="fa-solid fa-code"></i></button>
+        <button type="button" onClick={() => execCmd('removeFormat')} style={tbtn} title="Limpiar formato"><i className="fa-solid fa-eraser"></i></button>
+        <div style={{ marginLeft: 'auto' }}>
+          <button type="button" onClick={toggleSource} style={{ ...tbtn, width: 'auto', padding: '0 10px', background: showSource ? 'var(--accent-color)' : 'var(--bg-primary)', color: showSource ? '#fff' : 'var(--text-primary)' }} title="Ver HTML">
+            <i className="fa-solid fa-file-code" style={{ marginRight: '4px' }}></i>HTML
+          </button>
+        </div>
+      </div>
+      {showSource ? (
+        <textarea value={sourceCode} onChange={(e) => { setSourceCode(e.target.value); onChange(e.target.value); }}
+          style={{ width: '100%', minHeight: '300px', background: 'var(--input-bg)', color: '#4ade80', border: 'none', padding: '16px', fontSize: '0.9rem', fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
+      ) : (
+        <div ref={editorRef} contentEditable onInput={handleInput} suppressContentEditableWarning
+          style={{ minHeight: '300px', background: 'var(--input-bg)', color: 'var(--text-primary)', padding: '16px', fontSize: '1rem', lineHeight: '1.6', outline: 'none', overflow: 'auto', maxHeight: '500px' }} />
       )}
     </div>
   );
@@ -1958,394 +707,79 @@ const ContentManager = ({ onBack }) => {
 // ============================================
 // CONTENT EDIT MODAL
 // ============================================
-
 const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
   const [formData, setFormData] = useState(() => {
-    const mediaSeparator = '\n\n---MEDIA---\n';
-    const parts = (item.contenido || '').split(mediaSeparator);
-    const text = parts[0];
+    const sep = '\n\n---MEDIA---\n';
+    const parts = (item.contenido || '').split(sep);
     let media = {};
-    if (parts[1]) {
-      try {
-        media = JSON.parse(parts[1]);
-      } catch (e) {
-        console.error('Failed to parse media JSON:', e);
-      }
-    }
-    return {
-      ...item,
-      text: text,
-      audio_url: media?.audio_url || '',
-      video_url: media?.video_url || '',
-      imagen_url: media?.imagen_url || ''
-    };
+    if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
+    return { ...item, text: parts[0] || '', audio_url: media?.audio_url || '', video_url: media?.video_url || '', imagen_url: media?.imagen_url || '' };
   });
-
-  const handleFieldChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
+  const [activeSection, setActiveSection] = useState('editor');
+  const handleFieldChange = (field, value) => { setFormData(prev => ({ ...prev, [field]: value })); };
+  const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
+  const inputStyle = { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)', padding: '12px 15px', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600', fontSize: '0.95rem' };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 2000,
-      padding: '20px',
-      backdropFilter: 'blur(4px)'
-    }}>
-      <div style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--card-border)',
-        borderRadius: '16px',
-        maxWidth: '700px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflow: 'auto',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-      }}>
-        <div style={{
-          padding: '24px',
-          borderBottom: '1px solid var(--card-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)',
-          color: '#fff',
-          position: 'sticky',
-          top: 0
-        }}>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px', backdropFilter: 'blur(4px)' }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '900px', width: '100%', maxHeight: '95vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff', position: 'sticky', top: 0, zIndex: 10 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>
-              {item.id ? 'Editar Contenido' : 'Nuevo Contenido'}
-            </h2>
-            <p style={{ margin: '4px 0 0', opacity: 0.9, fontSize: '0.9rem' }}>
-              Completa los campos para {item.id ? 'actualizar' : 'crear'} un elemento
-            </p>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>{item.id ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
+            <p style={{ margin: '4px 0 0', opacity: 0.9, fontSize: '0.9rem' }}>Editor HTML con soporte multimedia</p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: 'none',
-              color: '#fff',
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.2)';
-            }}
-          >
-            <i className="fa-solid fa-xmark"></i>
-          </button>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fa-solid fa-xmark"></i></button>
         </div>
-
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '16px', marginBottom: '20px' }}>
+            <div>
+              <label style={labelStyle}><i className="fa-solid fa-heading" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Título</label>
+              <input type="text" value={formData.titulo} onChange={(e) => handleFieldChange('titulo', e.target.value)} placeholder="Título del contenido" style={inputStyle} required />
+            </div>
+            <div>
+              <label style={labelStyle}><i className="fa-solid fa-sort-numeric-up" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Orden</label>
+              <input type="number" value={formData.orden} onChange={(e) => handleFieldChange('orden', parseInt(e.target.value))} min="1" style={inputStyle} />
+            </div>
+          </div>
           <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              color: 'var(--text-primary)',
-              marginBottom: '8px',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              <i className="fa-solid fa-tag" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>
-              Tipo
-            </label>
-            <select
-              value={formData.tipo}
-              onChange={(e) => handleFieldChange('tipo', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                cursor: 'pointer'
-              }}
-            >
-              {tipoOptions.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
+            <label style={labelStyle}><i className="fa-solid fa-tag" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Tipo</label>
+            <select value={formData.tipo} onChange={(e) => handleFieldChange('tipo', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+              {tipoOptions.map(opt => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
             </select>
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              color: 'var(--text-primary)',
-              marginBottom: '8px',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              <i className="fa-solid fa-sort-numeric-up" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>
-              Orden
-            </label>
-            <input
-              type="number"
-              value={formData.orden}
-              onChange={(e) => handleFieldChange('orden', parseInt(e.target.value))}
-              min="1"
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-            />
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+            {[{ id: 'editor', label: 'Editor HTML', icon: 'fa-solid fa-pen-fancy' }, { id: 'media', label: 'Multimedia', icon: 'fa-solid fa-photo-film' }].map(s => (
+              <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
+                style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: activeSection === s.id ? 'var(--accent-color)' : 'var(--bg-primary)', color: activeSection === s.id ? '#fff' : 'var(--text-secondary)', fontWeight: '600', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <i className={s.icon}></i> {s.label}
+              </button>
+            ))}
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              color: 'var(--text-primary)',
-              marginBottom: '8px',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              <i className="fa-solid fa-heading" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>
-              Título
-            </label>
-            <input
-              type="text"
-              value={formData.titulo}
-              onChange={(e) => handleFieldChange('titulo', e.target.value)}
-              placeholder="Ingresa el título"
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              color: 'var(--text-primary)',
-              marginBottom: '8px',
-              fontWeight: '600',
-              fontSize: '0.95rem'
-            }}>
-              <i className="fa-solid fa-file-lines" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>
-              Contenido
-            </label>
-            <textarea
-              value={formData.text}
-              onChange={(e) => handleFieldChange('text', e.target.value)}
-              placeholder="Escribe el contenido aquí (Markdown soportado)"
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'monospace',
-                minHeight: '150px',
-                resize: 'vertical'
-              }}
-            />
-          </div>
-
-          <div style={{
-            background: 'var(--bg-primary)',
-            border: '1px dashed var(--card-border)',
-            borderRadius: '12px',
-            padding: '20px',
-            marginBottom: '20px'
-          }}>
-            <h4 style={{
-              color: 'var(--text-primary)',
-              margin: '0 0 16px',
-              fontSize: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <i className="fa-solid fa-circle-info" style={{ color: 'var(--accent-color)' }}></i>
-              Multimedia
-            </h4>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                color: 'var(--text-primary)',
-                marginBottom: '8px',
-                fontWeight: '500',
-                fontSize: '0.9rem'
-              }}>
-                <i className="fa-solid fa-headphones" style={{ marginRight: '6px', color: '#ec4899' }}></i>
-                URL de Audio
-              </label>
-              <input
-                type="url"
-                value={formData.audio_url}
-                onChange={(e) => handleFieldChange('audio_url', e.target.value)}
-                placeholder="https://..."
-                style={{
-                  width: '100%',
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  color: 'var(--text-primary)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit'
-                }}
-              />
+          {activeSection === 'editor' && <div style={{ marginBottom: '20px' }}><RichHTMLEditor value={formData.text} onChange={(html) => handleFieldChange('text', html)} /></div>}
+          {activeSection === 'media' && (
+            <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
+              <h4 style={{ color: 'var(--text-primary)', margin: '0 0 16px', fontSize: '0.95rem' }}><i className="fa-solid fa-photo-film" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Archivos Multimedia</h4>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}><i className="fa-solid fa-image" style={{ marginRight: '8px', color: '#10b981' }}></i>URL de Imagen</label>
+                <input type="url" value={formData.imagen_url} onChange={(e) => handleFieldChange('imagen_url', e.target.value)} placeholder="https://..." style={inputStyle} />
+                {formData.imagen_url && <div style={{ marginTop: '8px', borderRadius: '8px', overflow: 'hidden', maxHeight: '150px' }}><img src={formData.imagen_url} alt="Preview" style={{ width: '100%', maxHeight: '150px', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /></div>}
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={labelStyle}><i className="fa-solid fa-video" style={{ marginRight: '8px', color: '#f59e0b' }}></i>URL de Video</label>
+                <input type="url" value={formData.video_url} onChange={(e) => handleFieldChange('video_url', e.target.value)} placeholder="https://youtube.com/..." style={inputStyle} />
+                {formData.video_url && <div style={{ marginTop: '8px', background: 'rgba(245,158,11,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}><i className="fa-solid fa-video" style={{ color: '#f59e0b' }}></i><span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{formData.video_url}</span></div>}
+              </div>
+              <div>
+                <label style={labelStyle}><i className="fa-solid fa-headphones" style={{ marginRight: '8px', color: '#ec4899' }}></i>URL de Audio</label>
+                <input type="url" value={formData.audio_url} onChange={(e) => handleFieldChange('audio_url', e.target.value)} placeholder="https://..." style={inputStyle} />
+                {formData.audio_url && <div style={{ marginTop: '8px' }}><audio controls src={formData.audio_url} style={{ width: '100%' }} /></div>}
+              </div>
             </div>
-
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{
-                display: 'block',
-                color: 'var(--text-primary)',
-                marginBottom: '8px',
-                fontWeight: '500',
-                fontSize: '0.9rem'
-              }}>
-                <i className="fa-solid fa-video" style={{ marginRight: '6px', color: '#f59e0b' }}></i>
-                URL de Video
-              </label>
-              <input
-                type="url"
-                value={formData.video_url}
-                onChange={(e) => handleFieldChange('video_url', e.target.value)}
-                placeholder="https://..."
-                style={{
-                  width: '100%',
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  color: 'var(--text-primary)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit'
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{
-                display: 'block',
-                color: 'var(--text-primary)',
-                marginBottom: '8px',
-                fontWeight: '500',
-                fontSize: '0.9rem'
-              }}>
-                <i className="fa-solid fa-image" style={{ marginRight: '6px', color: '#10b981' }}></i>
-                URL de Imagen
-              </label>
-              <input
-                type="url"
-                value={formData.imagen_url}
-                onChange={(e) => handleFieldChange('imagen_url', e.target.value)}
-                placeholder="https://..."
-                style={{
-                  width: '100%',
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  color: 'var(--text-primary)',
-                  padding: '10px 12px',
-                  borderRadius: '8px',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit'
-                }}
-              />
-            </div>
-          </div>
-
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            paddingTop: '20px',
-            borderTop: '1px solid var(--card-border)'
-          }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--card-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'var(--bg-tertiary)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'var(--bg-primary)';
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              style={{
-                flex: 1,
-                background: 'var(--accent-color)',
-                border: 'none',
-                color: '#fff',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.target.style.background = 'var(--accent-hover)';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'var(--accent-color)';
-                e.target.style.transform = 'translateY(0)';
-              }}
-            >
-              <i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>
-              Guardar
-            </button>
+          )}
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)' }}>
+            <button type="button" onClick={onClose} style={{ flex: 1, background: 'var(--bg-primary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}>Cancelar</button>
+            <button type="submit" style={{ flex: 1, background: 'var(--accent-color)', border: 'none', color: '#fff', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}><i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>Guardar</button>
           </div>
         </form>
       </div>
@@ -2356,242 +790,43 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
 // ============================================
 // MODULE EDIT MODAL
 // ============================================
-
 const ModuleEditModal = ({ module, onSave, onClose }) => {
   const [formData, setFormData] = useState(module);
-
-  const handleFieldChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
+  const handleFieldChange = (field, value) => { setFormData(prev => ({ ...prev, [field]: value })); };
+  const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
+  const inputStyle = { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)', padding: '12px 15px', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 2000,
-      padding: '20px',
-      backdropFilter: 'blur(4px)'
-    }}>
-      <div style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--card-border)',
-        borderRadius: '16px',
-        maxWidth: '600px',
-        width: '100%',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
-      }}>
-        <div style={{
-          padding: '24px',
-          borderBottom: '1px solid var(--card-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)',
-          color: '#fff'
-        }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>
-            {module.id ? 'Editar Módulo' : 'Nuevo Módulo'}
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: 'none',
-              color: '#fff',
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <i className="fa-solid fa-xmark"></i>
-          </button>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px', backdropFilter: 'blur(4px)' }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '600px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff' }}>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>{module.id ? 'Editar Módulo' : 'Nuevo Módulo'}</h2>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fa-solid fa-xmark"></i></button>
         </div>
-
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Título
-            </label>
-            <input
-              type="text"
-              value={formData.titulo || ''}
-              onChange={(e) => handleFieldChange('titulo', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-              required
-            />
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Título</label><input type="text" value={formData.titulo || ''} onChange={(e) => handleFieldChange('titulo', e.target.value)} style={inputStyle} required /></div>
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Descripción</label><textarea value={formData.descripcion || ''} onChange={(e) => handleFieldChange('descripcion', e.target.value)} style={{ ...inputStyle, minHeight: '80px' }} /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div><label style={labelStyle}>Color</label><input type="color" value={formData.color || '#a855f7'} onChange={(e) => handleFieldChange('color', e.target.value)} style={{ width: '100%', height: '44px', border: '1px solid var(--input-border)', borderRadius: '10px', cursor: 'pointer' }} /></div>
+            <div><label style={labelStyle}>Ícono (Font Awesome)</label><input type="text" value={formData.icon || 'fa-solid fa-book'} onChange={(e) => handleFieldChange('icon', e.target.value)} placeholder="fa-solid fa-book" style={inputStyle} /></div>
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Descripción
-            </label>
-            <textarea
-              value={formData.descripcion || ''}
-              onChange={(e) => handleFieldChange('descripcion', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                minHeight: '80px'
-              }}
-            />
+          <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+            <h4 style={{ color: 'var(--text-primary)', margin: '0 0 12px', fontSize: '0.95rem' }}><i className="fa-solid fa-photo-film" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Multimedia del Módulo (inicio)</h4>
+            <div style={{ marginBottom: '12px' }}>
+              <label style={{ ...labelStyle, fontSize: '0.9rem' }}><i className="fa-solid fa-image" style={{ marginRight: '6px', color: '#3b82f6' }}></i>Infografía URL</label>
+              <input type="url" value={formData.infografia_url || ''} onChange={(e) => handleFieldChange('infografia_url', e.target.value)} placeholder="https://..." style={inputStyle} />
+              {formData.infografia_url && <div style={{ marginTop: '8px', borderRadius: '8px', overflow: 'hidden', maxHeight: '120px' }}><img src={formData.infografia_url} alt="Infografía" style={{ width: '100%', maxHeight: '120px', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /></div>}
+            </div>
+            <div>
+              <label style={{ ...labelStyle, fontSize: '0.9rem' }}><i className="fa-solid fa-headphones" style={{ marginRight: '6px', color: '#ec4899' }}></i>Audio URL</label>
+              <input type="url" value={formData.audio_url || ''} onChange={(e) => handleFieldChange('audio_url', e.target.value)} placeholder="https://..." style={inputStyle} />
+              {formData.audio_url && <div style={{ marginTop: '8px' }}><audio controls src={formData.audio_url} style={{ width: '100%' }} /></div>}
+            </div>
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Color
-            </label>
-            <input
-              type="color"
-              value={formData.color || '#a855f7'}
-              onChange={(e) => handleFieldChange('color', e.target.value)}
-              style={{
-                width: '100%',
-                height: '44px',
-                border: '1px solid var(--input-border)',
-                borderRadius: '10px',
-                cursor: 'pointer'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Ícono (Font Awesome class)
-            </label>
-            <input
-              type="text"
-              value={formData.icon || 'fa-solid fa-book'}
-              onChange={(e) => handleFieldChange('icon', e.target.value)}
-              placeholder="fa-solid fa-book"
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Audio URL
-            </label>
-            <input
-              type="url"
-              value={formData.audio_url || ''}
-              onChange={(e) => handleFieldChange('audio_url', e.target.value)}
-              placeholder="https://..."
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Infografía URL
-            </label>
-            <input
-              type="url"
-              value={formData.infografia_url || ''}
-              onChange={(e) => handleFieldChange('infografia_url', e.target.value)}
-              placeholder="https://..."
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            paddingTop: '20px',
-            borderTop: '1px solid var(--card-border)'
-          }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--card-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600'
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              style={{
-                flex: 1,
-                background: 'var(--accent-color)',
-                border: 'none',
-                color: '#fff',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600'
-              }}
-            >
-              <i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>
-              Guardar
-            </button>
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)' }}>
+            <button type="button" onClick={onClose} style={{ flex: 1, background: 'var(--bg-primary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}>Cancelar</button>
+            <button type="submit" style={{ flex: 1, background: 'var(--accent-color)', border: 'none', color: '#fff', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}><i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>Guardar</button>
           </div>
         </form>
       </div>
@@ -2602,349 +837,43 @@ const ModuleEditModal = ({ module, onSave, onClose }) => {
 // ============================================
 // PREGUNTA EDIT MODAL
 // ============================================
-
 const PreguntaEditModal = ({ pregunta, modules, onSave, onClose }) => {
   const [formData, setFormData] = useState(pregunta);
-
-  const handleFieldChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
+  const handleFieldChange = (field, value) => { setFormData(prev => ({ ...prev, [field]: value })); };
+  const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
+  const inputStyle = { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)', padding: '12px 15px', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' };
 
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      zIndex: 2000,
-      padding: '20px',
-      backdropFilter: 'blur(4px)',
-      overflow: 'auto'
-    }}>
-      <div style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--card-border)',
-        borderRadius: '16px',
-        maxWidth: '700px',
-        width: '100%',
-        maxHeight: '90vh',
-        overflow: 'auto',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-        margin: 'auto'
-      }}>
-        <div style={{
-          padding: '24px',
-          borderBottom: '1px solid var(--card-border)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)',
-          color: '#fff',
-          position: 'sticky',
-          top: 0
-        }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>
-            {pregunta.id ? 'Editar Pregunta' : 'Nueva Pregunta'}
-          </h2>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              border: 'none',
-              color: '#fff',
-              width: '40px',
-              height: '40px',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '1.2rem',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <i className="fa-solid fa-xmark"></i>
-          </button>
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px', backdropFilter: 'blur(4px)', overflow: 'auto' }}>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '700px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', margin: 'auto' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff', position: 'sticky', top: 0 }}>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>{pregunta.id ? 'Editar Pregunta' : 'Nueva Pregunta'}</h2>
+          <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fa-solid fa-xmark"></i></button>
         </div>
-
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Módulo
-            </label>
-            <select
-              value={formData.modulo_id || ''}
-              onChange={(e) => handleFieldChange('modulo_id', parseInt(e.target.value))}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="">Selecciona módulo</option>
-              {modules.map(mod => (
-                <option key={mod.id} value={mod.id}>{mod.titulo}</option>
-              ))}
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Pregunta
-            </label>
-            <textarea
-              value={formData.pregunta || ''}
-              onChange={(e) => handleFieldChange('pregunta', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                minHeight: '80px'
-              }}
-              required
-            />
-          </div>
-
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Módulo</label><select value={formData.modulo_id || ''} onChange={(e) => handleFieldChange('modulo_id', parseInt(e.target.value))} style={{ ...inputStyle, cursor: 'pointer' }}><option value="">Selecciona módulo</option>{modules.map(mod => (<option key={mod.id} value={mod.id}>{mod.titulo}</option>))}</select></div>
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Pregunta</label><textarea value={formData.pregunta || ''} onChange={(e) => handleFieldChange('pregunta', e.target.value)} style={{ ...inputStyle, minHeight: '80px' }} required /></div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <div>
-              <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-                Nivel
-              </label>
-              <select
-                value={formData.nivel || 'basico'}
-                onChange={(e) => handleFieldChange('nivel', e.target.value)}
-                style={{
-                  width: '100%',
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  color: 'var(--text-primary)',
-                  padding: '12px 15px',
-                  borderRadius: '10px',
-                  fontSize: '1rem',
-                  fontFamily: 'inherit',
-                  cursor: 'pointer'
-                }}
-              >
-                <option value="basico">Básico</option>
-                <option value="intermedio">Intermedio</option>
-                <option value="avanzado">Avanzado</option>
-              </select>
-            </div>
-
-            <div>
-              <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-                Subtema
-              </label>
-              <input
-                type="text"
-                value={formData.subtema || ''}
-                onChange={(e) => handleFieldChange('subtema', e.target.value)}
-                style={{
-                  width: '100%',
-                  background: 'var(--input-bg)',
-                  border: '1px solid var(--input-border)',
-                  color: 'var(--text-primary)',
-                  padding: '12px 15px',
-                  borderRadius: '10px',
-                  fontSize: '1rem',
-                  fontFamily: 'inherit'
-                }}
-              />
-            </div>
+            <div><label style={labelStyle}>Nivel</label><select value={formData.nivel || 'basico'} onChange={(e) => handleFieldChange('nivel', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}><option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></div>
+            <div><label style={labelStyle}>Subtema</label><input type="text" value={formData.subtema || ''} onChange={(e) => handleFieldChange('subtema', e.target.value)} style={inputStyle} /></div>
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Tema
-            </label>
-            <input
-              type="text"
-              value={formData.tema || ''}
-              onChange={(e) => handleFieldChange('tema', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <div style={{
-            background: 'var(--bg-primary)',
-            border: '1px dashed var(--card-border)',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '20px'
-          }}>
-            <h4 style={{ color: 'var(--text-primary)', margin: '0 0 12px', fontSize: '0.95rem' }}>
-              <i className="fa-solid fa-circle-info" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>
-              Opciones
-            </h4>
-
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Tema</label><input type="text" value={formData.tema || ''} onChange={(e) => handleFieldChange('tema', e.target.value)} style={inputStyle} /></div>
+          <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+            <h4 style={{ color: 'var(--text-primary)', margin: '0 0 12px', fontSize: '0.95rem' }}><i className="fa-solid fa-circle-info" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Opciones</h4>
             {['a', 'b', 'c', 'd'].map(letter => (
               <div key={letter} style={{ marginBottom: '12px' }}>
-                <label style={{
-                  display: 'block',
-                  color: 'var(--text-secondary)',
-                  marginBottom: '4px',
-                  fontSize: '0.85rem',
-                  fontWeight: '600'
-                }}>
-                  Opción {letter.toUpperCase()}
-                </label>
-                <input
-                  type="text"
-                  value={formData[`opcion_${letter}`] || ''}
-                  onChange={(e) => handleFieldChange(`opcion_${letter}`, e.target.value)}
-                  style={{
-                    width: '100%',
-                    background: 'var(--input-bg)',
-                    border: '1px solid var(--input-border)',
-                    color: 'var(--text-primary)',
-                    padding: '10px 12px',
-                    borderRadius: '8px',
-                    fontSize: '0.95rem',
-                    fontFamily: 'inherit'
-                  }}
-                  required
-                />
+                <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '0.85rem', fontWeight: '600' }}>Opción {letter.toUpperCase()}</label>
+                <input type="text" value={formData[`opcion_${letter}`] || ''} onChange={(e) => handleFieldChange(`opcion_${letter}`, e.target.value)} style={{ ...inputStyle, padding: '10px 12px', fontSize: '0.95rem' }} />
               </div>
             ))}
           </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Respuesta Correcta
-            </label>
-            <select
-              value={formData.respuesta_correcta || 'a'}
-              onChange={(e) => handleFieldChange('respuesta_correcta', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="a">A</option>
-              <option value="b">B</option>
-              <option value="c">C</option>
-              <option value="d">D</option>
-            </select>
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Explicación
-            </label>
-            <textarea
-              value={formData.explicacion || ''}
-              onChange={(e) => handleFieldChange('explicacion', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit',
-                minHeight: '60px'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' }}>
-              Fórmula (opcional)
-            </label>
-            <input
-              type="text"
-              value={formData.formula || ''}
-              onChange={(e) => handleFieldChange('formula', e.target.value)}
-              style={{
-                width: '100%',
-                background: 'var(--input-bg)',
-                border: '1px solid var(--input-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 15px',
-                borderRadius: '10px',
-                fontSize: '1rem',
-                fontFamily: 'inherit'
-              }}
-            />
-          </div>
-
-          <div style={{
-            display: 'flex',
-            gap: '12px',
-            paddingTop: '20px',
-            borderTop: '1px solid var(--card-border)'
-          }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--card-border)',
-                color: 'var(--text-primary)',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600'
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              style={{
-                flex: 1,
-                background: 'var(--accent-color)',
-                border: 'none',
-                color: '#fff',
-                padding: '12px 20px',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                fontSize: '1rem',
-                fontWeight: '600'
-              }}
-            >
-              <i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>
-              Guardar
-            </button>
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Respuesta Correcta</label><select value={formData.respuesta_correcta || 'a'} onChange={(e) => handleFieldChange('respuesta_correcta', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></div>
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Explicación</label><textarea value={formData.explicacion || ''} onChange={(e) => handleFieldChange('explicacion', e.target.value)} style={{ ...inputStyle, minHeight: '60px' }} /></div>
+          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Fórmula (opcional)</label><input type="text" value={formData.formula || ''} onChange={(e) => handleFieldChange('formula', e.target.value)} style={inputStyle} /></div>
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)' }}>
+            <button type="button" onClick={onClose} style={{ flex: 1, background: 'var(--bg-primary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}>Cancelar</button>
+            <button type="submit" style={{ flex: 1, background: 'var(--accent-color)', border: 'none', color: '#fff', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}><i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>Guardar</button>
           </div>
         </form>
       </div>
