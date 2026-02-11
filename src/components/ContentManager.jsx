@@ -325,7 +325,7 @@ const ContentManager = ({ onBack }) => {
 
   // PREGUNTA CRUD
   const handleAddPregunta = () => {
-    setEditingPregunta({ pregunta: '', subtema: '', nivel: 'basico', tema: '', opcion_a: '', opcion_b: '', opcion_c: '', opcion_d: '', respuesta_correcta: 'a', explicacion: '', formula: '', modulo_id: preguntaFilter.modulo || (modules[0]?.id) });
+    setEditingPregunta({ pregunta: '', subtema: '', nivel: 'basico', tema: '', opcion_a: '', opcion_b: '', opcion_c: '', opcion_d: '', respuesta_correcta: 'a', explicacion: '', formula: '', imagen_url: '', modulo_id: preguntaFilter.modulo || (modules[0]?.id) });
     setIsPreguntaModalOpen(true);
   };
 
@@ -335,12 +335,12 @@ const ContentManager = ({ onBack }) => {
     try {
       if (preguntaData.id) {
         const { error } = await supabase.from('preguntas')
-          .update({ pregunta: preguntaData.pregunta, subtema: preguntaData.subtema, nivel: preguntaData.nivel, tema: preguntaData.tema, opcion_a: preguntaData.opcion_a, opcion_b: preguntaData.opcion_b, opcion_c: preguntaData.opcion_c, opcion_d: preguntaData.opcion_d, respuesta_correcta: preguntaData.respuesta_correcta, explicacion: preguntaData.explicacion, formula: preguntaData.formula || null, modulo_id: preguntaData.modulo_id, activo: preguntaData.activo !== undefined ? preguntaData.activo : true })
+          .update({ pregunta: preguntaData.pregunta, subtema: preguntaData.subtema, nivel: preguntaData.nivel, tema: preguntaData.tema, opcion_a: preguntaData.opcion_a, opcion_b: preguntaData.opcion_b, opcion_c: preguntaData.opcion_c, opcion_d: preguntaData.opcion_d, respuesta_correcta: preguntaData.respuesta_correcta, explicacion: preguntaData.explicacion, formula: preguntaData.formula || null, imagen_url: preguntaData.imagen_url || null, modulo_id: preguntaData.modulo_id, activo: preguntaData.activo !== undefined ? preguntaData.activo : true })
           .eq('id', preguntaData.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from('preguntas')
-          .insert([{ pregunta: preguntaData.pregunta, subtema: preguntaData.subtema, nivel: preguntaData.nivel, tema: preguntaData.tema, opcion_a: preguntaData.opcion_a, opcion_b: preguntaData.opcion_b, opcion_c: preguntaData.opcion_c, opcion_d: preguntaData.opcion_d, respuesta_correcta: preguntaData.respuesta_correcta, explicacion: preguntaData.explicacion, formula: preguntaData.formula || null, modulo_id: preguntaData.modulo_id, activo: true }]);
+          .insert([{ pregunta: preguntaData.pregunta, subtema: preguntaData.subtema, nivel: preguntaData.nivel, tema: preguntaData.tema, opcion_a: preguntaData.opcion_a, opcion_b: preguntaData.opcion_b, opcion_c: preguntaData.opcion_c, opcion_d: preguntaData.opcion_d, respuesta_correcta: preguntaData.respuesta_correcta, explicacion: preguntaData.explicacion, formula: preguntaData.formula || null, imagen_url: preguntaData.imagen_url || null, modulo_id: preguntaData.modulo_id, activo: true }]);
         if (error) throw error;
       }
       loadPreguntas(); setIsPreguntaModalOpen(false); setEditingPregunta(null);
@@ -488,7 +488,7 @@ const ContentManager = ({ onBack }) => {
                               </span>
                               {media?.audio_url && <span style={{ color: '#ec4899', fontSize: '0.8rem' }}><i className="fa-solid fa-headphones"></i></span>}
                               {media?.video_url && <span style={{ color: '#f59e0b', fontSize: '0.8rem' }}><i className="fa-solid fa-video"></i></span>}
-                              {media?.imagen_url && <span style={{ color: '#10b981', fontSize: '0.8rem' }}><i className="fa-solid fa-image"></i></span>}
+                              {(media?.imagen_url || item.imagen_url) && <span style={{ color: '#10b981', fontSize: '0.8rem' }}><i className="fa-solid fa-image"></i></span>}
                             </div>
                             <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.titulo}</h3>
                             <p style={{ margin: '2px 0 0', color: 'var(--text-secondary)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text.substring(0, 120)}</p>
@@ -633,15 +633,77 @@ const RichHTMLEditor = ({ value, onChange }) => {
   useEffect(() => {
     if (editorRef.current && !showSource && editorRef.current.innerHTML !== value) {
       editorRef.current.innerHTML = value || '';
+      // Agregar onerror a todas las imágenes dentro del editor
+      fixBrokenImages(editorRef.current);
     }
   }, [value, showSource]);
+
+  // Arreglar imágenes rotas en el editor: ocultar las que no cargan
+  const fixBrokenImages = (container) => {
+    if (!container) return;
+    const imgs = container.querySelectorAll('img');
+    imgs.forEach(img => {
+      const src = img.getAttribute('src');
+      if (!src || src === 'null' || src === 'undefined' || src.trim() === '') {
+        img.style.display = 'none';
+        return;
+      }
+      img.onerror = () => { img.style.display = 'none'; };
+    });
+  };
 
   const execCmd = (command, val = null) => {
     document.execCommand(command, false, val);
     if (editorRef.current) onChange(editorRef.current.innerHTML);
   };
 
-  const handleInput = () => { if (editorRef.current) onChange(editorRef.current.innerHTML); };
+  const handleInput = () => { if (editorRef.current) { fixBrokenImages(editorRef.current); onChange(editorRef.current.innerHTML); } };
+
+  // Interceptar pegado: limpiar imágenes base64 para no inflar la BD
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    // Detectar si se está pegando una imagen
+    let hasImage = false;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith('image/')) { hasImage = true; break; }
+    }
+
+    if (hasImage) {
+      e.preventDefault();
+      // Insertar placeholder con instrucción
+      const notice = document.createElement('p');
+      notice.style.color = '#f59e0b';
+      notice.style.fontStyle = 'italic';
+      notice.style.fontSize = '0.85rem';
+      notice.textContent = '⚠️ No se pueden pegar imágenes directamente. Usa el botón 🖼️ de la barra o la pestaña Multimedia para agregar imágenes por URL.';
+      const sel = window.getSelection();
+      if (sel.rangeCount) {
+        const range = sel.getRangeAt(0);
+        range.deleteContents();
+        range.insertNode(notice);
+        range.setStartAfter(notice);
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      if (editorRef.current) onChange(editorRef.current.innerHTML);
+      // Remover el aviso después de 4 segundos
+      setTimeout(() => { if (notice.parentNode) notice.parentNode.removeChild(notice); if (editorRef.current) onChange(editorRef.current.innerHTML); }, 4000);
+      return;
+    }
+
+    // Para texto pegado: limpiar posibles imágenes base64 embebidas
+    const html = e.clipboardData.getData('text/html');
+    if (html && html.includes('data:image')) {
+      e.preventDefault();
+      // Insertar solo texto plano sin imágenes base64
+      const plainText = e.clipboardData.getData('text/plain');
+      document.execCommand('insertText', false, plainText);
+      if (editorRef.current) onChange(editorRef.current.innerHTML);
+    }
+  };
 
   const toggleSource = () => {
     if (showSource) { if (editorRef.current) editorRef.current.innerHTML = sourceCode; }
@@ -697,7 +759,7 @@ const RichHTMLEditor = ({ value, onChange }) => {
         <textarea value={sourceCode} onChange={(e) => { setSourceCode(e.target.value); onChange(e.target.value); }}
           style={{ width: '100%', minHeight: '300px', background: 'var(--input-bg)', color: '#4ade80', border: 'none', padding: '16px', fontSize: '0.9rem', fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }} />
       ) : (
-        <div ref={editorRef} contentEditable onInput={handleInput} suppressContentEditableWarning
+        <div ref={editorRef} contentEditable onInput={handleInput} onPaste={handlePaste} suppressContentEditableWarning
           style={{ minHeight: '300px', background: 'var(--input-bg)', color: 'var(--text-primary)', padding: '16px', fontSize: '1rem', lineHeight: '1.6', outline: 'none', overflow: 'auto', maxHeight: '500px' }} />
       )}
     </div>
@@ -713,7 +775,7 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
     const parts = (item.contenido || '').split(sep);
     let media = {};
     if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
-    return { ...item, text: parts[0] || '', audio_url: media?.audio_url || '', video_url: media?.video_url || '', imagen_url: media?.imagen_url || '' };
+    return { ...item, text: parts[0] || '', audio_url: media?.audio_url || item.audio_url || '', video_url: media?.video_url || item.video_url || '', imagen_url: media?.imagen_url || item.imagen_url || '' };
   });
   const [activeSection, setActiveSection] = useState('editor');
   const handleFieldChange = (field, value) => { setFormData(prev => ({ ...prev, [field]: value })); };
@@ -726,8 +788,8 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
       <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '900px', width: '100%', maxHeight: '95vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
         <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff', position: 'sticky', top: 0, zIndex: 10 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>{item.id ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
-            <p style={{ margin: '4px 0 0', opacity: 0.9, fontSize: '0.9rem' }}>Editor HTML con soporte multimedia</p>
+            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#fff' }}>{item.id ? 'Editar Contenido' : 'Nuevo Contenido'}</h2>
+            <p style={{ margin: '4px 0 0', opacity: 0.9, fontSize: '0.9rem', color: '#fff' }}>Editor HTML con soporte multimedia</p>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fa-solid fa-xmark"></i></button>
         </div>
@@ -801,7 +863,7 @@ const ModuleEditModal = ({ module, onSave, onClose }) => {
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px', backdropFilter: 'blur(4px)' }}>
       <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '600px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
         <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff' }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>{module.id ? 'Editar Módulo' : 'Nuevo Módulo'}</h2>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#fff' }}>{module.id ? 'Editar Módulo' : 'Nuevo Módulo'}</h2>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fa-solid fa-xmark"></i></button>
         </div>
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
@@ -835,43 +897,99 @@ const ModuleEditModal = ({ module, onSave, onClose }) => {
 };
 
 // ============================================
-// PREGUNTA EDIT MODAL
+// PREGUNTA EDIT MODAL (con editor HTML rico + imagen)
 // ============================================
 const PreguntaEditModal = ({ pregunta, modules, onSave, onClose }) => {
   const [formData, setFormData] = useState(pregunta);
+  const [activeTab, setActiveTab] = useState('contenido');
   const handleFieldChange = (field, value) => { setFormData(prev => ({ ...prev, [field]: value })); };
   const handleSubmit = (e) => { e.preventDefault(); onSave(formData); };
   const inputStyle = { width: '100%', background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)', padding: '12px 15px', borderRadius: '10px', fontSize: '1rem', fontFamily: 'inherit', boxSizing: 'border-box' };
   const labelStyle = { display: 'block', color: 'var(--text-primary)', marginBottom: '8px', fontWeight: '600' };
+  const tabBtnStyle = (active) => ({ padding: '10px 18px', border: 'none', borderRadius: '8px 8px 0 0', cursor: 'pointer', fontWeight: '600', fontSize: '0.9rem', background: active ? 'var(--accent-color)' : 'var(--bg-primary)', color: active ? '#fff' : 'var(--text-secondary)' });
 
   return (
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, padding: '20px', backdropFilter: 'blur(4px)', overflow: 'auto' }}>
-      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '700px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', margin: 'auto' }}>
-        <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff', position: 'sticky', top: 0 }}>
-          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700' }}>{pregunta.id ? 'Editar Pregunta' : 'Nueva Pregunta'}</h2>
+      <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '800px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)', margin: 'auto' }}>
+        <div style={{ padding: '24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)', color: '#fff', position: 'sticky', top: 0, zIndex: 10 }}>
+          <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '700', color: '#fff' }}>{pregunta.id ? 'Editar Pregunta' : 'Nueva Pregunta'}</h2>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', width: '40px', height: '40px', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fa-solid fa-xmark"></i></button>
         </div>
+
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '4px', padding: '16px 24px 0', borderBottom: '1px solid var(--card-border)' }}>
+          <button type="button" onClick={() => setActiveTab('contenido')} style={tabBtnStyle(activeTab === 'contenido')}><i className="fa-solid fa-pen"></i> Contenido</button>
+          <button type="button" onClick={() => setActiveTab('opciones')} style={tabBtnStyle(activeTab === 'opciones')}><i className="fa-solid fa-list"></i> Opciones</button>
+          <button type="button" onClick={() => setActiveTab('media')} style={tabBtnStyle(activeTab === 'media')}><i className="fa-solid fa-image"></i> Multimedia</button>
+        </div>
+
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
-          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Módulo</label><select value={formData.modulo_id || ''} onChange={(e) => handleFieldChange('modulo_id', parseInt(e.target.value))} style={{ ...inputStyle, cursor: 'pointer' }}><option value="">Selecciona módulo</option>{modules.map(mod => (<option key={mod.id} value={mod.id}>{mod.titulo}</option>))}</select></div>
-          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Pregunta</label><textarea value={formData.pregunta || ''} onChange={(e) => handleFieldChange('pregunta', e.target.value)} style={{ ...inputStyle, minHeight: '80px' }} required /></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-            <div><label style={labelStyle}>Nivel</label><select value={formData.nivel || 'basico'} onChange={(e) => handleFieldChange('nivel', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}><option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></div>
-            <div><label style={labelStyle}>Subtema</label><input type="text" value={formData.subtema || ''} onChange={(e) => handleFieldChange('subtema', e.target.value)} style={inputStyle} /></div>
-          </div>
-          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Tema</label><input type="text" value={formData.tema || ''} onChange={(e) => handleFieldChange('tema', e.target.value)} style={inputStyle} /></div>
-          <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-            <h4 style={{ color: 'var(--text-primary)', margin: '0 0 12px', fontSize: '0.95rem' }}><i className="fa-solid fa-circle-info" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Opciones</h4>
-            {['a', 'b', 'c', 'd'].map(letter => (
-              <div key={letter} style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '0.85rem', fontWeight: '600' }}>Opción {letter.toUpperCase()}</label>
-                <input type="text" value={formData[`opcion_${letter}`] || ''} onChange={(e) => handleFieldChange(`opcion_${letter}`, e.target.value)} style={{ ...inputStyle, padding: '10px 12px', fontSize: '0.95rem' }} />
+          {/* TAB: Contenido */}
+          {activeTab === 'contenido' && (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <div><label style={labelStyle}>Módulo</label><select value={formData.modulo_id || ''} onChange={(e) => handleFieldChange('modulo_id', parseInt(e.target.value))} style={{ ...inputStyle, cursor: 'pointer' }}><option value="">Selecciona módulo</option>{modules.map(mod => (<option key={mod.id} value={mod.id}>{mod.titulo}</option>))}</select></div>
+                <div><label style={labelStyle}>Nivel</label><select value={formData.nivel || 'basico'} onChange={(e) => handleFieldChange('nivel', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}><option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="avanzado">Avanzado</option></select></div>
               </div>
-            ))}
-          </div>
-          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Respuesta Correcta</label><select value={formData.respuesta_correcta || 'a'} onChange={(e) => handleFieldChange('respuesta_correcta', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></div>
-          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Explicación</label><textarea value={formData.explicacion || ''} onChange={(e) => handleFieldChange('explicacion', e.target.value)} style={{ ...inputStyle, minHeight: '60px' }} /></div>
-          <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Fórmula (opcional)</label><input type="text" value={formData.formula || ''} onChange={(e) => handleFieldChange('formula', e.target.value)} style={inputStyle} /></div>
-          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                <div><label style={labelStyle}>Tema</label><input type="text" value={formData.tema || ''} onChange={(e) => handleFieldChange('tema', e.target.value)} style={inputStyle} /></div>
+                <div><label style={labelStyle}>Subtema</label><input type="text" value={formData.subtema || ''} onChange={(e) => handleFieldChange('subtema', e.target.value)} style={inputStyle} /></div>
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}>Pregunta (admite HTML)</label>
+                <RichHTMLEditor value={formData.pregunta || ''} onChange={(val) => handleFieldChange('pregunta', val)} />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}>Explicación (admite HTML)</label>
+                <RichHTMLEditor value={formData.explicacion || ''} onChange={(val) => handleFieldChange('explicacion', val)} />
+              </div>
+              <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Fórmula (opcional)</label><input type="text" value={formData.formula || ''} onChange={(e) => handleFieldChange('formula', e.target.value)} style={inputStyle} placeholder="Ej: UMgₓ = ∂U/∂X = 2XY" /></div>
+            </>
+          )}
+
+          {/* TAB: Opciones */}
+          {activeTab === 'opciones' && (
+            <>
+              <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
+                <h4 style={{ color: 'var(--text-primary)', margin: '0 0 12px', fontSize: '0.95rem' }}><i className="fa-solid fa-circle-info" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Opciones de respuesta</h4>
+                {['a', 'b', 'c', 'd'].map(letter => (
+                  <div key={letter} style={{ marginBottom: '12px' }}>
+                    <label style={{ display: 'block', color: formData.respuesta_correcta === letter ? 'var(--success-color)' : 'var(--text-secondary)', marginBottom: '4px', fontSize: '0.85rem', fontWeight: '600' }}>
+                      {formData.respuesta_correcta === letter && <i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>}
+                      Opción {letter.toUpperCase()}
+                    </label>
+                    <input type="text" value={formData[`opcion_${letter}`] || ''} onChange={(e) => handleFieldChange(`opcion_${letter}`, e.target.value)} style={{ ...inputStyle, padding: '10px 12px', fontSize: '0.95rem', borderColor: formData.respuesta_correcta === letter ? 'var(--success-color)' : undefined }} />
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginBottom: '20px' }}><label style={labelStyle}>Respuesta Correcta</label><select value={formData.respuesta_correcta || 'a'} onChange={(e) => handleFieldChange('respuesta_correcta', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}><option value="a">A</option><option value="b">B</option><option value="c">C</option><option value="d">D</option></select></div>
+            </>
+          )}
+
+          {/* TAB: Multimedia */}
+          {activeTab === 'media' && (
+            <>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={labelStyle}><i className="fa-solid fa-image" style={{ marginRight: '8px', color: '#10b981' }}></i>URL de Imagen</label>
+                <input type="url" value={formData.imagen_url || ''} onChange={(e) => handleFieldChange('imagen_url', e.target.value)} placeholder="https://ejemplo.com/imagen.png" style={inputStyle} />
+                {formData.imagen_url && (
+                  <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--card-border)', textAlign: 'center', background: 'var(--bg-primary)', padding: '12px' }}>
+                    <img src={formData.imagen_url} alt="Preview" style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'contain', borderRadius: '8px' }}
+                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                    <p style={{ display: 'none', color: 'var(--error-color)', fontSize: '0.85rem' }}><i className="fa-solid fa-triangle-exclamation"></i> No se pudo cargar la imagen</p>
+                  </div>
+                )}
+              </div>
+              <div style={{ padding: '20px', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px dashed var(--card-border)' }}>
+                <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 8px', fontSize: '0.9rem' }}><i className="fa-solid fa-lightbulb" style={{ marginRight: '8px', color: 'var(--warning-color)' }}></i>Tip</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: '1.5' }}>
+                  Puedes agregar imágenes, videos y formato enriquecido directamente dentro de la pregunta y la explicación usando el editor HTML en la pestaña Contenido. La URL de imagen aquí se muestra como imagen destacada de la pregunta.
+                </p>
+              </div>
+            </>
+          )}
+
+          <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)', marginTop: '20px' }}>
             <button type="button" onClick={onClose} style={{ flex: 1, background: 'var(--bg-primary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}>Cancelar</button>
             <button type="submit" style={{ flex: 1, background: 'var(--accent-color)', border: 'none', color: '#fff', padding: '12px 20px', borderRadius: '10px', cursor: 'pointer', fontSize: '1rem', fontWeight: '600' }}><i className="fa-solid fa-save" style={{ marginRight: '8px' }}></i>Guardar</button>
           </div>

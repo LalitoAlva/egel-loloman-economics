@@ -99,7 +99,7 @@ function AppContent() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
 
     const { currentTrack } = useAudio();
-    const { user, isAdmin, logout, loading: authLoading } = useAuth();
+    const { user, isAdmin, logout, loading: authLoading, showInactivityWarning, warningCountdown, dismissWarning } = useAuth();
     const { theme } = useTheme();
 
     const handleModeChange = (mode) => {
@@ -418,6 +418,54 @@ function AppContent() {
                     <AdminPanel onBack={() => handleModeChange('home')} />
                 )}
             </div>
+
+            {/* ⏱️ Modal de advertencia por inactividad */}
+            {showInactivityWarning && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 9999, animation: 'fadeIn 0.3s ease'
+                }}>
+                    <div style={{
+                        background: 'var(--bg-secondary)', border: '2px solid var(--warning-color)',
+                        borderRadius: '20px', padding: '40px', maxWidth: '420px', width: '90%',
+                        textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+                    }}>
+                        <div style={{ fontSize: '3.5rem', marginBottom: '16px', color: 'var(--warning-color)' }}>
+                            <i className="fa-solid fa-clock"></i>
+                        </div>
+                        <h2 style={{ color: 'var(--text-primary)', fontSize: '1.4rem', marginBottom: '12px' }}>
+                            Sesión a punto de expirar
+                        </h2>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', marginBottom: '8px' }}>
+                            Has estado inactivo por un rato.
+                        </p>
+                        <div style={{
+                            fontSize: '2.5rem', fontWeight: '800', color: 'var(--error-color)',
+                            margin: '16px 0', fontVariantNumeric: 'tabular-nums'
+                        }}>
+                            {warningCountdown}s
+                        </div>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '24px' }}>
+                            Tu sesión se cerrará automáticamente
+                        </p>
+                        <button
+                            onClick={dismissWarning}
+                            style={{
+                                background: 'var(--accent-color)', color: '#fff', border: 'none',
+                                padding: '14px 40px', borderRadius: '12px', fontSize: '1.1rem',
+                                fontWeight: '700', cursor: 'pointer', width: '100%',
+                                transition: 'transform 0.2s'
+                            }}
+                            onMouseDown={(e) => e.target.style.transform = 'scale(0.97)'}
+                            onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
+                        >
+                            <i className="fa-solid fa-hand"></i> Seguir aquí
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

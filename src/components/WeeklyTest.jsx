@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { RichText, QuestionImage } from '../lib/renderQuestionHTML';
 
 const TOTAL_QUESTIONS = 80;
 const TIME_LIMIT_MINUTES = 60;
@@ -412,7 +413,7 @@ const WeeklyTest = ({ onBack }) => {
                                         {isCorrect ? '✓ Correcta' : userAnswer ? '✗ Incorrecta' : '○ Sin responder'}
                                     </span>
                                 </div>
-                                <p style={{ marginBottom: '10px', lineHeight: '1.6' }}>{pregunta.pregunta}</p>
+                                <div style={{ marginBottom: '10px', lineHeight: '1.6' }}><RichText content={pregunta.pregunta} /></div>
                                 <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
                                     Tu respuesta: <strong style={{ color: userAnswer?.letter ? (isCorrect ? 'var(--success-color)' : 'var(--error-color)') : 'var(--text-secondary)' }}>
                                         {userAnswer?.letter?.toUpperCase() || 'No respondida'}
@@ -674,9 +675,10 @@ const WeeklyTest = ({ onBack }) => {
                 </div>
 
                 {/* Question */}
-                <h2 style={{ fontSize: '1.2rem', lineHeight: '1.7', marginBottom: '25px', whiteSpace: 'pre-wrap' }}>
-                    {pregunta.pregunta}
-                </h2>
+                <div style={{ fontSize: '1.2rem', lineHeight: '1.7', marginBottom: '10px', fontWeight: '700' }}>
+                    <RichText content={pregunta.pregunta} />
+                </div>
+                <QuestionImage url={pregunta.imagen_url} />
 
                 {/* Options */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

@@ -135,30 +135,138 @@ const LessonMode = ({ onBack }) => {
     // Check if current module's audio is playing
     const isCurrentModulePlaying = currentTrack?.module === selectedModulo?.titulo && isPlaying;
 
-    // Renderizado simple de Markdown
+    // Separar contenido de media embebida (formato: texto\n\n---MEDIA---\n{JSON})
+    const parseContentMedia = (contenido) => {
+        if (!contenido) return { text: '', media: {} };
+        const sep = '\n\n---MEDIA---\n';
+        const parts = contenido.split(sep);
+        let media = {};
+        if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
+        return { text: parts[0], media };
+    };
+
+    // Detectar si el texto contiene tags HTML
+    const isHTML = (text) => /<[a-z][\s\S]*>/i.test(text);
+
+    // Sanitizar contenido HTML: limpiar imágenes rotas y agregar onError inline
+    const sanitizeHTMLContent = (html) => {
+        if (!html) return '';
+        // Eliminar img tags con src vacío, null o undefined
+        let cleaned = html.replace(/<img\b[^>]*>/gi, (match) => {
+            const srcMatch = match.match(/src\s*=\s*["']([^"']*)["']/i);
+            const src = srcMatch ? srcMatch[1].trim() : '';
+            if (!src || src === 'null' || src === 'undefined' || src === 'about:blank') {
+                return ''; // Eliminar tag completamente
+            }
+            // Agregar onerror a imágenes válidas para ocultar si no cargan
+            if (!match.includes('onerror')) {
+                return match.replace(/^<img/, '<img onerror="this.style.display=\'none\'"');
+            }
+            return match;
+        });
+        return cleaned;
+    };
+
+    // Limpiar HTML para VoiceReader (texto plano sin tags)
+    const stripHTML = (html) => {
+        if (!html) return '';
+        return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+    };
+
+    // Procesar negritas, cursivas e imágenes inline en cualquier texto
+    const processInline = (text, keyPrefix) => {
+        if (!text) return text;
+        // Procesar imágenes markdown: ![alt](url)
+        // Procesar negritas: **text**
+        // Procesar cursivas: *text*
+        const parts = [];
+        let remaining = text;
+        let partIndex = 0;
+
+        while (remaining.length > 0) {
+            // Buscar imagen markdown ![alt](url)
+            const imgMatch = remaining.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+            // Buscar negritas **text**
+            const boldMatch = remaining.match(/\*\*([^*]+)\*\*/);
+            // Buscar cursivas *text* (que no sean **)
+            const italicMatch = remaining.match(/(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/);
+
+            // Encontrar cuál viene primero
+            let firstMatch = null;
+            let firstType = null;
+            let firstIndex = remaining.length;
+
+            if (imgMatch && remaining.indexOf(imgMatch[0]) < firstIndex) {
+                firstIndex = remaining.indexOf(imgMatch[0]);
+                firstMatch = imgMatch;
+                firstType = 'img';
+            }
+            if (boldMatch && remaining.indexOf(boldMatch[0]) < firstIndex) {
+                firstIndex = remaining.indexOf(boldMatch[0]);
+                firstMatch = boldMatch;
+                firstType = 'bold';
+            }
+            if (italicMatch && remaining.indexOf(italicMatch[0]) < firstIndex) {
+                firstIndex = remaining.indexOf(italicMatch[0]);
+                firstMatch = italicMatch;
+                firstType = 'italic';
+            }
+
+            if (!firstMatch) {
+                parts.push(remaining);
+                break;
+            }
+
+            // Texto antes del match
+            if (firstIndex > 0) {
+                parts.push(remaining.substring(0, firstIndex));
+            }
+
+            if (firstType === 'img') {
+                parts.push(
+                    <img key={`${keyPrefix}-img-${partIndex}`} src={firstMatch[2]} alt={firstMatch[1]}
+                        style={{ maxWidth: '100%', borderRadius: '12px', margin: '12px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
+                        onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                );
+            } else if (firstType === 'bold') {
+                parts.push(<strong key={`${keyPrefix}-b-${partIndex}`} style={{ color: 'var(--warning-color)' }}>{firstMatch[1]}</strong>);
+            } else if (firstType === 'italic') {
+                parts.push(<em key={`${keyPrefix}-i-${partIndex}`} style={{ color: 'var(--text-primary)' }}>{firstMatch[1]}</em>);
+            }
+
+            remaining = remaining.substring(firstIndex + firstMatch[0].length);
+            partIndex++;
+        }
+
+        return parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : parts;
+    };
+
+    // Renderizado de Markdown (fallback para contenido sin HTML)
     const renderMarkdown = (text) => {
         if (!text) return null;
 
         return text.split('\n').map((line, i) => {
-            // Headers
-            if (line.startsWith('### ')) return <h4 key={i} style={{ color: 'var(--accent-color)', marginTop: '20px' }}>{line.replace('### ', '')}</h4>;
-            if (line.startsWith('## ')) return <h3 key={i} style={{ color: 'var(--text-primary)', marginTop: '25px' }}>{line.replace('## ', '')}</h3>;
-            if (line.startsWith('# ')) return <h2 key={i} style={{ color: 'var(--warning-color)', marginTop: '30px' }}>{line.replace('# ', '')}</h2>;
+            // Headers (con soporte para bold inline)
+            if (line.startsWith('### ')) return <h4 key={i} style={{ color: 'var(--accent-color)', marginTop: '20px' }}>{processInline(line.replace('### ', ''), `h4-${i}`)}</h4>;
+            if (line.startsWith('## ')) return <h3 key={i} style={{ color: 'var(--text-primary)', marginTop: '25px' }}>{processInline(line.replace('## ', ''), `h3-${i}`)}</h3>;
+            if (line.startsWith('# ')) return <h2 key={i} style={{ color: 'var(--warning-color)', marginTop: '30px' }}>{processInline(line.replace('# ', ''), `h2-${i}`)}</h2>;
 
-            // Lists
+            // Lists (con soporte para bold/italic inline)
             if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
-                return <li key={i} style={{ marginLeft: '20px', marginBottom: '8px' }}>{line.replace(/^[\s]*[\*\-]\s/, '')}</li>;
+                const content = line.replace(/^[\s]*[\*\-]\s/, '');
+                return <li key={i} style={{ marginLeft: '20px', marginBottom: '8px' }}>{processInline(content, `li-${i}`)}</li>;
             }
             if (line.match(/^\d+\.\s/)) {
-                return <li key={i} style={{ marginLeft: '20px', marginBottom: '8px', listStyleType: 'decimal' }}>{line.replace(/^\d+\.\s/, '')}</li>;
+                const content = line.replace(/^\d+\.\s/, '');
+                return <li key={i} style={{ marginLeft: '20px', marginBottom: '8px', listStyleType: 'decimal' }}>{processInline(content, `ol-${i}`)}</li>;
             }
 
-            // Bold
-            if (line.includes('**')) {
-                const parts = line.split('**');
+            // Línea con bold/italic/imágenes
+            if (line.includes('**') || line.includes('*') || line.match(/!\[/)) {
                 return (
                     <p key={i} style={{ marginBottom: '12px', lineHeight: '1.7' }}>
-                        {parts.map((part, j) => j % 2 === 1 ? <strong key={j} style={{ color: 'var(--warning-color)' }}>{part}</strong> : part)}
+                        {processInline(line, `p-${i}`)}
                     </p>
                 );
             }
@@ -169,6 +277,73 @@ const LessonMode = ({ onBack }) => {
             // Normal text
             return <p key={i} style={{ marginBottom: '12px', lineHeight: '1.7' }}>{line}</p>;
         });
+    };
+
+    // Renderizar contenido completo (HTML o Markdown + multimedia)
+    // cardRecord: el objeto completo de contenido_clase (para acceder a imagen_url de la BD)
+    const renderContent = (contenido, cardRecord) => {
+        if (!contenido) return null;
+        const { text, media } = parseContentMedia(contenido);
+
+        // Combinar imagen: priorizar media embebida, fallback a columna imagen_url de la BD
+        const imagenUrl = media.imagen_url || cardRecord?.imagen_url;
+        const videoUrl = media.video_url || cardRecord?.video_url;
+        const audioUrl = media.audio_url || cardRecord?.audio_url;
+
+        return (
+            <>
+                {/* Texto: HTML o Markdown */}
+                {isHTML(text) ? (
+                    <div
+                        className="lesson-html-content"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHTMLContent(text) }}
+                        style={{ lineHeight: '1.8', wordBreak: 'break-word' }}
+                    />
+                ) : (
+                    renderMarkdown(text)
+                )}
+
+                {/* Multimedia (de ---MEDIA--- o de columnas de la BD) */}
+                {imagenUrl && (
+                    <div style={{ marginTop: '20px', textAlign: 'center' }}>
+                        <img
+                            src={imagenUrl}
+                            alt="Contenido visual"
+                            style={{ maxWidth: '100%', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
+                            onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                    </div>
+                )}
+                {videoUrl && (
+                    <div style={{ marginTop: '20px' }}>
+                        {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
+                            <iframe
+                                src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                                style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '12px' }}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                title="Video de clase"
+                            />
+                        ) : (
+                            <video controls style={{ width: '100%', borderRadius: '12px' }} src={videoUrl} />
+                        )}
+                    </div>
+                )}
+                {audioUrl && (
+                    <div style={{ marginTop: '20px', padding: '15px', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
+                        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '8px' }}><i className="fa-solid fa-headphones"></i> Audio del contenido</p>
+                        <audio controls style={{ width: '100%' }} src={audioUrl} />
+                    </div>
+                )}
+            </>
+        );
+    };
+
+    // Obtener texto limpio para VoiceReader
+    const getCleanText = (contenido) => {
+        if (!contenido) return '';
+        const { text } = parseContentMedia(contenido);
+        return isHTML(text) ? stripHTML(text) : text;
     };
 
     // Pantalla de carga
@@ -447,9 +622,9 @@ const LessonMode = ({ onBack }) => {
                                 lineHeight: '1.7'
                             }}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
-                                    <VoiceReader text={currentCard.contenido} />
+                                    <VoiceReader text={getCleanText(currentCard.contenido)} />
                                 </div>
-                                {renderMarkdown(currentCard.contenido)}
+                                {renderContent(currentCard.contenido, currentCard)}
                             </div>
                         )}
                     </div>

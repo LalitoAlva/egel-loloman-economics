@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
 const StudentDashboard = ({ onBack }) => {
-    const { user } = useAuth();
+    const { user, updateInactivityTimeout, inactivityTimeoutMs } = useAuth();
     const [loading, setLoading] = useState(true);
     const [examenes, setExamenes] = useState([]);
     const [progreso, setProgreso] = useState([]);
@@ -69,7 +69,7 @@ const StudentDashboard = ({ onBack }) => {
         return (
             <div className="container fade-in" style={{ textAlign: 'center', paddingTop: '60px' }}>
                 <div style={{ fontSize: '4rem', marginBottom: '20px' }}><i className="fa-solid fa-lock"></i></div>
-                <h1 style={{ color: '#fff', marginBottom: '15px' }}>Inicia Sesión</h1>
+                <h1 style={{ color: 'var(--text-primary)', marginBottom: '15px' }}>Inicia Sesión</h1>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>
                     Necesitas iniciar sesión para ver tu progreso.
                 </p>
@@ -124,7 +124,7 @@ const StudentDashboard = ({ onBack }) => {
             }}>
                 <div style={{ fontSize: '4rem' }}>{user.id ? <i className="fa-solid fa-user-astronaut" style={{ color: 'var(--accent-color)' }}></i> : <i className="fa-solid fa-circle-user"></i>}</div>
                 <div>
-                    <h1 style={{ fontSize: '1.8rem', marginBottom: '5px', color: '#fff' }}>
+                    <h1 style={{ fontSize: '1.8rem', marginBottom: '5px', color: 'var(--text-primary)' }}>
                         ¡Hola, {user.nombre}!
                     </h1>
                     <p style={{ color: 'var(--text-secondary)' }}>
@@ -134,6 +134,63 @@ const StudentDashboard = ({ onBack }) => {
                     </p>
                 </div>
             </header>
+
+            {/* Session Settings */}
+            <div style={{
+                marginBottom: '30px',
+                padding: '20px',
+                background: 'var(--bg-secondary)',
+                borderRadius: '16px',
+                border: '1px solid var(--card-border)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '15px'
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                    <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: 'rgba(168, 85, 247, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--accent-color)',
+                        fontSize: '1.2rem'
+                    }}>
+                        <i className="fa-solid fa-stopwatch"></i>
+                    </div>
+                    <div>
+                        <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Tiempo de Inactividad</h3>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                            Cerrar sesión automáticamente después de:
+                        </p>
+                    </div>
+                </div>
+
+                <select
+                    value={inactivityTimeoutMs ? inactivityTimeoutMs / 60000 : 30}
+                    onChange={(e) => updateInactivityTimeout(parseInt(e.target.value))}
+                    style={{
+                        padding: '10px 15px',
+                        borderRadius: '8px',
+                        border: '1px solid var(--card-border)',
+                        background: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '0.95rem',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        minWidth: '150px'
+                    }}
+                >
+                    <option value="2">2 min (Prueba)</option>
+                    <option value="15">15 minutos</option>
+                    <option value="30">30 minutos (Recomendado)</option>
+                    <option value="60">1 hora</option>
+                </select>
+            </div>
 
             {/* Stats Grid */}
             <div style={{
@@ -170,7 +227,7 @@ const StudentDashboard = ({ onBack }) => {
 
             {/* Recent Exams */}
             <section className="slide-card" style={{ marginBottom: '25px' }}>
-                <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: '#fff' }}>
+                <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: 'var(--text-primary)' }}>
                     📋 Historial de Exámenes
                 </h2>
 
@@ -264,7 +321,7 @@ const StudentDashboard = ({ onBack }) => {
             {/* Module Progress */}
             {progreso.length > 0 && (
                 <section className="slide-card">
-                    <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: '#fff' }}>
+                    <h2 style={{ fontSize: '1.3rem', marginBottom: '20px', color: 'var(--text-primary)' }}>
                         📚 Progreso por Módulo
                     </h2>
 
@@ -281,7 +338,7 @@ const StudentDashboard = ({ onBack }) => {
                             }}>
                                 <span style={{ fontSize: '1.5rem' }}>{p.modulos?.icon || <i className="fa-solid fa-book"></i>}</span>
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ marginBottom: '8px', color: '#fff' }}>
+                                    <div style={{ marginBottom: '8px', color: 'var(--text-primary)' }}>
                                         {p.modulos?.titulo || p.modulo}
                                     </div>
                                     <div style={{
@@ -299,7 +356,7 @@ const StudentDashboard = ({ onBack }) => {
                                     </div>
                                 </div>
                                 <div style={{ textAlign: 'right', minWidth: '80px' }}>
-                                    <div style={{ color: '#fff', fontWeight: 'bold' }}>
+                                    <div style={{ color: 'var(--text-primary)', fontWeight: 'bold' }}>
                                         {p.tarjetas_vistas}/{p.tarjetas_totales}
                                     </div>
                                     <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
@@ -344,7 +401,7 @@ const thStyle = {
 
 const tdStyle = {
     padding: '12px',
-    color: '#fff',
+    color: 'var(--text-primary)',
     fontSize: '0.9rem'
 };
 

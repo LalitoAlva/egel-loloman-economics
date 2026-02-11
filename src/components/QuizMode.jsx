@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { RichText, QuestionImage, getCleanQuestionText } from '../lib/renderQuestionHTML';
 
 const QuizMode = ({ onBack }) => {
     const { user } = useAuth();
@@ -898,9 +899,10 @@ const QuizMode = ({ onBack }) => {
                 </div>
 
                 {/* Question */}
-                <h2 style={{ fontSize: '1.2rem', lineHeight: '1.7', marginBottom: '25px', whiteSpace: 'pre-wrap' }}>
-                    {pregunta.pregunta}
-                </h2>
+                <div style={{ fontSize: '1.2rem', lineHeight: '1.7', marginBottom: '10px', fontWeight: '700' }}>
+                    <RichText content={pregunta.pregunta} />
+                </div>
+                <QuestionImage url={pregunta.imagen_url} />
 
                 {/* Options */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -995,9 +997,9 @@ const QuizMode = ({ onBack }) => {
                                 <strong style={{ display: 'block', marginBottom: '8px', color: 'var(--accent-color)' }}>
                                     💡 Explicación:
                                 </strong>
-                                <p style={{ lineHeight: '1.6', marginBottom: pregunta.formula ? '12px' : 0 }}>
-                                    {pregunta.explicacion}
-                                </p>
+                                <div style={{ lineHeight: '1.6', marginBottom: pregunta.formula ? '12px' : 0 }}>
+                                    <RichText content={pregunta.explicacion} />
+                                </div>
                                 {pregunta.formula && (
                                     <div style={{
                                         background: 'rgba(0,0,0,0.3)',

@@ -1,8 +1,14 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import md5 from '../lib/md5';
 
 const AuthContext = createContext();
+
+// ⏱️ CONFIGURACIÓN DE TIMEOUT DE INACTIVIDAD
+const WARNING_DURATION_MS = 30 * 1000;          // 30 segundos de gracia
+
+// Default to 30 minutes if not set
+const DEFAULT_TIMEOUT = 30 * 60 * 1000;
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -16,8 +22,19 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [role, setRole] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showInactivityWarning, setShowInactivityWarning] = useState(false);
+    const [warningCountdown, setWarningCountdown] = useState(0);
 
-    // Check for saved session on mount
+    // State for Configurable Timeout
+    const [inactivityTimeoutMs, setInactivityTimeoutMs] = useState(DEFAULT_TIMEOUT);
+
+    const inactivityTimerRef = useRef(null);
+    const warningTimerRef = useRef(null);
+    const countdownIntervalRef = useRef(null);
+    // Ref para evitar que el useEffect limpie los timers del warning
+    const showWarningRef = useRef(false);
+
+    // Check for saved session and timeout preference on mount
     useEffect(() => {
         const savedUser = localStorage.getItem('egel_user');
         if (savedUser) {
@@ -25,6 +42,12 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
             loadRole(userData.rol_id);
         }
+
+        const savedTimeout = localStorage.getItem('egel_inactivity_timeout');
+        if (savedTimeout) {
+            setInactivityTimeoutMs(parseInt(savedTimeout, 10));
+        }
+
         setLoading(false);
     }, []);
 
@@ -39,6 +62,105 @@ export const AuthProvider = ({ children }) => {
             setRole(data);
         }
     };
+
+    // Function to update timeout setting
+    const updateInactivityTimeout = (minutes) => {
+        const ms = minutes * 60 * 1000;
+        setInactivityTimeoutMs(ms);
+        localStorage.setItem('egel_inactivity_timeout', ms.toString());
+        // Timer will automatically restart due to useEffect dependency on inactivityTimeoutMs
+    };
+
+    // ============================================
+    // INACTIVITY TIMER LOGIC
+    // ============================================
+
+    // Mantener ref sincronizado con el estado
+    useEffect(() => {
+        showWarningRef.current = showInactivityWarning;
+    }, [showInactivityWarning]);
+
+    const clearAllTimers = useCallback(() => {
+        if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+        if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+        inactivityTimerRef.current = null;
+        warningTimerRef.current = null;
+        countdownIntervalRef.current = null;
+    }, []);
+
+    const startInactivityTimer = useCallback(() => {
+        // Solo limpiar el timer de inactividad, NO los del warning
+        if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+        inactivityTimerRef.current = null;
+
+        inactivityTimerRef.current = setTimeout(() => {
+            // Mostrar advertencia
+            showWarningRef.current = true;
+            setShowInactivityWarning(true);
+            setWarningCountdown(Math.ceil(WARNING_DURATION_MS / 1000));
+
+            // Countdown cada segundo
+            countdownIntervalRef.current = setInterval(() => {
+                setWarningCountdown(prev => {
+                    if (prev <= 1) {
+                        clearInterval(countdownIntervalRef.current);
+                        countdownIntervalRef.current = null;
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+
+            // Auto-logout después del grace period
+            warningTimerRef.current = setTimeout(() => {
+                clearAllTimers();
+                showWarningRef.current = false;
+                setShowInactivityWarning(false);
+                setUser(null);
+                setRole(null);
+                localStorage.removeItem('egel_user');
+            }, WARNING_DURATION_MS);
+        }, inactivityTimeoutMs);
+    }, [clearAllTimers, inactivityTimeoutMs]);
+
+    const dismissWarning = useCallback(() => {
+        // Limpiar timers del warning
+        if (warningTimerRef.current) clearTimeout(warningTimerRef.current);
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+        warningTimerRef.current = null;
+        countdownIntervalRef.current = null;
+        showWarningRef.current = false;
+        setShowInactivityWarning(false);
+        // Reiniciar timer de inactividad
+        startInactivityTimer();
+    }, [startInactivityTimer]);
+
+    // Escuchar actividad del usuario — depende de `user` y `inactivityTimeoutMs`
+    useEffect(() => {
+        if (!user) {
+            clearAllTimers();
+            return;
+        }
+
+        const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+
+        const handleActivity = () => {
+            // Usar ref para evitar re-renders y dependencias circulares
+            if (!showWarningRef.current) {
+                startInactivityTimer();
+            }
+        };
+
+        events.forEach(ev => window.addEventListener(ev, handleActivity, { passive: true }));
+        startInactivityTimer();
+
+        return () => {
+            events.forEach(ev => window.removeEventListener(ev, handleActivity));
+            clearAllTimers();
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user, inactivityTimeoutMs]);
 
     const login = async (email, password) => {
         try {
@@ -165,7 +287,12 @@ export const AuthProvider = ({ children }) => {
             isAdmin,
             isProfesor,
             isEstudiante,
-            isAuthenticated: !!user
+            isAuthenticated: !!user,
+            showInactivityWarning,
+            warningCountdown,
+            dismissWarning,
+            updateInactivityTimeout,
+            inactivityTimeoutMs
         }}>
             {children}
         </AuthContext.Provider>

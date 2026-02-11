@@ -443,3 +443,159 @@ input[type="range"]::-webkit-slider-thumb {
     font-size: 1.5rem !important;
   }
 }
+
+/* ============================
+   LESSON HTML CONTENT STYLES
+   Renderiza correctamente HTML rico dentro de las tarjetas de lección
+   ============================ */
+.lesson-html-content {
+  color: var(--text-secondary);
+  font-size: 1.02rem;
+  line-height: 1.8;
+  word-break: break-word;
+}
+
+.lesson-html-content h1 {
+  font-size: 1.6rem !important;
+  color: var(--warning-color);
+  margin: 25px 0 12px 0;
+  border-bottom: 2px solid var(--card-border);
+  padding-bottom: 8px;
+}
+
+.lesson-html-content h2 {
+  font-size: 1.35rem !important;
+  color: var(--text-primary);
+  margin: 20px 0 10px 0;
+}
+
+.lesson-html-content h3 {
+  font-size: 1.15rem !important;
+  color: var(--accent-color);
+  margin: 18px 0 8px 0;
+}
+
+.lesson-html-content p {
+  font-size: 1.02rem;
+  margin-bottom: 12px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.lesson-html-content strong,
+.lesson-html-content b {
+  color: var(--warning-color);
+  font-weight: 700;
+}
+
+.lesson-html-content em,
+.lesson-html-content i:not([class]) {
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.lesson-html-content ul,
+.lesson-html-content ol {
+  margin: 12px 0 12px 24px;
+  padding: 0;
+}
+
+.lesson-html-content li {
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+.lesson-html-content a {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.lesson-html-content a:hover {
+  opacity: 0.8;
+}
+
+.lesson-html-content pre,
+.lesson-html-content code {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.92rem;
+}
+
+.lesson-html-content pre {
+  padding: 16px;
+  overflow-x: auto;
+  margin: 14px 0;
+  border: 1px solid var(--card-border);
+}
+
+.lesson-html-content code {
+  padding: 2px 6px;
+}
+
+.lesson-html-content blockquote {
+  border-left: 4px solid var(--accent-color);
+  margin: 14px 0;
+  padding: 12px 20px;
+  background: rgba(139, 92, 246, 0.08);
+  border-radius: 0 8px 8px 0;
+  font-style: italic;
+}
+
+.lesson-html-content img {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 12px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Ocultar imágenes rotas/vacías dentro de HTML content */
+.lesson-html-content img:not([src]),
+.lesson-html-content img[src=""],
+.lesson-html-content img[src="null"],
+.lesson-html-content img[src="undefined"],
+.lesson-html-content img[src="about:blank"] {
+  display: none !important;
+}
+
+/* Ocultar imágenes rotas dentro del editor contentEditable */
+[contenteditable] img:not([src]),
+[contenteditable] img[src=""],
+[contenteditable] img[src="null"],
+[contenteditable] img[src="undefined"],
+[contenteditable] img[src="about:blank"] {
+  display: none !important;
+}
+
+.lesson-html-content iframe {
+  max-width: 100%;
+  border-radius: 12px;
+  margin: 12px 0;
+}
+
+.lesson-html-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.lesson-html-content th,
+.lesson-html-content td {
+  padding: 10px 14px;
+  border: 1px solid var(--card-border);
+  text-align: left;
+}
+
+.lesson-html-content th {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.lesson-html-content hr {
+  border: none;
+  border-top: 1px solid var(--card-border);
+  margin: 20px 0;
+}
