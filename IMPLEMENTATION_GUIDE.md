@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS admin_settings (
 
 -- Insertar configuración por defecto
 INSERT INTO admin_settings (setting_key, setting_value)
-VALUES ('session_timeout_minutes', '2')
+VALUES ('session_timeout_minutes', '30')
 ON CONFLICT (setting_key) DO UPDATE SET setting_value = EXCLUDED.setting_value;
 
 -- RLS Policy: Solo admins pueden ver/editar
@@ -108,15 +108,15 @@ USING (bucket_id = 'uploads');
 
 1. **Configurar timeout:**
    - Ir a AdminPanel → Configuración
-   - Cambiar "Timeout de inactividad (minutos)" (default: 2)
+   - Cambiar "Timeout de inactividad (minutos)" (default: 30)
    - Click "Guardar"
 
 2. **Comportamiento:**
    - Cualquier click, tecla o scroll resetea el contador
-   - A los 2 minutos de inactividad → aparece modal
+   - A los 30 minutos de inactividad → aparece modal
    - Modal muestra countdown de 30 segundos
    - Usuario puede:
-     - Hacer click "Extender sesión" → 2 minutos más
+     - Hacer click "Extender sesión" → 30 minutos más
      - Hacer click "Cerrar sesión" → logout inmediato
      - Presionar ESC → logout inmediato
      - No hacer nada en 30s → auto logout
@@ -160,7 +160,7 @@ USING (bucket_id = 'uploads');
 
 ### Session Timeout
 - [ ] Login exitoso
-- [ ] Esperar 2 minutos sin hacer nada
+- [ ] Esperar 30 minutos sin hacer nada
 - [ ] Modal aparece con countdown de 30s
 - [ ] Countdown disminuye cada segundo
 - [ ] Color cambia: amarillo (20+s) → naranja (11-20s) → rojo (0-10s)

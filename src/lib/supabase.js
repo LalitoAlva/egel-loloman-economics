@@ -144,3 +144,64 @@ export async function getProgreso(userId) {
 
     return data
 }
+
+// ============================================
+// FUNCIONES PARA UPLOAD DE IMÁGENES
+// ============================================
+
+/**
+ * Sube una imagen a Supabase Storage
+ */
+export async function uploadImage(file, folder = 'modulos') {
+    if (!file) return null
+
+    try {
+        const ext = file.name.split('.').pop()
+        const filename = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`
+        const filepath = `${folder}/${filename}`
+
+        const { data, error } = await supabase.storage
+            .from('uploads')
+            .upload(filepath, file, {
+                cacheControl: '3600',
+                upsert: false
+            })
+
+        if (error) throw error
+
+        // Obtener URL pública
+        const { data: publicUrlData } = supabase.storage
+            .from('uploads')
+            .getPublicUrl(filepath)
+
+        return publicUrlData.publicUrl
+    } catch (error) {
+        console.error('Upload error:', error.message)
+        throw error
+    }
+}
+
+/**
+ * Elimina una imagen de Supabase Storage
+ */
+export async function deleteImage(fileUrl) {
+    try {
+        if (!fileUrl) return false
+
+        // Extraer filepath de URL pública
+        const parts = fileUrl.split('/uploads/')
+        if (parts.length < 2) return false
+
+        const filepath = parts[1]
+
+        const { error } = await supabase.storage
+            .from('uploads')
+            .remove([filepath])
+
+        if (error) throw error
+        return true
+    } catch (error) {
+        console.error('Delete error:', error.message)
+        return false
+    }
+}

@@ -5,6 +5,7 @@ import './index.css';
 import { AudioProvider, useAudio } from './context/AudioContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { SessionProvider } from './context/SessionContext';
 
 // Components
 import HomeScreen from './components/HomeScreen';
@@ -21,6 +22,7 @@ import StudentDashboard from './components/StudentDashboard';
 import WeeklyTest from './components/WeeklyTest';
 import NotificationsBubble from './components/NotificationsBubble';
 import PasswordChangeModal from './components/PasswordChangeModal';
+import SessionTimeoutModal from './components/SessionTimeoutModal';
 
 const FontSizeToggle = () => {
     const { fontSize, cycleFontSize, theme } = useTheme();
@@ -502,9 +504,12 @@ function App() {
     return (
         <ThemeProvider>
             <AuthProvider>
-                <AudioProvider>
-                    <AppContent />
-                </AudioProvider>
+                <SessionProvider>
+                    <AudioProvider>
+                        <AppContent />
+                        <SessionTimeoutModal />
+                    </AudioProvider>
+                </SessionProvider>
             </AuthProvider>
         </ThemeProvider>
     );

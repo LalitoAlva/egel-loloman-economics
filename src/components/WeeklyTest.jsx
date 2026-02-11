@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { RichText, QuestionImage } from '../lib/renderQuestionHTML';
+import QuestionPreviewModal from './QuestionPreviewModal';
 
 const TOTAL_QUESTIONS = 80;
 const TIME_LIMIT_MINUTES = 60;
@@ -22,6 +23,7 @@ const WeeklyTest = ({ onBack }) => {
     const [timeRemaining, setTimeRemaining] = useState(null);
     const [showResumeModal, setShowResumeModal] = useState(false);
     const [savedProgress, setSavedProgress] = useState(null);
+    const [previewQuestion, setPreviewQuestion] = useState(null);
     const timerRef = useRef(null);
 
     // Check for saved progress on mount
@@ -680,6 +682,27 @@ const WeeklyTest = ({ onBack }) => {
                 </div>
                 <QuestionImage url={pregunta.imagen_url} />
 
+                {/* Preview Button */}
+                {answers[currentIndex] === undefined && (
+                    <button
+                        onClick={() => setPreviewQuestion(pregunta)}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            marginBottom: '15px',
+                            background: 'transparent',
+                            border: '2px dashed #3b82f6',
+                            color: '#3b82f6',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        👁️ Vista previa
+                    </button>
+                )}
+
                 {/* Options */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {opciones.map(opt => {
@@ -774,6 +797,12 @@ const WeeklyTest = ({ onBack }) => {
                     )}
                 </div>
             </div>
+
+            {/* Question Preview Modal */}
+            <QuestionPreviewModal
+                question={previewQuestion}
+                onClose={() => setPreviewQuestion(null)}
+            />
         </div>
     );
 };

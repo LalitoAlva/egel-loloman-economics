@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { RichText, QuestionImage, getCleanQuestionText } from '../lib/renderQuestionHTML';
+import QuestionPreviewModal from './QuestionPreviewModal';
 
 const QuizMode = ({ onBack }) => {
     const { user } = useAuth();
@@ -24,6 +25,7 @@ const QuizMode = ({ onBack }) => {
     const [showResumeModal, setShowResumeModal] = useState(false);
     const [resumeData, setResumeData] = useState(null);
     const [isResumingExam, setIsResumingExam] = useState(false);
+    const [previewQuestion, setPreviewQuestion] = useState(null);
     const timerRef = useRef(null);
 
     // Load modules from preguntas table (unique modulo values)
@@ -904,6 +906,27 @@ const QuizMode = ({ onBack }) => {
                 </div>
                 <QuestionImage url={pregunta.imagen_url} />
 
+                {/* Preview Button */}
+                {answers[currentIndex] === undefined && (
+                    <button
+                        onClick={() => setPreviewQuestion(pregunta)}
+                        style={{
+                            width: '100%',
+                            padding: '10px',
+                            marginBottom: '15px',
+                            background: 'transparent',
+                            border: '2px dashed var(--accent-color)',
+                            color: 'var(--accent-color)',
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        👁️ Vista previa
+                    </button>
+                )}
+
                 {/* Options */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     {opciones.map(opt => {
@@ -1064,6 +1087,12 @@ const QuizMode = ({ onBack }) => {
                     )}
                 </div>
             </div>
+
+            {/* Question Preview Modal */}
+            <QuestionPreviewModal
+                question={previewQuestion}
+                onClose={() => setPreviewQuestion(null)}
+            />
         </div>
     );
 };
