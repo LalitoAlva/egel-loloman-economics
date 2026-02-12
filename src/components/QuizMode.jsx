@@ -34,23 +34,31 @@ const QuizMode = ({ onBack }) => {
         checkForResumeableExam();
     }, []);
 
-    // Check for a saved exam in localStorage when component mounts
+    // Check for a saved exam in localStorage — exámenes de más de 7 días no se pueden retomar
     const checkForResumeableExam = () => {
         if (!user) return;
 
-        // Check localStorage for any saved exams
         const savedExams = [];
+        const keysToRemove = [];
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
             if (key && key.startsWith('egel_exam_progress_')) {
                 const examenId = key.replace('egel_exam_progress_', '');
                 const data = JSON.parse(localStorage.getItem(key));
-                savedExams.push({ examenId, ...data });
+                const savedAt = new Date(data.savedAt);
+                const daysDiff = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60 * 24);
+                if (daysDiff < 7) {
+                    savedExams.push({ examenId, ...data });
+                } else {
+                    keysToRemove.push(key);
+                }
             }
         }
 
+        // Limpiar exámenes expirados
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+
         if (savedExams.length > 0) {
-            // Show resume modal with the first saved exam
             setResumeData(savedExams[0]);
             setShowResumeModal(true);
         }

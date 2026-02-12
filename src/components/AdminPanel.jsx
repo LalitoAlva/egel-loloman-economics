@@ -553,10 +553,44 @@ const AdminPanel = ({ onBack }) => {
         }
     };
 
+    // Configuración state
+    const [sessionTimeoutMin, setSessionTimeoutMin] = useState(30);
+    const [savingTimeout, setSavingTimeout] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'configuracion') {
+            loadSettings();
+        }
+    }, [activeTab]);
+
+    const loadSettings = async () => {
+        const { data } = await supabase
+            .from('admin_settings')
+            .select('setting_value')
+            .eq('setting_key', 'session_timeout_minutes')
+            .single();
+        if (data?.setting_value) {
+            setSessionTimeoutMin(parseInt(data.setting_value));
+        }
+    };
+
+    const saveSessionTimeout = async (minutes) => {
+        setSavingTimeout(true);
+        setSessionTimeoutMin(minutes);
+        const { error } = await supabase
+            .from('admin_settings')
+            .upsert({ setting_key: 'session_timeout_minutes', setting_value: minutes.toString(), updated_at: new Date().toISOString() }, { onConflict: 'setting_key' });
+        if (error) {
+            alert('Error al guardar: ' + error.message);
+        }
+        setSavingTimeout(false);
+    };
+
     const tabs = [
         { id: 'solicitudes', label: 'Solicitudes', icon: 'fa-solid fa-clipboard-list', badge: solicitudes.filter(s => s.estado === 'pendiente').length },
         { id: 'usuarios', label: 'Usuarios', icon: 'fa-solid fa-users' },
-        { id: 'roles', label: 'Roles', icon: 'fa-solid fa-key' }
+        { id: 'roles', label: 'Roles', icon: 'fa-solid fa-key' },
+        { id: 'configuracion', label: 'Configuración', icon: 'fa-solid fa-gear' }
     ];
 
     return (
@@ -905,6 +939,78 @@ const AdminPanel = ({ onBack }) => {
                                     onToggleStatus={handleTogglePreguntaStatus}
                                 />
                             </>
+                        )}
+
+                        {activeTab === 'configuracion' && (
+                            <div style={{ maxWidth: '600px' }}>
+                                <h2 style={{ fontSize: '1.5rem', marginBottom: '25px', color: 'var(--text-primary)' }}>
+                                    <i className="fa-solid fa-gear" style={{ marginRight: '10px', color: 'var(--accent-color)' }}></i>
+                                    Configuración Global
+                                </h2>
+
+                                {/* Session Timeout */}
+                                <div style={{
+                                    padding: '25px',
+                                    background: 'var(--bg-secondary)',
+                                    borderRadius: '16px',
+                                    border: '1px solid var(--card-border)',
+                                    marginBottom: '20px'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '20px' }}>
+                                        <div style={{
+                                            width: '50px', height: '50px', borderRadius: '12px',
+                                            background: 'rgba(168, 85, 247, 0.1)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            color: 'var(--accent-color)', fontSize: '1.4rem'
+                                        }}>
+                                            <i className="fa-solid fa-stopwatch"></i>
+                                        </div>
+                                        <div>
+                                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--text-primary)' }}>
+                                                Tiempo de Inactividad
+                                            </h3>
+                                            <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                                Cerrar sesión automáticamente para TODOS los usuarios después de:
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                        {[
+                                            { value: 5, label: '5 min' },
+                                            { value: 15, label: '15 min' },
+                                            { value: 30, label: '30 min' },
+                                            { value: 60, label: '1 hora' },
+                                            { value: 120, label: '2 horas' }
+                                        ].map(opt => (
+                                            <button
+                                                key={opt.value}
+                                                onClick={() => saveSessionTimeout(opt.value)}
+                                                disabled={savingTimeout}
+                                                style={{
+                                                    padding: '10px 20px',
+                                                    borderRadius: '10px',
+                                                    border: sessionTimeoutMin === opt.value ? '2px solid var(--accent-color)' : '1px solid var(--card-border)',
+                                                    background: sessionTimeoutMin === opt.value ? 'rgba(168, 85, 247, 0.15)' : 'var(--bg-primary)',
+                                                    color: sessionTimeoutMin === opt.value ? 'var(--accent-color)' : 'var(--text-secondary)',
+                                                    cursor: savingTimeout ? 'wait' : 'pointer',
+                                                    fontWeight: sessionTimeoutMin === opt.value ? '700' : '500',
+                                                    fontSize: '0.95rem',
+                                                    transition: 'all 0.2s'
+                                                }}
+                                            >
+                                                {sessionTimeoutMin === opt.value && <i className="fa-solid fa-check" style={{ marginRight: '6px' }}></i>}
+                                                {opt.label}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    <p style={{ margin: '16px 0 0', fontSize: '0.8rem', color: 'var(--text-secondary)', fontStyle: 'italic' }}>
+                                        <i className="fa-solid fa-info-circle" style={{ marginRight: '6px' }}></i>
+                                        Este ajuste aplica a todos los usuarios. Los cambios toman efecto en la próxima sesión.
+                                    </p>
+                                </div>
+                            </div>
                         )}
                     </>
                 )}

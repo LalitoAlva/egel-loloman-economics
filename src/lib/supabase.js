@@ -182,6 +182,45 @@ export async function uploadImage(file, folder = 'modulos') {
 }
 
 /**
+ * Lista imágenes en una carpeta de Supabase Storage
+ */
+export async function listImages(folder = 'contenido') {
+    try {
+        const { data, error } = await supabase.storage
+            .from('uploads')
+            .list(folder, {
+                limit: 100,
+                offset: 0,
+                sortBy: { column: 'created_at', order: 'desc' }
+            })
+
+        if (error) throw error
+
+        // Filtrar solo archivos de imagen y obtener URLs públicas
+        const imageFiles = (data || []).filter(f => {
+            if (!f.name || f.id === null) return false
+            const ext = f.name.split('.').pop()?.toLowerCase()
+            return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'].includes(ext)
+        })
+
+        return imageFiles.map(f => {
+            const { data: urlData } = supabase.storage
+                .from('uploads')
+                .getPublicUrl(`${folder}/${f.name}`)
+            return {
+                name: f.name,
+                url: urlData.publicUrl,
+                created_at: f.created_at,
+                size: f.metadata?.size || 0
+            }
+        })
+    } catch (error) {
+        console.error('List images error:', error.message)
+        return []
+    }
+}
+
+/**
  * Elimina una imagen de Supabase Storage
  */
 export async function deleteImage(fileUrl) {

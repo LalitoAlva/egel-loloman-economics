@@ -4,6 +4,16 @@ import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import md5 from '../lib/md5';
 
+// Google SVG logo para botón OAuth
+const GoogleIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 48 48">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+  </svg>
+);
+
 const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
@@ -27,6 +37,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
 
     const { login } = useAuth();
     const { theme } = useTheme();
+    const [googleLoading, setGoogleLoading] = useState(false);
 
     // Use consistent MD5 hash function shared across the app
     const hashPassword = (password) => {
@@ -132,6 +143,143 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
         setLoading(false);
     };
 
+    // Decodificar JWT de Google (sin librería externa)
+    const decodeJWT = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
+                '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+            ).join(''));
+            return JSON.parse(jsonPayload);
+        } catch { return null; }
+    };
+
+    // Callback cuando Google devuelve las credenciales
+    const handleGoogleCredential = async (response) => {
+        setGoogleLoading(true);
+        setError('');
+
+        const payload = decodeJWT(response.credential);
+        if (!payload || !payload.email) {
+            setError('No se pudo obtener información de Google');
+            setGoogleLoading(false);
+            return;
+        }
+
+        const gEmail = payload.email.toLowerCase().trim();
+        const gNombre = payload.name || payload.email.split('@')[0] || 'Usuario';
+
+        try {
+            // 1. Verificar si ya existe en nuestra tabla usuarios
+            const { data: existingUser } = await supabase
+                .from('usuarios')
+                .select('*, roles(*)')
+                .eq('email', gEmail)
+                .eq('activo', true)
+                .single();
+
+            if (existingUser) {
+                // Usuario existe — login directo
+                await supabase.from('usuarios')
+                    .update({ ultimo_acceso: new Date().toISOString() })
+                    .eq('id', existingUser.id);
+                localStorage.setItem('egel_user', JSON.stringify(existingUser));
+                window.location.reload();
+                return;
+            }
+
+            // 2. Verificar si ya tiene solicitud
+            const { data: existingReq } = await supabase
+                .from('solicitudes_cuenta')
+                .select('id, estado')
+                .eq('email', gEmail)
+                .single();
+
+            if (existingReq) {
+                if (existingReq.estado === 'pendiente') {
+                    setError('Ya existe una solicitud pendiente con este email. Espera la aprobación del administrador.');
+                } else if (existingReq.estado === 'rechazada') {
+                    setError('Tu solicitud fue rechazada. Contacta al administrador.');
+                }
+                setGoogleLoading(false);
+                return;
+            }
+
+            // 3. Crear solicitud nueva
+            await supabase.from('solicitudes_cuenta').insert([{
+                nombre: gNombre,
+                email: gEmail,
+                password_hash: 'google_oauth',
+                motivo: 'Registro via Google OAuth',
+                estado: 'pendiente'
+            }]);
+
+            setError('');
+            setRequestSent(true);
+        } catch (err) {
+            console.error('Google login error:', err);
+            setError('Error al procesar tu cuenta de Google');
+        }
+        setGoogleLoading(false);
+    };
+
+    const handleGoogleLogin = () => {
+        setError('');
+        if (!window.google?.accounts?.id) {
+            setError('Google Identity Services no está disponible. Recarga la página.');
+            return;
+        }
+
+        setGoogleLoading(true);
+
+        window.google.accounts.id.initialize({
+            client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID || '',
+            callback: handleGoogleCredential,
+            auto_select: false,
+            cancel_on_tap_outside: true
+        });
+
+        // Renderizar el popup de Google
+        window.google.accounts.id.prompt((notification) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                // Si One Tap no se muestra, usar el botón renderizado como fallback
+                // Crear un contenedor temporal para el botón de Google
+                const tempDiv = document.createElement('div');
+                tempDiv.id = 'google-btn-temp';
+                tempDiv.style.position = 'fixed';
+                tempDiv.style.top = '50%';
+                tempDiv.style.left = '50%';
+                tempDiv.style.transform = 'translate(-50%, -50%)';
+                tempDiv.style.zIndex = '9999';
+                tempDiv.style.background = 'var(--bg-secondary)';
+                tempDiv.style.padding = '30px';
+                tempDiv.style.borderRadius = '16px';
+                tempDiv.style.boxShadow = '0 20px 60px rgba(0,0,0,0.5)';
+                document.body.appendChild(tempDiv);
+
+                window.google.accounts.id.renderButton(tempDiv, {
+                    type: 'standard',
+                    theme: 'outline',
+                    size: 'large',
+                    text: 'signin_with',
+                    shape: 'rectangular',
+                    width: 300
+                });
+
+                // Cerrar al hacer clic fuera
+                const overlay = document.createElement('div');
+                overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:9998';
+                overlay.onclick = () => {
+                    overlay.remove();
+                    tempDiv.remove();
+                    setGoogleLoading(false);
+                };
+                document.body.appendChild(overlay);
+            }
+        });
+    };
+
     // Success message after request is sent
     if (requestSent) {
         return (
@@ -200,13 +348,23 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
             <div className="slide-card" style={{ padding: '40px' }}>
                 {onBack && !hideBackButton && <button className="close-btn" onClick={onBack} title="Cerrar">×</button>}
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <div style={{ fontSize: '3.5rem', marginBottom: '15px', color: 'var(--accent-color)' }}>
-                        <i className={isLogin ? 'fa-solid fa-right-to-bracket' : 'fa-solid fa-user-plus'}></i>
+                    <div style={{
+                        width: '80px', height: '80px', borderRadius: '50%', margin: '0 auto 18px',
+                        background: isLogin
+                            ? 'linear-gradient(135deg, var(--accent-color), var(--accent-hover))'
+                            : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: isLogin
+                            ? '0 8px 25px rgba(168, 85, 247, 0.3)'
+                            : '0 8px 25px rgba(59, 130, 246, 0.3)'
+                    }}>
+                        <i className={isLogin ? 'fa-solid fa-lock-open' : 'fa-solid fa-user-plus'}
+                            style={{ fontSize: '2rem', color: '#fff' }}></i>
                     </div>
-                    <h1 style={{ color: 'var(--text-primary)', marginBottom: '10px' }}>
-                        {isLogin ? 'Iniciar Sesión' : 'Solicitar Cuenta'}
+                    <h1 style={{ color: 'var(--text-primary)', marginBottom: '10px', fontSize: '1.6rem' }}>
+                        {isLogin ? 'Bienvenido' : 'Solicitar Cuenta'}
                     </h1>
-                    <p style={{ color: 'var(--text-secondary)' }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
                         {isLogin
                             ? 'Ingresa para guardar tu progreso'
                             : 'Envía tu solicitud para unirte'}
@@ -424,17 +582,65 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="btn-primary"
                         style={{
                             width: '100%',
-                            padding: '14px',
-                            fontSize: '1.1rem',
-                            opacity: loading ? 0.7 : 1
+                            padding: '15px',
+                            fontSize: '1.05rem',
+                            fontWeight: '700',
+                            border: 'none',
+                            borderRadius: '12px',
+                            cursor: loading ? 'wait' : 'pointer',
+                            background: 'linear-gradient(135deg, var(--accent-color) 0%, var(--accent-hover) 100%)',
+                            color: '#fff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            opacity: loading ? 0.7 : 1,
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)'
                         }}
                     >
-                        {loading
-                            ? '⏳ Procesando...'
-                            : isLogin ? '🚀 Entrar' : '📤 Enviar Solicitud'}
+                        {loading ? (
+                            <><i className="fa-solid fa-spinner fa-spin"></i> Procesando...</>
+                        ) : isLogin ? (
+                            <><i className="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</>
+                        ) : (
+                            <><i className="fa-solid fa-paper-plane"></i> Enviar Solicitud</>
+                        )}
+                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '20px 0' }}>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--card-border)' }}></div>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{isLogin ? 'o continúa con' : 'o regístrate con'}</span>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--card-border)' }}></div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        disabled={googleLoading}
+                        style={{
+                            width: '100%',
+                            padding: '13px',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            border: '2px solid var(--card-border)',
+                            borderRadius: '12px',
+                            cursor: googleLoading ? 'wait' : 'pointer',
+                            background: theme === 'dark' ? 'rgba(255,255,255,0.05)' : '#fff',
+                            color: 'var(--text-primary)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        {googleLoading ? (
+                            <><i className="fa-solid fa-spinner fa-spin"></i> Conectando...</>
+                        ) : (
+                            <><GoogleIcon /> Google</>
+                        )}
                     </button>
                 </form>
 

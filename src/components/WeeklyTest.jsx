@@ -26,15 +26,14 @@ const WeeklyTest = ({ onBack }) => {
     const [previewQuestion, setPreviewQuestion] = useState(null);
     const timerRef = useRef(null);
 
-    // Check for saved progress on mount
+    // Check for saved progress on mount — exámenes de más de 7 días no se pueden retomar
     useEffect(() => {
         const saved = localStorage.getItem('egel_weekly_progress');
         if (saved) {
             const data = JSON.parse(saved);
-            // Check if less than 24 hours old
             const savedAt = new Date(data.savedAt);
-            const hoursDiff = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60);
-            if (hoursDiff < 24) {
+            const daysDiff = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60 * 24);
+            if (daysDiff < 7) {
                 setSavedProgress(data);
                 setShowResumeModal(true);
             } else {

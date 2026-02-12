@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 const StudentDashboard = ({ onBack }) => {
-    const { user, updateInactivityTimeout, inactivityTimeoutMs } = useAuth();
+    const { user } = useAuth();
+    const { theme } = useTheme();
+    const td = theme === 'dark' ? tdStyleDark : tdStyle;
     const [loading, setLoading] = useState(true);
     const [examenes, setExamenes] = useState([]);
     const [progreso, setProgreso] = useState([]);
@@ -135,63 +138,6 @@ const StudentDashboard = ({ onBack }) => {
                 </div>
             </header>
 
-            {/* Session Settings */}
-            <div style={{
-                marginBottom: '30px',
-                padding: '20px',
-                background: 'var(--bg-secondary)',
-                borderRadius: '16px',
-                border: '1px solid var(--card-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '15px'
-            }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <div style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
-                        background: 'rgba(168, 85, 247, 0.1)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'var(--accent-color)',
-                        fontSize: '1.2rem'
-                    }}>
-                        <i className="fa-solid fa-stopwatch"></i>
-                    </div>
-                    <div>
-                        <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-primary)' }}>Tiempo de Inactividad</h3>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                            Cerrar sesión automáticamente después de:
-                        </p>
-                    </div>
-                </div>
-
-                <select
-                    value={inactivityTimeoutMs ? inactivityTimeoutMs / 60000 : 30}
-                    onChange={(e) => updateInactivityTimeout(parseInt(e.target.value))}
-                    style={{
-                        padding: '10px 15px',
-                        borderRadius: '8px',
-                        border: '1px solid var(--card-border)',
-                        background: 'var(--bg-primary)',
-                        color: 'var(--text-primary)',
-                        fontSize: '0.95rem',
-                        cursor: 'pointer',
-                        outline: 'none',
-                        minWidth: '150px'
-                    }}
-                >
-                    <option value="2">2 min (Prueba)</option>
-                    <option value="15">15 minutos</option>
-                    <option value="30">30 minutos (Recomendado)</option>
-                    <option value="60">1 hora</option>
-                </select>
-            </div>
-
             {/* Stats Grid */}
             <div style={{
                 display: 'grid',
@@ -254,7 +200,7 @@ const StudentDashboard = ({ onBack }) => {
                             <tbody>
                                 {examenes.map(exam => (
                                     <tr key={exam.id} style={{ borderBottom: '1px solid var(--card-border)' }}>
-                                        <td style={tdStyle}>
+                                        <td style={td}>
                                             {new Date(exam.fecha_inicio).toLocaleDateString('es-MX', {
                                                 day: '2-digit',
                                                 month: 'short',
@@ -262,7 +208,7 @@ const StudentDashboard = ({ onBack }) => {
                                                 minute: '2-digit'
                                             })}
                                         </td>
-                                        <td style={tdStyle}>
+                                        <td style={td}>
                                             <span style={{
                                                 padding: '4px 10px',
                                                 background: exam.tipo === 'quiz' ? 'rgba(168, 85, 247, 0.2)' :
@@ -276,10 +222,10 @@ const StudentDashboard = ({ onBack }) => {
                                                 {exam.tipo.charAt(0).toUpperCase() + exam.tipo.slice(1)}
                                             </span>
                                         </td>
-                                        <td style={tdStyle}>
+                                        <td style={td}>
                                             {exam.correctas}/{exam.total_preguntas}
                                         </td>
-                                        <td style={tdStyle}>
+                                        <td style={td}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                 <div style={{
                                                     width: '60px',
@@ -305,7 +251,7 @@ const StudentDashboard = ({ onBack }) => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td style={tdStyle}>
+                                        <td style={td}>
                                             {exam.tiempo_segundos
                                                 ? `${Math.floor(exam.tiempo_segundos / 60)}:${String(exam.tiempo_segundos % 60).padStart(2, '0')}`
                                                 : '-'}
@@ -390,18 +336,25 @@ const StatCard = ({ icon, value, label, color }) => (
     </div>
 );
 
-// Table styles
+// Table styles — usar colores explícitos para garantizar contraste en ambos temas
 const thStyle = {
     textAlign: 'left',
     padding: '12px',
-    color: 'var(--text-secondary)',
+    color: '#64748b',
     fontSize: '0.85rem',
     fontWeight: '600'
 };
 
 const tdStyle = {
     padding: '12px',
-    color: 'var(--text-primary)',
+    color: '#1e293b',
+    fontSize: '0.9rem'
+};
+
+// Dark theme override via CSS class
+const tdStyleDark = {
+    padding: '12px',
+    color: '#e2e8f0',
     fontSize: '0.9rem'
 };
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, uploadImage, listImages } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { RichText, QuestionImage } from '../lib/renderQuestionHTML';
 
 /**
  * ContentManager Component
@@ -11,6 +12,22 @@ import { useTheme } from '../context/ThemeContext';
  * - Multimedia support (audio, video, images)
  * - Tabs: Contenido de Clase, Módulos, Preguntas
  */
+
+// Funciones utilitarias a nivel módulo (accesibles por ContentManager y todos los modals)
+const stripHTMLTags = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+};
+
+const getTipoIcon = (tipo) => {
+  const icons = { guia: 'fa-solid fa-book-open', informe: 'fa-solid fa-file-lines', audio: 'fa-solid fa-headphones', video: 'fa-solid fa-video', imagen: 'fa-solid fa-image', otro: 'fa-solid fa-cube' };
+  return icons[tipo] || icons.otro;
+};
+
+const getTipoBadgeColor = (tipo) => {
+  const colors = { guia: '#8b5cf6', informe: '#3b82f6', audio: '#ec4899', video: '#f59e0b', imagen: '#10b981', otro: '#6b7280' };
+  return colors[tipo] || colors.otro;
+};
 
 const ContentManager = ({ onBack }) => {
   const { user } = useAuth();
@@ -159,16 +176,6 @@ const ContentManager = ({ onBack }) => {
     { value: 'audio', label: 'Audio' }, { value: 'video', label: 'Video' },
     { value: 'imagen', label: 'Imagen' }, { value: 'otro', label: 'Otro' }
   ];
-
-  const getTipoIcon = (tipo) => {
-    const icons = { guia: 'fa-solid fa-book-open', informe: 'fa-solid fa-file-lines', audio: 'fa-solid fa-headphones', video: 'fa-solid fa-video', imagen: 'fa-solid fa-image', otro: 'fa-solid fa-cube' };
-    return icons[tipo] || icons.otro;
-  };
-
-  const getTipoBadgeColor = (tipo) => {
-    const colors = { guia: '#8b5cf6', informe: '#3b82f6', audio: '#ec4899', video: '#f59e0b', imagen: '#10b981', otro: '#6b7280' };
-    return colors[tipo] || colors.otro;
-  };
 
   const getFilteredContent = () => {
     let filtered = [...contentItems];
@@ -491,7 +498,7 @@ const ContentManager = ({ onBack }) => {
                               {(media?.imagen_url || item.imagen_url) && <span style={{ color: '#10b981', fontSize: '0.8rem' }}><i className="fa-solid fa-image"></i></span>}
                             </div>
                             <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1rem', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.titulo}</h3>
-                            <p style={{ margin: '2px 0 0', color: 'var(--text-secondary)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text.substring(0, 120)}</p>
+                            <p style={{ margin: '2px 0 0', color: 'var(--text-secondary)', fontSize: '0.8rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{stripHTMLTags(text).substring(0, 120)}</p>
                           </div>
                           <div style={{ display: 'flex', gap: '6px' }}>
                             <button onClick={(e) => { e.stopPropagation(); handleEditContent(item); }} style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }} title="Editar">
@@ -767,6 +774,150 @@ const RichHTMLEditor = ({ value, onChange }) => {
 };
 
 // ============================================
+// IMAGE PICKER — Upload + Browse from Supabase Storage
+// ============================================
+const ImagePickerButton = ({ onUploaded, folder = 'contenido', label = 'Subir imagen' }) => {
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [showBrowser, setShowBrowser] = useState(false);
+  const [images, setImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [browseFolder, setBrowseFolder] = useState(folder);
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('Solo se permiten archivos de imagen'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('La imagen no debe exceder 5 MB'); return; }
+    setUploading(true);
+    try {
+      const url = await uploadImage(file, folder);
+      if (url) onUploaded(url);
+    } catch (err) {
+      alert('Error al subir imagen: ' + err.message);
+    }
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const openBrowser = async () => {
+    setShowBrowser(true);
+    await loadImages(browseFolder);
+  };
+
+  const loadImages = async (f) => {
+    setLoadingImages(true);
+    const imgs = await listImages(f);
+    setImages(imgs);
+    setLoadingImages(false);
+  };
+
+  const selectImage = (url) => {
+    onUploaded(url);
+    setShowBrowser(false);
+  };
+
+  const formatSize = (bytes) => {
+    if (!bytes) return '';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  };
+
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+        <input ref={fileRef} type="file" accept="image/*" onChange={handleFile} style={{ display: 'none' }} />
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          style={{ padding: '8px 16px', background: uploading ? 'var(--card-border)' : 'var(--accent-color)', color: '#fff', border: 'none', borderRadius: '8px', cursor: uploading ? 'wait' : 'pointer', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <i className={uploading ? 'fa-solid fa-spinner fa-spin' : 'fa-solid fa-cloud-arrow-up'}></i>
+          {uploading ? 'Subiendo...' : label}
+        </button>
+        <button type="button" onClick={openBrowser}
+          style={{ padding: '8px 16px', background: 'var(--bg-primary)', color: 'var(--accent-color)', border: '1px solid var(--accent-color)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <i className="fa-solid fa-images"></i> Galería
+        </button>
+        <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Máx 5 MB</span>
+      </div>
+
+      {/* Image Browser Modal */}
+      {showBrowser && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '20px', backdropFilter: 'blur(4px)' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowBrowser(false); }}>
+          <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', borderRadius: '16px', maxWidth: '800px', width: '100%', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }}>
+            {/* Header */}
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div>
+                <h3 style={{ margin: 0, color: 'var(--text-primary)', fontSize: '1.2rem', fontWeight: '700' }}>
+                  <i className="fa-solid fa-images" style={{ marginRight: '10px', color: 'var(--accent-color)' }}></i>Galería de Imágenes
+                </h3>
+                <p style={{ margin: '4px 0 0', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Selecciona una imagen existente o sube una nueva</p>
+              </div>
+              <button onClick={() => setShowBrowser(false)} style={{ background: 'var(--bg-primary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', width: '36px', height: '36px', borderRadius: '8px', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+
+            {/* Folder tabs */}
+            <div style={{ padding: '12px 24px', borderBottom: '1px solid var(--card-border)', display: 'flex', gap: '8px', flexShrink: 0 }}>
+              {[{ id: 'contenido', label: 'Contenido', icon: 'fa-solid fa-book-open' },
+                { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-question' },
+                { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-cubes' }
+              ].map(f => (
+                <button key={f.id} type="button" onClick={() => { setBrowseFolder(f.id); loadImages(f.id); }}
+                  style={{ padding: '6px 14px', borderRadius: '6px', border: browseFolder === f.id ? 'none' : '1px solid var(--card-border)', cursor: 'pointer', background: browseFolder === f.id ? 'var(--accent-color)' : 'var(--bg-primary)', color: browseFolder === f.id ? '#fff' : 'var(--text-secondary)', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <i className={f.icon}></i> {f.label}
+                </button>
+              ))}
+              <div style={{ marginLeft: 'auto' }}>
+                <button type="button" onClick={() => loadImages(browseFolder)} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid var(--card-border)', cursor: 'pointer', background: 'var(--bg-primary)', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
+                  <i className="fa-solid fa-arrows-rotate"></i>
+                </button>
+              </div>
+            </div>
+
+            {/* Image grid */}
+            <div style={{ padding: '20px 24px', overflow: 'auto', flex: 1 }}>
+              {loadingImages ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                  <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '2rem', display: 'block', marginBottom: '12px', color: 'var(--accent-color)' }}></i>
+                  Cargando imágenes...
+                </div>
+              ) : images.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-secondary)' }}>
+                  <i className="fa-solid fa-folder-open" style={{ fontSize: '2.5rem', display: 'block', marginBottom: '12px', opacity: 0.4 }}></i>
+                  <p style={{ margin: 0, fontSize: '1rem' }}>No hay imágenes en esta carpeta</p>
+                  <p style={{ margin: '6px 0 0', fontSize: '0.85rem', opacity: 0.7 }}>Sube una imagen con el botón de arriba</p>
+                </div>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '12px' }}>
+                  {images.map((img, idx) => (
+                    <div key={idx} onClick={() => selectImage(img.url)}
+                      style={{ cursor: 'pointer', borderRadius: '10px', border: '2px solid var(--card-border)', overflow: 'hidden', transition: 'all 0.2s', background: 'var(--bg-primary)' }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-color)'; e.currentTarget.style.transform = 'scale(1.03)'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--card-border)'; e.currentTarget.style.transform = 'scale(1)'; }}>
+                      <div style={{ width: '100%', paddingBottom: '100%', position: 'relative', background: 'var(--bg-primary)' }}>
+                        <img src={img.url} alt={img.name}
+                          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+                          onError={(e) => { e.target.style.display = 'none'; e.target.parentNode.innerHTML = '<div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#6b7280"><i class="fa-solid fa-image-slash" style="font-size:1.5rem"></i></div>'; }} />
+                      </div>
+                      <div style={{ padding: '6px 8px' }}>
+                        <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{img.name}</p>
+                        {img.size > 0 && <p style={{ margin: '2px 0 0', fontSize: '0.65rem', color: 'var(--text-secondary)', opacity: 0.6 }}>{formatSize(img.size)}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+// ============================================
 // CONTENT EDIT MODAL
 // ============================================
 const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
@@ -811,7 +962,7 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
             </select>
           </div>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-            {[{ id: 'editor', label: 'Editor HTML', icon: 'fa-solid fa-pen-fancy' }, { id: 'media', label: 'Multimedia', icon: 'fa-solid fa-photo-film' }].map(s => (
+            {[{ id: 'editor', label: 'Editor HTML', icon: 'fa-solid fa-pen-fancy' }, { id: 'media', label: 'Multimedia', icon: 'fa-solid fa-photo-film' }, { id: 'preview', label: 'Vista Previa', icon: 'fa-solid fa-eye' }].map(s => (
               <button key={s.id} type="button" onClick={() => setActiveSection(s.id)}
                 style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', background: activeSection === s.id ? 'var(--accent-color)' : 'var(--bg-primary)', color: activeSection === s.id ? '#fff' : 'var(--text-secondary)', fontWeight: '600', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <i className={s.icon}></i> {s.label}
@@ -823,8 +974,14 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
             <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '20px', marginBottom: '20px' }}>
               <h4 style={{ color: 'var(--text-primary)', margin: '0 0 16px', fontSize: '0.95rem' }}><i className="fa-solid fa-photo-film" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Archivos Multimedia</h4>
               <div style={{ marginBottom: '16px' }}>
-                <label style={labelStyle}><i className="fa-solid fa-image" style={{ marginRight: '8px', color: '#10b981' }}></i>URL de Imagen</label>
-                <input type="url" value={formData.imagen_url} onChange={(e) => handleFieldChange('imagen_url', e.target.value)} placeholder="https://..." style={inputStyle} />
+                <label style={labelStyle}><i className="fa-solid fa-image" style={{ marginRight: '8px', color: '#10b981' }}></i>Imagen</label>
+                <div style={{ marginBottom: '8px' }}>
+                  <ImagePickerButton folder="contenido" label="Subir imagen" onUploaded={(url) => handleFieldChange('imagen_url', url)} />
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', whiteSpace: 'nowrap' }}>o pega URL:</span>
+                  <input type="url" value={formData.imagen_url} onChange={(e) => handleFieldChange('imagen_url', e.target.value)} placeholder="https://..." style={inputStyle} />
+                </div>
                 {formData.imagen_url && <div style={{ marginTop: '8px', borderRadius: '8px', overflow: 'hidden', maxHeight: '150px' }}><img src={formData.imagen_url} alt="Preview" style={{ width: '100%', maxHeight: '150px', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /></div>}
               </div>
               <div style={{ marginBottom: '16px' }}>
@@ -837,6 +994,50 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
                 <input type="url" value={formData.audio_url} onChange={(e) => handleFieldChange('audio_url', e.target.value)} placeholder="https://..." style={inputStyle} />
                 {formData.audio_url && <div style={{ marginTop: '8px' }}><audio controls src={formData.audio_url} style={{ width: '100%' }} /></div>}
               </div>
+            </div>
+          )}
+          {activeSection === 'preview' && (
+            <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '24px', border: '1px solid var(--card-border)', marginBottom: '20px' }}>
+              <div style={{ marginBottom: '16px', display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <span style={{ background: formData.tipo ? getTipoBadgeColor(formData.tipo) : 'var(--accent-color)', color: '#fff', padding: '4px 12px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <i className={getTipoIcon(formData.tipo)}></i> {formData.tipo || 'guia'}
+                </span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Orden: {formData.orden}</span>
+              </div>
+              <h2 style={{ margin: '0 0 20px', color: 'var(--text-primary)', fontSize: '1.5rem', fontWeight: '700' }}>{formData.titulo || '(Sin título)'}</h2>
+              {/* Rendered HTML content */}
+              <div className="lesson-html-content" style={{ color: 'var(--text-primary)', fontSize: '1rem', lineHeight: '1.7', marginBottom: '20px' }}
+                dangerouslySetInnerHTML={{ __html: formData.text || '<p style="opacity:0.5">(Sin contenido)</p>' }} />
+              {/* Multimedia preview */}
+              {formData.imagen_url && (
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 8px' }}><i className="fa-solid fa-image" style={{ marginRight: '6px', color: '#10b981' }}></i>Imagen</h4>
+                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--card-border)' }}>
+                    <img src={formData.imagen_url} alt="Imagen del contenido" style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', display: 'block' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                  </div>
+                </div>
+              )}
+              {formData.video_url && (
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 8px' }}><i className="fa-solid fa-video" style={{ marginRight: '6px', color: '#f59e0b' }}></i>Video</h4>
+                  <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
+                    <iframe src={formData.video_url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                      style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 0 }} allowFullScreen title="Video preview" />
+                  </div>
+                </div>
+              )}
+              {formData.audio_url && (
+                <div style={{ marginBottom: '16px' }}>
+                  <h4 style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', margin: '0 0 8px' }}><i className="fa-solid fa-headphones" style={{ marginRight: '6px', color: '#ec4899' }}></i>Audio</h4>
+                  <audio controls src={formData.audio_url} style={{ width: '100%' }} />
+                </div>
+              )}
+              {!formData.text && !formData.imagen_url && !formData.video_url && !formData.audio_url && (
+                <div style={{ textAlign: 'center', padding: '30px', color: 'var(--text-secondary)', opacity: 0.6 }}>
+                  <i className="fa-solid fa-eye-slash" style={{ fontSize: '2rem', display: 'block', marginBottom: '10px' }}></i>
+                  No hay contenido para previsualizar
+                </div>
+              )}
             </div>
           )}
           <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)' }}>
@@ -876,7 +1077,10 @@ const ModuleEditModal = ({ module, onSave, onClose }) => {
           <div style={{ background: 'var(--bg-primary)', border: '1px dashed var(--card-border)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
             <h4 style={{ color: 'var(--text-primary)', margin: '0 0 12px', fontSize: '0.95rem' }}><i className="fa-solid fa-photo-film" style={{ marginRight: '8px', color: 'var(--accent-color)' }}></i>Multimedia del Módulo (inicio)</h4>
             <div style={{ marginBottom: '12px' }}>
-              <label style={{ ...labelStyle, fontSize: '0.9rem' }}><i className="fa-solid fa-image" style={{ marginRight: '6px', color: '#3b82f6' }}></i>Infografía URL</label>
+              <label style={{ ...labelStyle, fontSize: '0.9rem' }}><i className="fa-solid fa-image" style={{ marginRight: '6px', color: '#3b82f6' }}></i>Infografía</label>
+              <div style={{ marginBottom: '8px' }}>
+                <ImagePickerButton folder="modulos" label="Subir infografía" onUploaded={(url) => handleFieldChange('infografia_url', url)} />
+              </div>
               <input type="url" value={formData.infografia_url || ''} onChange={(e) => handleFieldChange('infografia_url', e.target.value)} placeholder="https://..." style={inputStyle} />
               {formData.infografia_url && <div style={{ marginTop: '8px', borderRadius: '8px', overflow: 'hidden', maxHeight: '120px' }}><img src={formData.infografia_url} alt="Infografía" style={{ width: '100%', maxHeight: '120px', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /></div>}
             </div>
@@ -917,10 +1121,11 @@ const PreguntaEditModal = ({ pregunta, modules, onSave, onClose }) => {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: '4px', padding: '16px 24px 0', borderBottom: '1px solid var(--card-border)' }}>
+        <div style={{ display: 'flex', gap: '4px', padding: '16px 24px 0', borderBottom: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
           <button type="button" onClick={() => setActiveTab('contenido')} style={tabBtnStyle(activeTab === 'contenido')}><i className="fa-solid fa-pen"></i> Contenido</button>
           <button type="button" onClick={() => setActiveTab('opciones')} style={tabBtnStyle(activeTab === 'opciones')}><i className="fa-solid fa-list"></i> Opciones</button>
           <button type="button" onClick={() => setActiveTab('media')} style={tabBtnStyle(activeTab === 'media')}><i className="fa-solid fa-image"></i> Multimedia</button>
+          <button type="button" onClick={() => setActiveTab('preview')} style={tabBtnStyle(activeTab === 'preview')}><i className="fa-solid fa-eye"></i> Vista Previa</button>
         </div>
 
         <form onSubmit={handleSubmit} style={{ padding: '24px' }}>
@@ -970,7 +1175,11 @@ const PreguntaEditModal = ({ pregunta, modules, onSave, onClose }) => {
           {activeTab === 'media' && (
             <>
               <div style={{ marginBottom: '20px' }}>
-                <label style={labelStyle}><i className="fa-solid fa-image" style={{ marginRight: '8px', color: '#10b981' }}></i>URL de Imagen</label>
+                <label style={labelStyle}><i className="fa-solid fa-image" style={{ marginRight: '8px', color: '#10b981' }}></i>Imagen de la Pregunta</label>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
+                  <ImagePickerButton folder="preguntas" label="Subir imagen" onUploaded={(url) => handleFieldChange('imagen_url', url)} />
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>o pega URL:</span>
+                </div>
                 <input type="url" value={formData.imagen_url || ''} onChange={(e) => handleFieldChange('imagen_url', e.target.value)} placeholder="https://ejemplo.com/imagen.png" style={inputStyle} />
                 {formData.imagen_url && (
                   <div style={{ marginTop: '12px', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--card-border)', textAlign: 'center', background: 'var(--bg-primary)', padding: '12px' }}>
@@ -983,10 +1192,48 @@ const PreguntaEditModal = ({ pregunta, modules, onSave, onClose }) => {
               <div style={{ padding: '20px', background: 'var(--bg-primary)', borderRadius: '12px', border: '1px dashed var(--card-border)' }}>
                 <h4 style={{ color: 'var(--text-secondary)', margin: '0 0 8px', fontSize: '0.9rem' }}><i className="fa-solid fa-lightbulb" style={{ marginRight: '8px', color: 'var(--warning-color)' }}></i>Tip</h4>
                 <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', margin: 0, lineHeight: '1.5' }}>
-                  Puedes agregar imágenes, videos y formato enriquecido directamente dentro de la pregunta y la explicación usando el editor HTML en la pestaña Contenido. La URL de imagen aquí se muestra como imagen destacada de la pregunta.
+                  Las imágenes se guardan en el almacenamiento de Supabase (bucket "uploads"). También puedes insertar imágenes directamente en el texto usando el editor HTML en la pestaña Contenido.
                 </p>
               </div>
             </>
+          )}
+
+          {/* TAB: Vista Previa */}
+          {activeTab === 'preview' && (
+            <div style={{ background: 'var(--bg-primary)', borderRadius: '12px', padding: '24px', border: '1px solid var(--card-border)' }}>
+              <div style={{ marginBottom: '12px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {formData.nivel && <span style={{ padding: '4px 10px', background: formData.nivel === 'basico' ? 'rgba(34,197,94,0.15)' : formData.nivel === 'intermedio' ? 'rgba(234,179,8,0.15)' : 'rgba(239,68,68,0.15)', color: formData.nivel === 'basico' ? '#22c55e' : formData.nivel === 'intermedio' ? '#eab308' : '#ef4444', borderRadius: '6px', fontSize: '0.8rem', fontWeight: '600' }}>{formData.nivel}</span>}
+                {formData.tema && <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{formData.tema}</span>}
+                {formData.subtema && <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', opacity: 0.7 }}>/ {formData.subtema}</span>}
+              </div>
+              <div style={{ fontSize: '1.1rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>
+                <RichText content={formData.pregunta || '(Sin pregunta)'} />
+              </div>
+              <QuestionImage url={formData.imagen_url} />
+              {formData.formula && <div style={{ background: 'rgba(168,85,247,0.1)', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontFamily: 'monospace', color: 'var(--accent-color)', fontSize: '0.95rem' }}>{formData.formula}</div>}
+              <div style={{ display: 'grid', gap: '8px', marginBottom: '20px' }}>
+                {['a', 'b', 'c', 'd'].map(letter => (
+                  <div key={letter} style={{
+                    padding: '12px 16px', borderRadius: '10px',
+                    background: formData.respuesta_correcta === letter ? 'rgba(34,197,94,0.15)' : 'var(--bg-secondary)',
+                    border: `2px solid ${formData.respuesta_correcta === letter ? '#22c55e' : 'var(--card-border)'}`,
+                    color: 'var(--text-primary)', fontSize: '0.95rem',
+                    display: 'flex', alignItems: 'center', gap: '10px'
+                  }}>
+                    <span style={{ width: '28px', height: '28px', borderRadius: '50%', background: formData.respuesta_correcta === letter ? '#22c55e' : 'var(--bg-primary)', color: formData.respuesta_correcta === letter ? '#fff' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '0.85rem', flexShrink: 0 }}>
+                      {formData.respuesta_correcta === letter ? <i className="fa-solid fa-check"></i> : letter.toUpperCase()}
+                    </span>
+                    {formData[`opcion_${letter}`] || <span style={{ opacity: 0.4 }}>(vacío)</span>}
+                  </div>
+                ))}
+              </div>
+              {formData.explicacion && (
+                <div style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '10px', padding: '16px' }}>
+                  <h4 style={{ color: '#3b82f6', margin: '0 0 8px', fontSize: '0.9rem' }}><i className="fa-solid fa-circle-info" style={{ marginRight: '6px' }}></i>Explicación</h4>
+                  <RichText content={formData.explicacion} style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }} />
+                </div>
+              )}
+            </div>
           )}
 
           <div style={{ display: 'flex', gap: '12px', paddingTop: '20px', borderTop: '1px solid var(--card-border)', marginTop: '20px' }}>

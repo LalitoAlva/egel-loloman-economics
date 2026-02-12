@@ -6,9 +6,7 @@ const AuthContext = createContext();
 
 // ⏱️ CONFIGURACIÓN DE TIMEOUT DE INACTIVIDAD
 const WARNING_DURATION_MS = 30 * 1000;          // 30 segundos de gracia
-
-// Default to 30 minutes if not set
-const DEFAULT_TIMEOUT = 30 * 60 * 1000;
+const DEFAULT_TIMEOUT = 30 * 60 * 1000;         // 30 minutos default
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
@@ -25,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     const [showInactivityWarning, setShowInactivityWarning] = useState(false);
     const [warningCountdown, setWarningCountdown] = useState(0);
 
-    // State for Configurable Timeout
+    // Timeout global desde admin_settings
     const [inactivityTimeoutMs, setInactivityTimeoutMs] = useState(DEFAULT_TIMEOUT);
 
     const inactivityTimerRef = useRef(null);
@@ -34,7 +32,7 @@ export const AuthProvider = ({ children }) => {
     // Ref para evitar que el useEffect limpie los timers del warning
     const showWarningRef = useRef(false);
 
-    // Check for saved session and timeout preference on mount
+    // Check for saved session on mount + load global timeout
     useEffect(() => {
         const savedUser = localStorage.getItem('egel_user');
         if (savedUser) {
@@ -43,11 +41,8 @@ export const AuthProvider = ({ children }) => {
             loadRole(userData.rol_id);
         }
 
-        const savedTimeout = localStorage.getItem('egel_inactivity_timeout');
-        if (savedTimeout) {
-            setInactivityTimeoutMs(parseInt(savedTimeout, 10));
-        }
-
+        // Cargar timeout global desde admin_settings
+        loadGlobalTimeout();
         setLoading(false);
     }, []);
 
@@ -63,12 +58,20 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Function to update timeout setting
-    const updateInactivityTimeout = (minutes) => {
-        const ms = minutes * 60 * 1000;
-        setInactivityTimeoutMs(ms);
-        localStorage.setItem('egel_inactivity_timeout', ms.toString());
-        // Timer will automatically restart due to useEffect dependency on inactivityTimeoutMs
+    // Cargar timeout global desde la tabla admin_settings
+    const loadGlobalTimeout = async () => {
+        try {
+            const { data } = await supabase
+                .from('admin_settings')
+                .select('setting_value')
+                .eq('setting_key', 'session_timeout_minutes')
+                .single();
+            if (data?.setting_value) {
+                setInactivityTimeoutMs(parseInt(data.setting_value) * 60 * 1000);
+            }
+        } catch {
+            // Usar default si no existe la tabla
+        }
     };
 
     // ============================================
@@ -291,8 +294,8 @@ export const AuthProvider = ({ children }) => {
             showInactivityWarning,
             warningCountdown,
             dismissWarning,
-            updateInactivityTimeout,
-            inactivityTimeoutMs
+            inactivityTimeoutMs,
+            loadGlobalTimeout
         }}>
             {children}
         </AuthContext.Provider>
