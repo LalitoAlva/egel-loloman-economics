@@ -14,7 +14,7 @@ const AudioPromptModal = ({ isOpen, onClose, onConfirm, moduleName, moduleIcon, 
 
     return (
         <div
-            className="fade-in"
+            className="fade-in audio-modal-container"
             style={{
                 position: 'fixed',
                 top: 0,
@@ -23,10 +23,8 @@ const AudioPromptModal = ({ isOpen, onClose, onConfirm, moduleName, moduleIcon, 
                 bottom: 0,
                 background: 'rgba(0, 0, 0, 0.85)',
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
                 zIndex: 2000,
-                padding: '20px'
             }}
             onClick={onClose}
         >
@@ -153,6 +151,19 @@ const AudioPromptModal = ({ isOpen, onClose, onConfirm, moduleName, moduleIcon, 
                     }
                     50% {
                         transform: scale(1.1);
+                    }
+                }
+
+                .audio-modal-container {
+                    align-items: center;
+                    padding: 20px;
+                }
+
+                /* En computadoras o pantallas grandes, mandar el modal hacia arriba */
+                @media (min-width: 768px) {
+                    .audio-modal-container {
+                        align-items: flex-start;
+                        padding-top: 10vh;
                     }
                 }
             `}</style>
