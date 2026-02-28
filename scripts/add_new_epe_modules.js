@@ -17,8 +17,8 @@ const newModules = [
         titulo: "Redacción Indirecta",
         slug: "redaccion-indirecta",
         descripcion: "Reglas gramaticales, ortografía, coherencia y sintaxis de textos.",
-        icon: "fa-pen-clip",
-        color: "bg-blue-600",
+        icon: "fa-solid fa-pen-clip",
+        color: "#3b82f6",
         activo: true,
         numero: 3
     },
@@ -26,8 +26,8 @@ const newModules = [
         titulo: "Comprensión Lectora",
         slug: "comprension-lectora",
         descripcion: "Análisis, interpretación y comprensión crítica de textos de diversa índole.",
-        icon: "fa-book-open-reader",
-        color: "bg-purple-600",
+        icon: "fa-solid fa-book-open-reader",
+        color: "#9333ea",
         activo: true,
         numero: 4
     },
@@ -35,8 +35,8 @@ const newModules = [
         titulo: "Evaluación Diagnóstica Transversal",
         slug: "diagnostica-transversal",
         descripcion: "Prueba integral que evalúa competencias interdisciplinarias y analíticas.",
-        icon: "fa-clipboard-check",
-        color: "bg-teal-600",
+        icon: "fa-solid fa-clipboard-check",
+        color: "#0d9488",
         activo: true,
         numero: 5
     }
