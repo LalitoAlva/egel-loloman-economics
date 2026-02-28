@@ -22,6 +22,7 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const [showInactivityWarning, setShowInactivityWarning] = useState(false);
     const [warningCountdown, setWarningCountdown] = useState(0);
+    const [googlePending, setGooglePending] = useState(false);
 
     // Timeout global desde admin_settings
     const [inactivityTimeoutMs, setInactivityTimeoutMs] = useState(DEFAULT_TIMEOUT);
@@ -43,10 +44,65 @@ export const AuthProvider = ({ children }) => {
 
         // Cargar timeout global desde admin_settings
         loadGlobalTimeout();
+
+        // Listen for Supabase Auth state changes (Google OAuth callback)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session?.user) {
+                const googleUser = session.user;
+                const email = googleUser.email;
+                const nombre = googleUser.user_metadata?.full_name || googleUser.user_metadata?.name || email;
+
+                // Check if user exists in usuarios table
+                const { data: existingUser } = await supabase
+                    .from('usuarios')
+                    .select('*, roles(*)')
+                    .eq('email', email.toLowerCase().trim())
+                    .eq('activo', true)
+                    .single();
+
+                if (existingUser) {
+                    // User exists and is active - log them in
+                    await supabase
+                        .from('usuarios')
+                        .update({ ultimo_acceso: new Date().toISOString() })
+                        .eq('id', existingUser.id);
+
+                    setUser(existingUser);
+                    setRole(existingUser.roles);
+                    localStorage.setItem('egel_user', JSON.stringify(existingUser));
+                    setGooglePending(false);
+                } else {
+                    // User doesn't exist - check for pending request
+                    const { data: existingRequest } = await supabase
+                        .from('solicitudes_cuenta')
+                        .select('id, estado')
+                        .eq('email', email.toLowerCase().trim())
+                        .single();
+
+                    if (!existingRequest) {
+                        // Create automatic access request
+                        await supabase
+                            .from('solicitudes_cuenta')
+                            .insert([{
+                                nombre: nombre,
+                                email: email.toLowerCase().trim(),
+                                password_hash: 'google_oauth',
+                                motivo: 'Registro automático vía Google OAuth',
+                                estado: 'pendiente'
+                            }]);
+                    }
+
+                    // Sign out from Supabase Auth (we use custom auth)
+                    await supabase.auth.signOut();
+                    setGooglePending(true);
+                }
+            }
+        });
+
         setLoading(false);
 
         return () => {
-            subscription.unsubscribe();
+            subscription?.unsubscribe();
         };
     }, []);
 
@@ -236,6 +292,24 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const loginWithGoogle = async () => {
+        try {
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
+            });
+            if (error) {
+                return { success: false, error: error.message };
+            }
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    };
+
+    const clearGooglePending = () => setGooglePending(false);
 
     const logout = () => {
         setUser(null);
@@ -302,7 +376,9 @@ export const AuthProvider = ({ children }) => {
             warningCountdown,
             dismissWarning,
             inactivityTimeoutMs,
-            loadGlobalTimeout
+            loadGlobalTimeout,
+            googlePending,
+            clearGooglePending
         }}>
             {children}
         </AuthContext.Provider>
