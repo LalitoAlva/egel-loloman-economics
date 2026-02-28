@@ -381,7 +381,7 @@ const LessonMode = ({ onBack }) => {
                             <iframe
                                 src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
                                 style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '12px' }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
                                 allowFullScreen
                                 title="Video de clase"
                             />
