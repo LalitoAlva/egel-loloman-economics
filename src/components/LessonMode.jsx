@@ -597,31 +597,55 @@ const LessonMode = ({ onBack }) => {
                 scrollbarWidth: 'thin',
                 WebkitOverflowScrolling: 'touch'
             }}>
-                {contenido.map((card, idx) => (
-                    <button
-                        key={card.id || idx}
-                        onClick={() => setCurrentIndex(idx)}
-                        title={card.titulo}
-                        style={{
-                            minWidth: '36px',
-                            height: '36px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            borderRadius: '50%',
-                            fontSize: '0.9rem',
-                            fontWeight: '600',
-                            border: `2px solid ${currentIndex === idx ? selectedModulo.color : 'var(--card-border)'}`,
-                            background: currentIndex === idx ? selectedModulo.color : 'transparent',
-                            color: currentIndex === idx ? '#fff' : 'var(--text-secondary)',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            transition: 'all 0.2s ease'
-                        }}
-                    >
-                        {idx + 1}
-                    </button>
-                ))}
+                {contenido.map((card, idx) => {
+                    const hasVideo = card.contenido && card.contenido.includes('{"video_url":');
+
+                    return (
+                        <button
+                            key={card.id || idx}
+                            onClick={() => setCurrentIndex(idx)}
+                            title={card.titulo}
+                            style={{
+                                position: 'relative',
+                                minWidth: '36px',
+                                height: '36px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                borderRadius: '50%',
+                                fontSize: '0.9rem',
+                                fontWeight: '600',
+                                border: `2px solid ${currentIndex === idx ? selectedModulo.color : 'var(--card-border)'}`,
+                                background: currentIndex === idx ? selectedModulo.color : 'transparent',
+                                color: currentIndex === idx ? '#fff' : 'var(--text-secondary)',
+                                cursor: 'pointer',
+                                flexShrink: 0,
+                                transition: 'all 0.2s ease'
+                            }}
+                        >
+                            {idx + 1}
+                            {hasVideo && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '-4px',
+                                    right: '-4px',
+                                    background: '#ef4444',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    width: '14px',
+                                    height: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '0.45rem',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                                }}>
+                                    <i className="fa-solid fa-play"></i>
+                                </div>
+                            )}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Progress bar */}
