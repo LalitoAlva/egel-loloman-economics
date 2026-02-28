@@ -44,6 +44,10 @@ export const AuthProvider = ({ children }) => {
         // Cargar timeout global desde admin_settings
         loadGlobalTimeout();
         setLoading(false);
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
     const loadRole = async (rolId) => {
@@ -232,10 +236,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+
     const logout = () => {
         setUser(null);
         setRole(null);
         localStorage.removeItem('egel_user');
+        supabase.auth.signOut().catch(() => { });
     };
 
     const register = async (email, nombre, password) => {
@@ -284,6 +290,7 @@ export const AuthProvider = ({ children }) => {
             role,
             loading,
             login,
+            loginWithGoogle,
             logout,
             register,
             hasPermission,

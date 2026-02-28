@@ -3,14 +3,18 @@ import { supabase } from '../lib/supabase';
 import { useAudio } from '../context/AudioContext';
 import AudioPromptModal from './AudioPromptModal';
 import VoiceReader from './VoiceReader';
+import { useAuth } from '../context/AuthContext';
 
 const LessonMode = ({ onBack }) => {
+    const { user } = useAuth();
     const [modulos, setModulos] = useState([]);
     const [selectedModulo, setSelectedModulo] = useState(null);
     const [contenido, setContenido] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [loading, setLoading] = useState(true);
     const [showInfografiaModal, setShowInfografiaModal] = useState(false);
+    const [progresoDB, setProgresoDB] = useState(0); // Tracks maximum card seen in DB
+    const [progresoId, setProgresoId] = useState(null); // Tracks DB record ID if it exists
 
     // Escape Key listener for Infografia Modal
     useEffect(() => {
@@ -79,8 +83,36 @@ const LessonMode = ({ onBack }) => {
             };
 
             // Prepend infografía al inicio del contenido
-            setContenido([infografiaCard, ...data]);
-            setCurrentIndex(0);
+            const fullContent = [infografiaCard, ...data];
+            setContenido(fullContent);
+
+            // Load user progress
+            if (user) {
+                const { data: progData } = await supabase
+                    .from('progreso_modulo')
+                    .select('id, tarjetas_vistas')
+                    .eq('usuario_id', user.id)
+                    .eq('modulo', moduloId)
+                    .single();
+
+                if (progData) {
+                    setProgresoId(progData.id);
+                    setProgresoDB(progData.tarjetas_vistas || 0);
+
+                    // Resume if not completed, else start at 0
+                    if (progData.tarjetas_vistas > 0 && progData.tarjetas_vistas < fullContent.length - 1) {
+                        setCurrentIndex(progData.tarjetas_vistas);
+                    } else {
+                        setCurrentIndex(0);
+                    }
+                } else {
+                    setProgresoId(null);
+                    setProgresoDB(0);
+                    setCurrentIndex(0);
+                }
+            } else {
+                setCurrentIndex(0);
+            }
         }
         setLoading(false);
     };
@@ -108,9 +140,38 @@ const LessonMode = ({ onBack }) => {
         setShowAudioPrompt(false);
     };
 
-    const nextCard = () => {
+    const nextCard = async () => {
         if (currentIndex < contenido.length - 1) {
-            setCurrentIndex(prev => prev + 1);
+            const nextIdx = currentIndex + 1;
+            setCurrentIndex(nextIdx);
+
+            // Save progress to DB if we've reached a new max
+            if (user && selectedModulo && nextIdx > progresoDB) {
+                setProgresoDB(nextIdx);
+
+                const progressPayload = {
+                    usuario_id: user.id,
+                    modulo: selectedModulo.id,
+                    tarjetas_vistas: nextIdx,
+                    tarjetas_totales: contenido.length,
+                    completado: nextIdx === contenido.length - 1
+                };
+
+                if (progresoId) {
+                    await supabase
+                        .from('progreso_modulo')
+                        .update(progressPayload)
+                        .eq('id', progresoId);
+                } else {
+                    const { data } = await supabase
+                        .from('progreso_modulo')
+                        .insert([progressPayload])
+                        .select()
+                        .single();
+
+                    if (data) setProgresoId(data.id);
+                }
+            }
         }
     };
 

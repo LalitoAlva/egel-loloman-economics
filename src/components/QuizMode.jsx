@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { RichText, QuestionImage, getCleanQuestionText } from '../lib/renderQuestionHTML';
 import QuestionPreviewModal from './QuestionPreviewModal';
 
-const QuizMode = ({ onBack }) => {
+const QuizMode = ({ onBack, resumeExamId }) => {
     const { user } = useAuth();
     const [preguntas, setPreguntas] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -31,38 +31,14 @@ const QuizMode = ({ onBack }) => {
     // Load modules from preguntas table (unique modulo values)
     useEffect(() => {
         loadModulos();
-        checkForResumeableExam();
     }, []);
 
-    // Check for a saved exam in localStorage — exámenes de más de 7 días no se pueden retomar
-    const checkForResumeableExam = () => {
-        if (!user) return;
-
-        const savedExams = [];
-        const keysToRemove = [];
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            if (key && key.startsWith('egel_exam_progress_')) {
-                const examenId = key.replace('egel_exam_progress_', '');
-                const data = JSON.parse(localStorage.getItem(key));
-                const savedAt = new Date(data.savedAt);
-                const daysDiff = (Date.now() - savedAt.getTime()) / (1000 * 60 * 60 * 24);
-                if (daysDiff < 7) {
-                    savedExams.push({ examenId, ...data });
-                } else {
-                    keysToRemove.push(key);
-                }
-            }
+    // Check for resumeExamId on mount
+    useEffect(() => {
+        if (resumeExamId && user) {
+            resumeExam(resumeExamId);
         }
-
-        // Limpiar exámenes expirados
-        keysToRemove.forEach(k => localStorage.removeItem(k));
-
-        if (savedExams.length > 0) {
-            setResumeData(savedExams[0]);
-            setShowResumeModal(true);
-        }
-    };
+    }, [resumeExamId, user]);
 
     // Timer effect
     useEffect(() => {
@@ -167,7 +143,103 @@ const QuizMode = ({ onBack }) => {
                 }])
                 .select()
                 .single();
-            if (examData) setExamenId(examData.id);
+            if (examData) {
+                setExamenId(examData.id);
+                // Pre-insert all questions for resuming later
+                const respuestasIniciales = balanced.map(q => ({
+                    examen_id: examData.id,
+                    pregunta_id: q.id,
+                    respuesta_usuario: null,
+                    es_correcta: false
+                }));
+                await supabase.from('respuestas_examen').insert(respuestasIniciales);
+            }
+        }
+    };
+
+    const resumeExam = async (id) => {
+        setLoading(true);
+        setQuizStarted(true);
+        setExamenId(id);
+
+        try {
+            // 1. Fetch exam details
+            const { data: examData, error: examError } = await supabase
+                .from('examenes')
+                .select('*')
+                .eq('id', id)
+                .single();
+
+            if (examError || !examData) throw new Error("No se pudo cargar el examen.");
+
+            // 2. Fetch all answers (including unanswered ones we pre-inserted)
+            const { data: answersData, error: answersError } = await supabase
+                .from('respuestas_examen')
+                .select('pregunta_id, respuesta_usuario, es_correcta, id')
+                .eq('examen_id', id)
+                .order('id', { ascending: true }); // Important: keep original order
+
+            if (answersError) throw new Error("No se pudieron cargar las respuestas.");
+            if (!answersData || answersData.length === 0) throw new Error("Este examen no tiene preguntas guardadas.");
+
+            // 3. Fetch all original questions
+            const questionIds = answersData.map(a => a.pregunta_id);
+            const { data: questionsData, error: questionsError } = await supabase
+                .from('preguntas')
+                .select('*, modulos(id, titulo, icon, color)')
+                .in('id', questionIds);
+
+            if (questionsError) throw new Error("No se pudieron cargar las preguntas.");
+
+            // Map questions back to the original order
+            const questionsMap = {};
+            questionsData.forEach(q => { questionsMap[q.id] = q; });
+            const orderedQuestions = answersData.map(a => questionsMap[a.pregunta_id]).filter(Boolean);
+
+            setPreguntas(orderedQuestions);
+
+            // 4. Reconstruct answers state
+            const restoredAnswers = {};
+            let firstUnansweredIndex = 0;
+            let foundUnanswered = false;
+
+            answersData.forEach((a, index) => {
+                if (a.respuesta_usuario) {
+                    restoredAnswers[index] = {
+                        letter: a.respuesta_usuario,
+                        isCorrect: a.es_correcta
+                    };
+                } else if (!foundUnanswered) {
+                    firstUnansweredIndex = index;
+                    foundUnanswered = true;
+                }
+            });
+
+            setAnswers(restoredAnswers);
+            setCurrentIndex(firstUnansweredIndex);
+
+            // 5. Setup extra state
+            setScore({
+                correct: Object.values(restoredAnswers).filter(a => a.isCorrect).length,
+                total: orderedQuestions.length
+            });
+            setSelectedAnswer(null);
+            setShowExplanation(false);
+
+            // Timer calc
+            const timeLimitSecs = (examData.tiempo_limite_min || 0) * 60;
+            const timeSpent = examData.tiempo_segundos || 0;
+            const timeRem = Math.max(timeLimitSecs - timeSpent, 0);
+
+            setStartTime(Date.now() - (timeSpent * 1000));
+            setTimeRemaining(timeRem);
+
+        } catch (error) {
+            console.error('Error al reanudar:', error);
+            alert("No se pudo reanudar el examen: " + error.message);
+            onBack();
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -217,57 +289,7 @@ const QuizMode = ({ onBack }) => {
         loadPreguntas();
     };
 
-    const resumeExam = async () => {
-        if (!resumeData) return;
 
-        setIsResumingExam(true);
-        setLoading(true);
-
-        try {
-            // Fetch the questions by their IDs
-            const { data: fetchedQuestions, error } = await supabase
-                .from('preguntas')
-                .select('*, modulos(id, titulo, icon, color)')
-                .in('id', resumeData.questionIds);
-
-            if (error) {
-                console.error('Error loading questions:', error);
-                setIsResumingExam(false);
-                setLoading(false);
-                return;
-            }
-
-            // Restore the questions in the original order
-            const orderedQuestions = resumeData.questionIds
-                .map(id => fetchedQuestions.find(q => q.id === id))
-                .filter(Boolean);
-
-            setPreguntas(orderedQuestions);
-            setExamenId(resumeData.examenId);
-            setAnswers(resumeData.answers);
-            setTimeRemaining(resumeData.timeRemaining);
-            setCurrentIndex(resumeData.currentQuestionIndex);
-            setSelectedAnswer(resumeData.answers[resumeData.currentQuestionIndex]?.letter || null);
-            setStartTime(Date.now() - (resumeData.timeLimit * 60 * 1000 - resumeData.timeRemaining * 1000));
-            setQuizStarted(true);
-            setShowResumeModal(false);
-            setIsResumingExam(false);
-            setLoading(false);
-        } catch (err) {
-            console.error('Error resuming exam:', err);
-            setIsResumingExam(false);
-            setLoading(false);
-        }
-    };
-
-    const startNewExam = () => {
-        if (resumeData) {
-            // Clear the saved progress
-            localStorage.removeItem(`egel_exam_progress_${resumeData.examenId}`);
-        }
-        setShowResumeModal(false);
-        setResumeData(null);
-    };
 
     const handleAnswer = async (letter) => {
         if (answers[currentIndex]) return;
@@ -283,12 +305,14 @@ const QuizMode = ({ onBack }) => {
 
         // Save answer to database
         if (user && examenId) {
-            await supabase.from('respuestas_examen').insert([{
-                examen_id: examenId,
-                pregunta_id: preguntas[currentIndex].id,
-                respuesta_usuario: letter,
-                es_correcta: isCorrect
-            }]);
+            await supabase
+                .from('respuestas_examen')
+                .update({
+                    respuesta_usuario: letter,
+                    es_correcta: isCorrect
+                })
+                .eq('examen_id', examenId)
+                .eq('pregunta_id', preguntas[currentIndex].id);
         }
     };
 
@@ -778,7 +802,7 @@ const QuizMode = ({ onBack }) => {
     };
 
     return (
-        <div className="container fade-in">
+        <div className="container fade-in" style={{ paddingBottom: '80px' }}>
             {/* Header with Timer */}
             <div style={{
                 display: 'flex',

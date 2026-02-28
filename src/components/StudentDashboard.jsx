@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-const StudentDashboard = ({ onBack }) => {
+const StudentDashboard = ({ onBack, onResumeExam }) => {
     const { user } = useAuth();
     const { theme } = useTheme();
     const td = theme === 'dark' ? tdStyleDark : tdStyle;
@@ -226,30 +226,51 @@ const StudentDashboard = ({ onBack }) => {
                                             {exam.correctas}/{exam.total_preguntas}
                                         </td>
                                         <td style={td}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{
-                                                    width: '60px',
-                                                    height: '8px',
-                                                    background: 'var(--bg-primary)',
-                                                    borderRadius: '4px',
-                                                    overflow: 'hidden'
-                                                }}>
+                                            {exam.completado ? (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                                     <div style={{
-                                                        width: `${exam.porcentaje}%`,
-                                                        height: '100%',
-                                                        background: parseFloat(exam.porcentaje) >= 70 ? '#22c55e' :
+                                                        width: '60px',
+                                                        height: '8px',
+                                                        background: 'var(--bg-primary)',
+                                                        borderRadius: '4px',
+                                                        overflow: 'hidden'
+                                                    }}>
+                                                        <div style={{
+                                                            width: `${exam.porcentaje}%`,
+                                                            height: '100%',
+                                                            background: parseFloat(exam.porcentaje) >= 70 ? '#22c55e' :
+                                                                parseFloat(exam.porcentaje) >= 50 ? '#eab308' : '#ef4444',
+                                                            transition: 'width 0.3s'
+                                                        }} />
+                                                    </div>
+                                                    <span style={{
+                                                        color: parseFloat(exam.porcentaje) >= 70 ? '#22c55e' :
                                                             parseFloat(exam.porcentaje) >= 50 ? '#eab308' : '#ef4444',
-                                                        transition: 'width 0.3s'
-                                                    }} />
+                                                        fontWeight: 'bold'
+                                                    }}>
+                                                        {parseFloat(exam.porcentaje).toFixed(0)}%
+                                                    </span>
                                                 </div>
-                                                <span style={{
-                                                    color: parseFloat(exam.porcentaje) >= 70 ? '#22c55e' :
-                                                        parseFloat(exam.porcentaje) >= 50 ? '#eab308' : '#ef4444',
-                                                    fontWeight: 'bold'
-                                                }}>
-                                                    {parseFloat(exam.porcentaje).toFixed(0)}%
-                                                </span>
-                                            </div>
+                                            ) : (
+                                                <button
+                                                    onClick={() => onResumeExam && onResumeExam(exam.id)}
+                                                    style={{
+                                                        padding: '6px 14px',
+                                                        background: 'var(--accent-color)',
+                                                        color: '#fff',
+                                                        border: 'none',
+                                                        borderRadius: '6px',
+                                                        cursor: 'pointer',
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 'bold',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px'
+                                                    }}
+                                                >
+                                                    <i className="fa-solid fa-play"></i> Continuar
+                                                </button>
+                                            )}
                                         </td>
                                         <td style={td}>
                                             {exam.tiempo_segundos

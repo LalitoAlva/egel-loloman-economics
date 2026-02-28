@@ -99,6 +99,7 @@ function AppContent() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [resumeExamId, setResumeExamId] = useState(null);
 
     const { currentTrack } = useAudio();
     const { user, isAdmin, logout, loading: authLoading, showInactivityWarning, warningCountdown, dismissWarning } = useAuth();
@@ -108,11 +109,17 @@ function AppContent() {
         setCurrentMode(mode);
         if (mode === 'home') {
             setActiveModule(null);
+            setResumeExamId(null);
         }
     };
 
     const handleSelectModule = (module) => {
         setActiveModule(module);
+    };
+
+    const handleResumeExam = (examId) => {
+        setResumeExamId(examId);
+        setCurrentMode('quiz');
     };
 
     const handleLoginSuccess = () => {
@@ -376,7 +383,7 @@ function AppContent() {
                 )}
 
                 {currentMode === 'quiz' && (
-                    <QuizMode onBack={() => handleModeChange('home')} />
+                    <QuizMode onBack={() => handleModeChange('home')} resumeExamId={resumeExamId} />
                 )}
 
                 {currentMode === 'test' && (
@@ -398,7 +405,7 @@ function AppContent() {
                 )}
 
                 {currentMode === 'progress' && (
-                    <StudentDashboard onBack={() => handleModeChange('home')} />
+                    <StudentDashboard onBack={() => handleModeChange('home')} onResumeExam={handleResumeExam} />
                 )}
 
                 {currentMode === 'profile' && (
