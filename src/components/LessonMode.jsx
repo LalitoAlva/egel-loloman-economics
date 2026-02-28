@@ -202,7 +202,7 @@ const LessonMode = ({ onBack }) => {
         const sep = '\n\n---MEDIA---\n';
         const parts = contenido.split(sep);
         let media = {};
-        if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
+        if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) { } }
         return { text: parts[0], media };
     };
 
@@ -585,6 +585,43 @@ const LessonMode = ({ onBack }) => {
                         {currentIndex + 1} / {totalCards}
                     </span>
                 </div>
+            </div>
+
+            {/* Numbered Index Navigation Bar */}
+            <div style={{
+                display: 'flex',
+                gap: '8px',
+                marginBottom: '15px',
+                overflowX: 'auto',
+                paddingBottom: '8px',
+                scrollbarWidth: 'thin',
+                WebkitOverflowScrolling: 'touch'
+            }}>
+                {contenido.map((card, idx) => (
+                    <button
+                        key={card.id || idx}
+                        onClick={() => setCurrentIndex(idx)}
+                        title={card.titulo}
+                        style={{
+                            minWidth: '36px',
+                            height: '36px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '50%',
+                            fontSize: '0.9rem',
+                            fontWeight: '600',
+                            border: `2px solid ${currentIndex === idx ? selectedModulo.color : 'var(--card-border)'}`,
+                            background: currentIndex === idx ? selectedModulo.color : 'transparent',
+                            color: currentIndex === idx ? '#fff' : 'var(--text-secondary)',
+                            cursor: 'pointer',
+                            flexShrink: 0,
+                            transition: 'all 0.2s ease'
+                        }}
+                    >
+                        {idx + 1}
+                    </button>
+                ))}
             </div>
 
             {/* Progress bar */}
