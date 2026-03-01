@@ -379,6 +379,9 @@ const LessonMode = ({ onBack }) => {
             fallbackVideos.push(cardRecord.video_url);
         }
 
+        // Deduplicate: if the user explicitly placed the video in the text (e.g. ![video](URL)), don't show it again at the bottom
+        const finalFallbackVideos = fallbackVideos.filter(vUrl => !text.includes(vUrl));
+
         // Process raw HTML text to support [VIDEO](url) tags natively if needed
         let processedText = text;
         if (isHTML(text)) {
@@ -412,9 +415,9 @@ const LessonMode = ({ onBack }) => {
                         />
                     </div>
                 )}
-                {fallbackVideos.length > 0 && (
+                {finalFallbackVideos.length > 0 && (
                     <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
-                        {fallbackVideos.map((vUrl, idx) => (
+                        {finalFallbackVideos.map((vUrl, idx) => (
                             <div key={`vid-${idx}`}>
                                 {vUrl.includes('youtube.com') || vUrl.includes('youtu.be') ? (
                                     <iframe
