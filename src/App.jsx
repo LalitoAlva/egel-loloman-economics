@@ -20,6 +20,7 @@ import AdminPanel from './components/AdminPanel';
 import ContentManager from './components/ContentManager';
 import StudentDashboard from './components/StudentDashboard';
 import WeeklyTest from './components/WeeklyTest';
+import PdfEditor from './components/PdfEditor';
 import NotificationsBubble from './components/NotificationsBubble';
 import PasswordChangeModal from './components/PasswordChangeModal';
 import SessionTimeoutModal from './components/SessionTimeoutModal';
@@ -443,6 +444,11 @@ function AppContent() {
                     <AdminPanel onBack={() => handleModeChange('home')} />
                 )}
 
+                {/* PDF Editor */}
+                {currentMode === 'pdf-editor' && (
+                    <PdfEditor onBack={() => handleModeChange('home')} />
+                )}
+
                 {/* Admin sub-modes */}
                 {currentMode.startsWith('admin-') && (
                     <AdminPanel onBack={() => handleModeChange('home')} />
@@ -513,6 +519,7 @@ const getModeLabel = (mode) => {
         login: { icon: 'fa-solid fa-lock', text: 'Login' },
         admin: { icon: 'fa-solid fa-gear', text: 'Admin' },
         'content-manager': { icon: 'fa-solid fa-sliders', text: 'Administrar Contenido' },
+        'pdf-editor': { icon: 'fa-solid fa-file-pdf', text: 'Editor PDF' },
         profile: { icon: 'fa-solid fa-user', text: 'Perfil' }
     };
     const label = labels[mode];

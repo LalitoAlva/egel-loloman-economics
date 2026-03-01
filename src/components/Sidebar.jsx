@@ -306,6 +306,36 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                             </button>
                             <button
                                 onClick={() => {
+                                    onSetMode('pdf-editor');
+                                    onClose();
+                                }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    width: '100%',
+                                    padding: '12px 20px',
+                                    background: currentMode === 'pdf-editor'
+                                        ? 'rgba(239, 68, 68, 0.15)'
+                                        : 'transparent',
+                                    border: 'none',
+                                    borderLeft: currentMode === 'pdf-editor'
+                                        ? '3px solid #ef4444'
+                                        : '3px solid transparent',
+                                    color: currentMode === 'pdf-editor'
+                                        ? '#ef4444'
+                                        : 'var(--text-secondary)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    textAlign: 'left',
+                                    fontSize: '0.95rem'
+                                }}
+                            >
+                                <i className="fa-solid fa-file-pdf" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
+                                Editor de PDF
+                            </button>
+                            <button
+                                onClick={() => {
                                     onSetMode('admin');
                                     onClose();
                                 }}
