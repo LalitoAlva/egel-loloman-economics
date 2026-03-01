@@ -2,8 +2,14 @@ import { supabase } from '../lib/supabase';
 import html2pdf from 'html2pdf.js';
 
 // Convert markdown-like syntax to simple HTML for the PDF, enforcing Tables for formulas
-const processMarkdown = (text) => {
+export const processMarkdown = (text) => {
     if (!text) return '';
+
+    // Bypass markdown parser if the content is already HTML (from Quill Editor)
+    const trimmed = text.trim();
+    if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+        return `<div class="quill-content">${trimmed}</div>`;
+    }
 
     let inList = false;
     let lines = text.split('\n');
@@ -92,7 +98,7 @@ export const generateFormulasPDF = async (moduloId) => {
         container.style.padding = '40px';
         container.style.fontFamily = "'Inter', sans-serif";
         container.style.color = '#333';
-        container.style.width = '720px'; // reduced width for A4 portrait
+        container.style.width = '1000px'; // adjusted width for A4 landscape
         container.style.maxWidth = '100%';
         container.style.boxSizing = 'border-box';
         container.style.overflowWrap = 'break-word';
@@ -157,7 +163,7 @@ export const generateFormulasPDF = async (moduloId) => {
             filename: 'Formulario_EGEL_Economia.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
         };
 
         // Fire the download
