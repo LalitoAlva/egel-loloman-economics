@@ -1140,7 +1140,7 @@ const SolicitudesPanel = ({ solicitudes, onApprove, onReject }) => {
         if (!dateStr) return 'N/A';
         return new Date(dateStr).toLocaleDateString('es-MX', {
             day: '2-digit',
-            month: 'short',
+            month: '2-digit',
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -1844,7 +1844,7 @@ const UsersTable = ({ usuarios, roles, currentUserId, onToggleActive, onUpdateRo
                         </td>
                         <td style={tdStyle}>
                             {u.ultimo_acceso
-                                ? new Date(u.ultimo_acceso).toLocaleDateString('es-MX')
+                                ? new Date(u.ultimo_acceso).toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })
                                 : 'Nunca'}
                         </td>
                         <td style={tdStyle}>
