@@ -401,10 +401,6 @@ const LessonMode = ({ onBack }) => {
         const emojisToStrip = /[\u{1F3AF}\u{1F9E0}\u{1F9E9}\u{1F7E6}\u{1F7E9}\u{1F7E8}\u{1F50E}\u{1F4DA}\u{26A0}\u{FE0F}\u{1F511}]/gu;
         cleanText = cleanText.replace(emojisToStrip, '');
 
-        // Usar saltos de línea para forzar pausas naturales en el TTS (agregando puntuación invisible o pausas gramaticales)
-        // Reemplazamos saltos de línea con un punto y espacio para que el TTS respire/pause
-        cleanText = cleanText.replace(/\n+/g, '. ');
-
         return cleanText;
     };
 

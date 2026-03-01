@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 
 const VoiceReader = ({ text }) => {
     const [isSpeaking, setIsSpeaking] = useState(false);
-    const [utterance, setUtterance] = useState(null);
-
     const [isPaused, setIsPaused] = useState(false);
 
     useEffect(() => {
@@ -39,34 +37,48 @@ const VoiceReader = ({ text }) => {
             setIsPaused(false);
 
             const textToRead = cleanText(text);
-            const newUtterance = new SpeechSynthesisUtterance(textToRead);
+
+            // Divide el texto por saltos de línea para forzar una pausa natural en el motor TTS
+            const chunks = textToRead.split(/\n+/).map(c => c.trim()).filter(c => c.length > 0);
+
+            if (chunks.length === 0) return;
 
             // Try to find a good Spanish voice
             const voices = window.speechSynthesis.getVoices();
             const spanishVoice = voices.find(v => v.lang.includes('es-MX')) ||
                 voices.find(v => v.lang.includes('es'));
 
-            if (spanishVoice) {
-                newUtterance.voice = spanishVoice;
-            }
-            // Fallback is default system voice
-
-            newUtterance.lang = 'es-MX';
-            newUtterance.rate = 1;
-
-            newUtterance.onend = () => {
-                setIsSpeaking(false);
-                setIsPaused(false);
-            };
-            newUtterance.onerror = (e) => {
-                console.error("Speech error", e);
-                setIsSpeaking(false);
-                setIsPaused(false);
-            };
-
-            setUtterance(newUtterance);
-            window.speechSynthesis.speak(newUtterance);
             setIsSpeaking(true);
+
+            chunks.forEach((chunk, index) => {
+                const newUtterance = new SpeechSynthesisUtterance(chunk);
+
+                if (spanishVoice) {
+                    newUtterance.voice = spanishVoice;
+                }
+
+                newUtterance.lang = 'es-MX';
+                newUtterance.rate = 1;
+
+                // Solo el último bloque resetea el estado completo
+                if (index === chunks.length - 1) {
+                    newUtterance.onend = () => {
+                        setIsSpeaking(false);
+                        setIsPaused(false);
+                    };
+                }
+
+                newUtterance.onerror = (e) => {
+                    // Evitar registrar error intencional al cancelar flujo manualmente
+                    if (e.error !== 'canceled' && e.error !== 'interrupted') {
+                        console.error("Speech error", e);
+                    }
+                    setIsSpeaking(false);
+                    setIsPaused(false);
+                };
+
+                window.speechSynthesis.speak(newUtterance);
+            });
         }
     };
 
