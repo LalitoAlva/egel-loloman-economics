@@ -327,7 +327,24 @@ const LessonMode = ({ onBack }) => {
                     code: ({ node, inline, ...props }) => inline
                         ? <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: '#ec4899' }} {...props} />
                         : <pre style={{ background: '#1e1e1e', padding: '15px', borderRadius: '8px', overflowX: 'auto', color: '#d4d4d4' }}><code {...props} /></pre>,
-                    img: ({ node, ...props }) => <img style={{ maxWidth: '100%', borderRadius: '12px', margin: '15px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }} {...props} />,
+                    img: ({ node, ...props }) => {
+                        if (props.alt && props.alt.toLowerCase() === 'video') {
+                            const vUrl = props.src || '';
+                            const embedUrl = vUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/');
+                            return (
+                                <div style={{ margin: '25px 0' }}>
+                                    <iframe
+                                        src={embedUrl}
+                                        style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', backgroundColor: '#000' }}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                        allowFullScreen
+                                        title="Video de clase"
+                                    />
+                                </div>
+                            );
+                        }
+                        return <img style={{ maxWidth: '100%', borderRadius: '12px', margin: '15px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }} {...props} />;
+                    },
                     h2: ({ node, ...props }) => <h2 style={{ color: 'var(--warning-color)', marginTop: '30px' }} {...props} />,
                     h3: ({ node, ...props }) => <h3 style={{ color: 'var(--text-primary)', marginTop: '25px' }} {...props} />,
                     h4: ({ node, ...props }) => <h4 style={{ color: 'var(--accent-color)', marginTop: '20px' }} {...props} />,
@@ -348,8 +365,28 @@ const LessonMode = ({ onBack }) => {
 
         // Combinar imagen: priorizar media embebida, fallback a columna imagen_url de la BD
         const imagenUrl = media.imagen_url || cardRecord?.imagen_url;
-        const videoUrl = media.video_url || cardRecord?.video_url;
         const audioUrl = media.audio_url || cardRecord?.audio_url;
+
+        // Collect all videos (from new array mapping or old single strings)
+        const fallbackVideos = [];
+        if (media.videos && Array.isArray(media.videos)) {
+            fallbackVideos.push(...media.videos);
+        }
+        if (media.video_url && !fallbackVideos.includes(media.video_url)) {
+            fallbackVideos.push(media.video_url);
+        }
+        if (cardRecord?.video_url && !fallbackVideos.includes(cardRecord.video_url)) {
+            fallbackVideos.push(cardRecord.video_url);
+        }
+
+        // Process raw HTML text to support [VIDEO](url) tags natively if needed
+        let processedText = text;
+        if (isHTML(text)) {
+            processedText = sanitizeHTMLContent(text).replace(/\[VIDEO\]\((https?:\/\/[^\)]+)\)/gi, (match, url) => {
+                const embedUrl = url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/');
+                return `<div style="margin: 25px 0;"><iframe src="${embedUrl}" style="width: 100%; aspect-ratio: 16/9; border: none; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); background-color: #000;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe></div>`;
+            });
+        }
 
         return (
             <>
@@ -357,7 +394,7 @@ const LessonMode = ({ onBack }) => {
                 {isHTML(text) ? (
                     <div
                         className="lesson-html-content"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHTMLContent(text) }}
+                        dangerouslySetInnerHTML={{ __html: processedText }}
                         style={{ lineHeight: '1.8', wordBreak: 'break-word' }}
                     />
                 ) : (
@@ -375,19 +412,23 @@ const LessonMode = ({ onBack }) => {
                         />
                     </div>
                 )}
-                {videoUrl && (
-                    <div style={{ marginTop: '20px' }}>
-                        {videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be') ? (
-                            <iframe
-                                src={videoUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
-                                style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '12px' }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-                                allowFullScreen
-                                title="Video de clase"
-                            />
-                        ) : (
-                            <video controls style={{ width: '100%', borderRadius: '12px' }} src={videoUrl} />
-                        )}
+                {fallbackVideos.length > 0 && (
+                    <div style={{ marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        {fallbackVideos.map((vUrl, idx) => (
+                            <div key={`vid-${idx}`}>
+                                {vUrl.includes('youtube.com') || vUrl.includes('youtu.be') ? (
+                                    <iframe
+                                        src={vUrl.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                                        style={{ width: '100%', aspectRatio: '16/9', border: 'none', borderRadius: '12px' }}
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                        allowFullScreen
+                                        title={`Video de clase ${idx + 1}`}
+                                    />
+                                ) : (
+                                    <video controls style={{ width: '100%', borderRadius: '12px' }} src={vUrl} />
+                                )}
+                            </div>
+                        ))}
                     </div>
                 )}
                 {audioUrl && (
