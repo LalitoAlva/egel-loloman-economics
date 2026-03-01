@@ -307,6 +307,27 @@ function AppContent() {
                         style={{ marginRight: '5px' }}
                     />
 
+                    <button
+                        className="hidden-on-mobile"
+                        onClick={() => handleModeChange('content-manager')}
+                        style={{
+                            background: 'rgba(255, 183, 77, 0.15)',
+                            border: '1px solid rgba(255, 183, 77, 0.5)',
+                            color: '#f59e0b',
+                            padding: '10px 16px',
+                            cursor: 'pointer',
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            transition: 'all 0.2s'
+                        }}
+                    >
+                        <i className="fa-solid fa-lock"></i> Administrar
+                    </button>
+
                     <div style={{
                         background: theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
                         border: 'none',

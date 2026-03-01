@@ -13,7 +13,7 @@ const QuizMode = ({ onBack, resumeExamId }) => {
     const [answers, setAnswers] = useState({});
     const [score, setScore] = useState({ correct: 0, total: 0 });
     const [loading, setLoading] = useState(true);
-    const [filters, setFilters] = useState({ modulo: [], nivel: null });
+    const [filters, setFilters] = useState({ modulo: [], nivel: null, includeProblemas: false });
     const [questionCount, setQuestionCount] = useState(50);
     const [timeLimit, setTimeLimit] = useState(45); // minutes
     const [quizStarted, setQuizStarted] = useState(false);
@@ -117,7 +117,12 @@ const QuizMode = ({ onBack, resumeExamId }) => {
             return;
         }
 
-        const balanced = balanceQuestions(data, questionCount, filters.nivel);
+        let preFilteredData = data;
+        if (!filters.includeProblemas) {
+            preFilteredData = preFilteredData.filter(q => q.tipo !== 'problema');
+        }
+
+        const balanced = balanceQuestions(preFilteredData, questionCount, filters.nivel);
 
         setPreguntas(balanced);
         setCurrentIndex(0);
@@ -687,6 +692,43 @@ const QuizMode = ({ onBack, resumeExamId }) => {
                                 </button>
                             ))}
                         </div>
+                    </div>
+
+                    {/* Practical Problems Filter */}
+                    <div style={{ marginBottom: '30px', textAlign: 'left', background: 'var(--bg-secondary)', padding: '15px 20px', borderRadius: '12px', border: '1px solid var(--card-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div>
+                            <label style={{ display: 'block', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 'bold' }}>
+                                <i className="fa-solid fa-calculator" style={{ color: '#ec4899' }}></i> Problemas Prácticos (Fórmulas)
+                            </label>
+                            <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                                Incluir retos matemáticos complejos en el examen.
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setFilters(f => ({ ...f, includeProblemas: !f.includeProblemas }))}
+                            style={{
+                                width: '50px',
+                                height: '28px',
+                                borderRadius: '15px',
+                                background: filters.includeProblemas ? '#10b981' : 'var(--card-border)',
+                                position: 'relative',
+                                cursor: 'pointer',
+                                border: 'none',
+                                transition: 'background 0.3s'
+                            }}
+                        >
+                            <div style={{
+                                width: '22px',
+                                height: '22px',
+                                borderRadius: '50%',
+                                background: '#fff',
+                                position: 'absolute',
+                                top: '3px',
+                                left: filters.includeProblemas ? '25px' : '3px',
+                                transition: 'left 0.3s',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }} />
+                        </button>
                     </div>
 
                     {/* Start Button */}

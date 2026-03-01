@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAudio } from '../context/AudioContext';
 import Icon, { Icons } from './Icon';
+import { generateFormulasPDF } from '../utils/pdfGenerator';
 
 const HomeScreen = ({ onSelectModule, onSetMode }) => {
     const [modulos, setModulos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [downloadingPdf, setDownloadingPdf] = useState(false);
     const { playTrack, currentTrack, isPlaying } = useAudio();
 
     useEffect(() => {
@@ -34,6 +36,12 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                 color: modulo.color
             });
         }
+    };
+
+    const handleDownloadPDF = async (moduloId) => {
+        setDownloadingPdf(true);
+        await generateFormulasPDF(moduloId);
+        setDownloadingPdf(false);
     };
 
     if (loading) {
@@ -81,10 +89,38 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                     color: 'var(--text-secondary)',
                     fontSize: '1.1rem',
                     maxWidth: '600px',
-                    margin: '0 auto'
+                    margin: '0 auto',
+                    marginBottom: '25px'
                 }}>
                     Prepárate para tu examen EGEL con contenido interactivo, audios y ejercicios prácticos
                 </p>
+
+                {/* PDF Formulario Direct Download */}
+                {modulos.some(m => m.slug === 'formulas-y-tips') && (
+                    <button
+                        onClick={() => handleDownloadPDF(modulos.find(m => m.slug === 'formulas-y-tips').id)}
+                        disabled={downloadingPdf}
+                        style={{
+                            padding: '12px 24px',
+                            background: '#ec4899',
+                            border: 'none',
+                            borderRadius: '25px',
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            cursor: downloadingPdf ? 'wait' : 'pointer',
+                            fontSize: '1.05rem',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            boxShadow: '0 4px 15px rgba(236, 72, 153, 0.4)',
+                            transition: 'all 0.2s',
+                            opacity: downloadingPdf ? 0.7 : 1
+                        }}
+                    >
+                        <i className={`fa-solid ${downloadingPdf ? 'fa-spinner fa-spin' : 'fa-file-pdf'}`}></i>
+                        {downloadingPdf ? 'Generando PDF...' : 'Descargar Formulario de Estudio (PDF)'}
+                    </button>
+                )}
             </div>
 
             {/* Quick Actions */}
@@ -216,7 +252,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                     ¿Qué vamos a aprender?
                 </h2>
                 <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>
-                    6 módulos completos con contenido especializado para el EGEL
+                    {modulos.length} módulos completos con contenido especializado para el EGEL
                 </p>
             </div>
 
@@ -283,7 +319,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                 marginBottom: '20px',
                                 lineHeight: '1.6'
                             }}>
-                                {modulo.descripcion || getModuleDescription(modulo.numero)}
+                                {modulo.descripcion}
                             </p>
 
                             {/* Features */}
@@ -417,18 +453,4 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
         </div>
     );
 };
-
-// Helper function for module descriptions
-const getModuleDescription = (numero) => {
-    const descriptions = {
-        1: 'Fundamentos de microeconomía y macroeconomía. Análisis de oferta, demanda, equilibrio de mercado y políticas económicas.',
-        2: 'Evaluación de proyectos de inversión, análisis de riesgo, VAN, TIR y matemáticas financieras aplicadas.',
-        3: 'Comercio internacional, balanza de pagos, tipos de cambio y organismos económicos internacionales.',
-        4: 'Normas de Información Financiera (NIF), contabilidad de costos y sistemas de costeo.',
-        5: 'Marco fiscal mexicano: ISR, IVA, IMSS, obligaciones fiscales y cumplimiento tributario.',
-        6: 'Auditoría, control interno, dictámenes financieros y normatividad aplicable.'
-    };
-    return descriptions[numero] || 'Contenido especializado para el EGEL.';
-};
-
 export default HomeScreen;

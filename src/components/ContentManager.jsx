@@ -62,14 +62,44 @@ const ContentManager = ({ onBack }) => {
   const [isPreguntaModalOpen, setIsPreguntaModalOpen] = useState(false);
   const [editingPregunta, setEditingPregunta] = useState(null);
 
+  // Global Counts
+  const [totalContent, setTotalContent] = useState(0);
+  const [totalModules, setTotalModules] = useState(0);
+  const [totalPreguntas, setTotalPreguntas] = useState(0);
+
   // AUTH CHECK
-  if (user?.roles?.nombre !== 'admin') {
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState(user?.roles?.nombre === 'admin');
+  const [pinInput, setPinInput] = useState('');
+
+  if (!isAdminUnlocked) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center', color: 'var(--error-color)' }}>
-        <i className="fa-solid fa-lock" style={{ fontSize: '2rem', marginBottom: '20px', display: 'block' }}></i>
-        <h2>Acceso Denegado</h2>
-        <p>Solo los administradores pueden acceder a esta sección.</p>
-        <button onClick={onBack} style={{ marginTop: '20px', background: 'var(--accent-color)', color: '#fff', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', border: 'none', fontSize: '1rem' }}>
+      <div style={{ padding: '50px', textAlign: 'center', color: 'var(--text-primary)' }}>
+        <i className="fa-solid fa-lock" style={{ fontSize: '3rem', marginBottom: '20px', display: 'block', color: 'var(--accent-color)' }}></i>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '10px' }}>Acceso Protegido</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '30px' }}>Solo los administradores pueden modificar el contenido. Ingresa el PIN maestro para continuar.</p>
+
+        <input
+          type="password"
+          value={pinInput}
+          onChange={(e) => setPinInput(e.target.value)}
+          placeholder="Ingresar PIN (Ej. admin)"
+          style={{ padding: '12px 20px', borderRadius: '8px', border: '2px solid var(--accent-color)', fontSize: '1.1rem', textAlign: 'center', outline: 'none', background: 'var(--input-bg)', color: 'var(--text-primary)', width: '250px', maxWidth: '100%', marginBottom: '20px' }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              if (pinInput === 'admin' || pinInput === '1234') { setIsAdminUnlocked(true); }
+              else { alert('PIN Incorrecto'); setPinInput(''); }
+            }
+          }}
+        />
+        <br />
+        <button onClick={() => {
+          if (pinInput === 'admin' || pinInput === '1234') { setIsAdminUnlocked(true); }
+          else { alert('PIN Incorrecto'); setPinInput(''); }
+        }} style={{ background: 'var(--accent-color)', color: '#fff', padding: '12px 30px', borderRadius: '8px', cursor: 'pointer', border: 'none', fontSize: '1rem', fontWeight: 'bold', marginRight: '10px' }}>
+          Desbloquear
+        </button>
+
+        <button onClick={onBack} style={{ background: 'transparent', color: 'var(--text-secondary)', padding: '12px 30px', borderRadius: '8px', cursor: 'pointer', border: '2px solid var(--card-border)', fontSize: '1rem', fontWeight: 'bold' }}>
           Volver
         </button>
       </div>
@@ -77,7 +107,20 @@ const ContentManager = ({ onBack }) => {
   }
 
   // EFFECTS
-  useEffect(() => { loadModules(); }, []);
+  useEffect(() => {
+    const loadCounts = async () => {
+      try {
+        const { count: cMod } = await supabase.from('modulos').select('*', { count: 'exact', head: true });
+        const { count: cCon } = await supabase.from('contenido_clase').select('*', { count: 'exact', head: true });
+        const { count: cPre } = await supabase.from('preguntas').select('*', { count: 'exact', head: true });
+        setTotalModules(cMod || 0);
+        setTotalContent(cCon || 0);
+        setTotalPreguntas(cPre || 0);
+      } catch (err) { console.error("Error loading counts", err); }
+    };
+    loadCounts();
+    loadModules();
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'contenido') {
@@ -162,7 +205,7 @@ const ContentManager = ({ onBack }) => {
     const sep = '\n\n---MEDIA---\n';
     const parts = contenido.split(sep);
     let media = {};
-    if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
+    if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) { } }
     return { text: parts[0], media };
   };
 
@@ -407,9 +450,9 @@ const ContentManager = ({ onBack }) => {
         {/* TABS */}
         <div style={{ display: 'flex', gap: '8px', marginBottom: '30px', borderBottom: '1px solid var(--card-border)', flexWrap: 'wrap' }}>
           {[
-            { id: 'contenido', label: 'Contenido de Clase', icon: 'fa-solid fa-book-open', count: selectedModule ? contentItems.length : 0 },
-            { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-cubes', count: modulesList.length },
-            { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-question', count: preguntas.length }
+            { id: 'contenido', label: 'Contenido de Clase', icon: 'fa-solid fa-book-open', count: totalContent },
+            { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-cubes', count: totalModules },
+            { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-question', count: totalPreguntas }
           ].map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               style={{ padding: '12px 24px', background: activeTab === tab.id ? 'var(--accent-color)' : 'transparent', color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)', border: activeTab === tab.id ? 'none' : '1px solid var(--card-border)', borderBottom: 'none', borderRadius: '8px 8px 0 0', cursor: 'pointer', fontSize: '1rem', fontWeight: '600', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -861,8 +904,8 @@ const ImagePickerButton = ({ onUploaded, folder = 'contenido', label = 'Subir im
             {/* Folder tabs */}
             <div style={{ padding: '12px 24px', borderBottom: '1px solid var(--card-border)', display: 'flex', gap: '8px', flexShrink: 0 }}>
               {[{ id: 'contenido', label: 'Contenido', icon: 'fa-solid fa-book-open' },
-                { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-question' },
-                { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-cubes' }
+              { id: 'preguntas', label: 'Preguntas', icon: 'fa-solid fa-question' },
+              { id: 'modulos', label: 'Módulos', icon: 'fa-solid fa-cubes' }
               ].map(f => (
                 <button key={f.id} type="button" onClick={() => { setBrowseFolder(f.id); loadImages(f.id); }}
                   style={{ padding: '6px 14px', borderRadius: '6px', border: browseFolder === f.id ? 'none' : '1px solid var(--card-border)', cursor: 'pointer', background: browseFolder === f.id ? 'var(--accent-color)' : 'var(--bg-primary)', color: browseFolder === f.id ? '#fff' : 'var(--text-secondary)', fontWeight: '600', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -925,7 +968,7 @@ const ContentEditModal = ({ item, tipoOptions, onSave, onClose }) => {
     const sep = '\n\n---MEDIA---\n';
     const parts = (item.contenido || '').split(sep);
     let media = {};
-    if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) {} }
+    if (parts[1]) { try { media = JSON.parse(parts[1]); } catch (e) { } }
     return { ...item, text: parts[0] || '', audio_url: media?.audio_url || item.audio_url || '', video_url: media?.video_url || item.video_url || '', imagen_url: media?.imagen_url || item.imagen_url || '' };
   });
   const [activeSection, setActiveSection] = useState('editor');
