@@ -5,12 +5,6 @@ import html2pdf from 'html2pdf.js';
 export const processMarkdown = (text) => {
     if (!text) return '';
 
-    // Bypass markdown parser if the content is already HTML (from Quill Editor)
-    const trimmed = text.trim();
-    if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
-        return `<div class="quill-content">${trimmed}</div>`;
-    }
-
     let inList = false;
     let lines = text.split('\n');
     let htmlLines = [];
@@ -22,8 +16,8 @@ export const processMarkdown = (text) => {
         if (line.startsWith('* **')) {
             if (!inList) {
                 inList = true;
-                htmlLines.push('<table style="table-layout: fixed; width: 100%; border-collapse: collapse; margin-block: 15px; font-size: 13px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">');
-                htmlLines.push('<thead><tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;"><th style="padding: 12px 15px; text-align: left; width: 35%; color: #334155; font-weight: bold;">Concepto / Razón</th><th style="padding: 12px 15px; text-align: left; width: 65%; color: #334155; font-weight: bold;">Fórmula / Ecuación</th></tr></thead>');
+                htmlLines.push('<table style="table-layout: auto; width: 100%; border-collapse: collapse; margin-block: 15px; font-size: 11px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden;">');
+                htmlLines.push('<thead><tr style="background-color: #f8fafc; border-bottom: 2px solid #cbd5e1;"><th style="padding: 10px 12px; text-align: left; width: 35%; color: #334155; font-weight: bold;">Concepto</th><th style="padding: 10px 12px; text-align: left; width: 65%; color: #334155; font-weight: bold;">Ecuación</th></tr></thead>');
                 htmlLines.push('<tbody>');
             }
 
@@ -34,14 +28,14 @@ export const processMarkdown = (text) => {
                 let formula = match[2].trim();
 
                 // Format formula backticks inside the cell
-                formula = formula.replace(/`([^`]+)`/g, '<code style="word-break: break-word; white-space: pre-wrap; display: inline-block; max-width: 100%; background:#f1f5f9;padding:4px 8px;border-radius:6px;color:#ec4899;font-family:monospace;border:1px solid #e2e8f0;font-weight:bold;letter-spacing:1px;font-size:14px;">$1</code>');
+                formula = formula.replace(/`([^`]+)`/g, '<code style="word-break: break-word; white-space: normal; display: block; background:#f1f5f9;padding:6px 10px;border-radius:6px;color:#ec4899;font-family:monospace;border:1px solid #e2e8f0;font-weight:600;letter-spacing:0.5px;font-size:11.5px;">$1</code>');
                 formula = formula.replace(/(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/g, '<em>$1</em>');
 
-                htmlLines.push(`<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 14px 15px; font-weight: 600; color: #0f172a; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word;">${title}</td><td style="padding: 14px 15px; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word;">${formula}</td></tr>`);
+                htmlLines.push(`<tr style="border-bottom: 1px solid #f1f5f9;"><td style="padding: 12px; font-weight: 600; color: #0f172a; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word;">${title}</td><td style="padding: 12px; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word;">${formula}</td></tr>`);
             } else {
                 line = line.replace(/^\*\s*/, '');
                 line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-                line = line.replace(/`([^`]+)`/g, '<code style="word-break: break-word; white-space: pre-wrap; display: inline-block; max-width: 100%; background:#f1f5f9;padding:2px 4px;border-radius:4px;color:#ec4899;font-weight:bold;">$1</code>');
+                line = line.replace(/`([^`]+)`/g, '<code style="word-break: break-word; white-space: normal; display: inline-block; background:#f1f5f9;padding:2px 4px;border-radius:4px;color:#ec4899;font-weight:bold;">$1</code>');
                 htmlLines.push(`<tr style="border-bottom: 1px solid #e2e8f0;"><td colspan="2" style="padding: 10px; word-wrap: break-word; overflow-wrap: break-word;">${line}</td></tr>`);
             }
         } else {
@@ -51,17 +45,17 @@ export const processMarkdown = (text) => {
             }
 
             if (line.startsWith('### ')) {
-                htmlLines.push(`<h4 style="color: #475569; font-size: 15px; margin-top: 25px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">${line.replace('### ', '')}</h4>`);
+                htmlLines.push(`<h4 style="color: #475569; font-size: 14px; margin-top: 25px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">${line.replace('### ', '')}</h4>`);
             } else if (line.startsWith('> *(Hack')) {
                 let match = line.match(/> \*(Hack[^:]*:)\*\s*(.*)/) || line.match(/> \*(Hack)\*\s*(.*)/);
                 if (match) {
-                    htmlLines.push(`<div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 18px; margin: 20px 0; border-radius: 0 8px 8px 0;"><strong style="color: #d97706; display: block; margin-bottom: 4px; font-size:14px;"><i class="fa-solid fa-lightbulb"></i> ${match[1]}</strong><span style="color: #92400e; font-size:13px; line-height: 1.5;">${match[2]}</span></div>`);
+                    htmlLines.push(`<div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px 18px; margin: 20px 0; border-radius: 0 8px 8px 0;"><strong style="color: #d97706; display: block; margin-bottom: 4px; font-size:13px;">💡 ${match[1]}</strong><span style="color: #92400e; font-size:12px; line-height: 1.5;">${match[2]}</span></div>`);
                 }
             } else if (line !== '') {
                 line = line.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
                 line = line.replace(/(?<!\*)\*(?!\*)([^*]+)\*(?!\*)/g, '<em>$1</em>');
-                line = line.replace(/`([^`]+)`/g, '<code style="word-break: break-word; white-space: pre-wrap; display: inline-block; max-width: 100%; background:#f1f5f9;padding:2px 4px;border-radius:4px;color:#ec4899;font-weight:bold;">$1</code>');
-                htmlLines.push(`<p style="margin: 0 0 10px 0; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word;">${line}</p>`);
+                line = line.replace(/`([^`]+)`/g, '<code style="word-break: break-word; white-space: normal; display: inline-block; background:#f1f5f9;padding:2px 4px;border-radius:4px;color:#ec4899;font-weight:bold;">$1</code>');
+                htmlLines.push(`<p style="margin: 0 0 10px 0; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; font-size: 12px;">${line}</p>`);
             }
         }
     }
@@ -75,7 +69,11 @@ export const processMarkdown = (text) => {
 
 export const generateFormulasPDF = async (moduloId) => {
     try {
-        // 1. Fetch the theory (formulas)
+        if (!moduloId) {
+            throw new Error("No hay módulo especificado para generar el PDF.");
+        }
+
+        // 1. Fetch the content for the module (the formulas/tips)
         const { data: formulas, error: fError } = await supabase
             .from('contenido_clase')
             .select('*')
@@ -98,7 +96,7 @@ export const generateFormulasPDF = async (moduloId) => {
         container.style.padding = '40px';
         container.style.fontFamily = "'Inter', sans-serif";
         container.style.color = '#333';
-        container.style.width = '1000px'; // adjusted width for A4 landscape
+        container.style.width = '780px'; // A4 Portrait + padding cushion
         container.style.maxWidth = '100%';
         container.style.boxSizing = 'border-box';
         container.style.overflowWrap = 'break-word';
@@ -123,7 +121,7 @@ export const generateFormulasPDF = async (moduloId) => {
                     <h3 style="color: #1e293b; font-size: 16px; margin-bottom: 10px; border-left: 4px solid #3b82f6; padding-left: 8px;">
                         ${idx + 1}. ${f.titulo}
                     </h3>
-                    <div style="font-size: 13px; line-height: 1.6; color: #475569; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <div style="font-size: 12px; line-height: 1.6; color: #475569; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
                         ${processMarkdown(cleanText)}
                     </div>
                 </div>
@@ -144,7 +142,7 @@ export const generateFormulasPDF = async (moduloId) => {
                     <div style="background: #fffbeb; padding: 12px 15px; border-bottom: 1px solid #fde68a;">
                         <strong style="color: #d97706; font-size: 14px;">Ejemplo ${idx + 1}: ${p.subtema} (${p.tema})</strong>
                     </div>
-                    <div style="padding: 15px; font-size: 13px; line-height: 1.5; color: #334155; max-width: 100%; overflow: hidden;">
+                    <div style="padding: 15px; font-size: 12px; line-height: 1.5; color: #334155; max-width: 100%; overflow: hidden;">
                         <p style="margin-top: 0; font-weight: 500; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; max-width: 100%;">Problema: ${p.pregunta}</p>
                         <div style="background: #f1f5f9; padding: 12px; border-radius: 6px; margin-top: 15px; border-left: 3px solid #10b981; overflow-wrap: break-word; word-wrap: break-word; word-break: break-all; max-width: 100%; overflow: hidden;">
                             <strong style="color: #059669; display: block; margin-bottom: 5px;">Resolución:</strong>
@@ -163,14 +161,15 @@ export const generateFormulasPDF = async (moduloId) => {
             filename: 'Formulario_EGEL_Economia.pdf',
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
         // Fire the download
         await html2pdf().set(opt).from(container).save();
         return true;
-    } catch (e) {
-        console.error("Error generating PDF:", e);
-        return false;
+
+    } catch (error) {
+        console.error("Error generating PDF", error);
+        throw error;
     }
 };

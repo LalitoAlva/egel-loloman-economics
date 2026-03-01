@@ -2,14 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import ReactQuill from 'react-quill-new';
-import 'react-quill-new/dist/quill.snow.css';
 import { processMarkdown } from '../utils/pdfGenerator';
 
 /**
  * PdfEditor
- * Interfaz 100% dedicada a gestionar las fórmulas que se renderizan en el PDF.
- * Permite añadir contenido en formato HTML.
+ * Interfaz dedicada a gestionar las fórmulas que se renderizan en el PDF.
+ * Modo de Mantenimiento Visual y Generador de Tablas (Sin HTML WYSIWYG).
  */
 const PdfEditor = ({ onBack }) => {
     const { user } = useAuth();
@@ -20,7 +18,6 @@ const PdfEditor = ({ onBack }) => {
     const [contentItems, setContentItems] = useState([]);
     const [editingItem, setEditingItem] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [showRawHtml, setShowRawHtml] = useState(false);
 
     // Auth Check
     const isAdmin = user?.roles?.nombre === 'admin';
@@ -79,53 +76,44 @@ const PdfEditor = ({ onBack }) => {
         }
     };
 
+    // Interpretar el contenido Markdown especial en Concepto y Fórmula
+    const extractFormData = (markdownText) => {
+        if (!markdownText) return { text: '', isTableText: false };
+
+        let isTableText = false;
+        if (markdownText.includes('* **')) isTableText = true;
+
+        return {
+            text: markdownText.trim(),
+            isTableText
+        };
+    };
+
     const handleAddFormula = () => {
         setEditingItem({
             id: null,
             orden: contentItems.length + 1,
-            contenido: ''
+            text: '',
+            isTableText: false
         });
-        setShowRawHtml(false);
         setIsEditModalOpen(true);
     };
 
     const handleEditFormula = (item) => {
         const { text } = parseMediaFromContent(item.contenido);
-
-        let htmlText = text;
-        const trimmed = (text || '').trim();
-
-        // Si no es HTML, intenta transformar el sintaxis markdown viejo a HTML para el WYSIWYG
-        if (text && !trimmed.startsWith('<')) {
-            let lines = text.split('\n');
-            let newHtml = '';
-            lines.forEach((line) => {
-                let ln = line.trim();
-                let match = ln.match(/^\*\s*\*\*([^*]+)\*\*:?\s*(.*)$/);
-                if (match) {
-                    newHtml += `<table style="width: 100%; border-collapse: collapse; margin-bottom: 10px;" border="1"><tbody><tr><td style="padding: 10px; width: 35%;"><strong>${match[1]}</strong></td><td style="padding: 10px;"><code>${match[2].replace(/`/g, '')}</code></td></tr></tbody></table>`;
-                } else if (ln.startsWith('### ')) {
-                    newHtml += `<h3>${ln.replace('### ', '')}</h3>`;
-                } else if (ln.startsWith('> *(Hack')) {
-                    newHtml += `<blockquote>${ln}</blockquote>`;
-                } else if (ln !== '') {
-                    newHtml += `<p>${ln}</p>`;
-                }
-            });
-            htmlText = newHtml;
-        }
+        const { isTableText } = extractFormData(text);
 
         setEditingItem({
             id: item.id,
             orden: item.orden,
-            contenido: htmlText || ''
+            text: text,
+            isTableText: isTableText
         });
-        setShowRawHtml(false);
         setIsEditModalOpen(true);
     };
 
     const handleDeleteFormula = async (id) => {
-        if (!window.confirm('¿Estás seguro de que deseas eliminar este contenido del PDF?')) return;
+        if (!window.confirm('¿Estás seguro de que deseas eliminar este bloque del PDF?')) return;
 
         try {
             const { error } = await supabase.from('contenido_clase').delete().eq('id', id);
@@ -155,19 +143,19 @@ const PdfEditor = ({ onBack }) => {
 
     const handleSaveItem = async () => {
         try {
-            if (!editingItem.contenido) {
-                alert('El contenido no puede estar vacío');
+            if (!editingItem.text) {
+                alert('El campo de texto no puede estar vacío');
                 return;
             }
 
-            const contenido = editingItem.contenido;
+            const contenido = editingItem.text;
 
             if (editingItem.id) {
                 const { error } = await supabase
                     .from('contenido_clase')
                     .update({
                         contenido: contenido,
-                        titulo: 'Contenido PDF',
+                        titulo: editingItem.isTableText ? 'Tabla de Fórmulas' : 'Sección Libre / Tip',
                         tipo: 'guia'
                     })
                     .eq('id', editingItem.id);
@@ -178,7 +166,7 @@ const PdfEditor = ({ onBack }) => {
                     .from('contenido_clase')
                     .insert([{
                         modulo_id: formulasModule.id,
-                        titulo: 'Contenido PDF',
+                        titulo: editingItem.isTableText ? 'Tabla de Fórmulas' : 'Sección Libre / Tip',
                         contenido: contenido,
                         orden: editingItem.orden,
                         tipo: 'guia'
@@ -215,17 +203,6 @@ const PdfEditor = ({ onBack }) => {
         );
     }
 
-    const quillModules = {
-        toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike', 'blockquote', 'code-block'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ color: [] }, { background: [] }],
-            ['link', 'image'],
-            ['clean']
-        ],
-    };
-
     return (
         <div style={{ minHeight: '100vh', padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '30px' }}>
@@ -236,7 +213,7 @@ const PdfEditor = ({ onBack }) => {
                     <div>
                         <h1 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <i className="fa-solid fa-file-pdf" style={{ color: '#ef4444' }}></i>
-                            Editor Formulario PDF (HTML)
+                            Estructurador PDF
                         </h1>
                         <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
                             Módulo vinculado: <strong>{formulasModule?.titulo}</strong>
@@ -247,7 +224,7 @@ const PdfEditor = ({ onBack }) => {
                     onClick={handleAddFormula}
                     style={{ background: 'var(--accent-color)', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '10px', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(168,85,247,0.3)' }}
                 >
-                    <i className="fa-solid fa-plus"></i> Añadir Contenido
+                    <i className="fa-solid fa-plus"></i> Añadir Bloque
                 </button>
             </div>
 
@@ -262,11 +239,7 @@ const PdfEditor = ({ onBack }) => {
                             </div>
 
                             <div style={{ flex: 1, minWidth: 0, background: 'var(--bg-primary)', padding: '15px', borderRadius: '8px', border: '1px solid var(--input-border)', color: 'var(--text-primary)', overflowX: 'auto' }}>
-                                {(text || '').trim().startsWith('<') ? (
-                                    <div className="ql-editor" style={{ padding: 0 }} dangerouslySetInnerHTML={{ __html: text }} />
-                                ) : (
-                                    <div dangerouslySetInnerHTML={{ __html: processMarkdown(text) }} />
-                                )}
+                                <div dangerouslySetInnerHTML={{ __html: processMarkdown(text) }} />
                             </div>
 
                             <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
@@ -292,7 +265,7 @@ const PdfEditor = ({ onBack }) => {
                 {contentItems.length === 0 && (
                     <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-secondary)' }}>
                         <i className="fa-regular fa-folder-open" style={{ fontSize: '3rem', marginBottom: '15px' }}></i>
-                        <p>No hay contenido en el documento PDF.</p>
+                        <p>No hay bloques configurados para este PDF.</p>
                     </div>
                 )}
             </div>
@@ -304,40 +277,32 @@ const PdfEditor = ({ onBack }) => {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
                             <h2 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <i className="fa-solid fa-code" style={{ color: 'var(--accent-color)' }}></i>
-                                {editingItem.id ? 'Editar Contenido PDF (HTML)' : 'Nuevo Contenido PDF (HTML)'}
+                                {editingItem.id ? 'Editar Bloque (Markdown)' : 'Nuevo Bloque (Markdown)'}
                             </h2>
-                            <button
-                                onClick={() => setShowRawHtml(!showRawHtml)}
-                                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--card-border)', color: 'var(--text-primary)', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' }}
-                            >
-                                <i className="fa-solid fa-exchange-alt" style={{ marginRight: '6px' }}></i>
-                                {showRawHtml ? 'Usar Editor Visual' : 'Editar Código HTML'}
-                            </button>
                         </div>
 
-                        <div style={{ marginBottom: '30px', background: '#fff', borderRadius: '8px', color: '#000' }}>
-                            {showRawHtml ? (
-                                <textarea
-                                    value={editingItem.contenido}
-                                    onChange={(e) => setEditingItem({ ...editingItem, contenido: e.target.value })}
-                                    rows={15}
-                                    style={{ width: '100%', padding: '15px', fontFamily: 'monospace', fontSize: '14px', border: '1px solid #ccc', borderRadius: '8px', resize: 'vertical' }}
-                                    placeholder="<p>Escribe tu HTML aquí...</p>"
-                                />
-                            ) : (
-                                <div style={{ minHeight: '300px' }}>
-                                    <ReactQuill
-                                        theme="snow"
-                                        value={editingItem.contenido}
-                                        onChange={(val) => setEditingItem({ ...editingItem, contenido: val })}
-                                        modules={quillModules}
-                                        style={{ height: '250px', marginBottom: '40px' }}
-                                    />
-                                </div>
-                            )}
+                        <div style={{ marginBottom: '20px' }}>
+                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '10px' }}>
+                                Para tabular fórmulas dentro del PDF, sigue la plantilla estricta iniciando con astersícos:
+                            </p>
+                            <pre style={{ background: '#1e293b', color: '#cbd5e1', padding: '10px 15px', borderRadius: '8px', fontSize: '0.85rem', overflowX: 'auto' }}>
+                                "### Categoría de Fórmulas"<br />
+                                "* **Concepto de Razón**: \`Formula / Operador\`"<br />
+                                "&gt; *(Hack)* Algo que quieras remarcar del tema"<br />
+                            </pre>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end', marginTop: showRawHtml ? '10px' : '40px' }}>
+                        <div style={{ marginBottom: '30px', background: 'var(--input-bg)', borderRadius: '8px', border: '1px solid var(--input-border)' }}>
+                            <textarea
+                                value={editingItem.text}
+                                onChange={(e) => setEditingItem({ ...editingItem, text: e.target.value })}
+                                rows={15}
+                                style={{ width: '100%', padding: '15px', fontFamily: 'monospace', fontSize: '14px', border: 'none', background: 'transparent', color: 'var(--text-primary)', resize: 'vertical', outline: 'none' }}
+                                placeholder="### Título de Sección&#10;* **Concepto**: `a / b`"
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'flex-end', marginTop: '20px' }}>
                             <button
                                 onClick={() => setIsEditModalOpen(false)}
                                 style={{ padding: '12px 24px', background: 'transparent', color: 'var(--text-secondary)', border: '2px solid var(--card-border)', borderRadius: '10px', fontWeight: 'bold', fontSize: '1rem', cursor: 'pointer' }}
