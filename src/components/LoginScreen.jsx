@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import md5 from '../lib/md5';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 
 const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
@@ -15,6 +16,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
     const [error, setError] = useState('');
     const [requestSent, setRequestSent] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [captchaToken, setCaptchaToken] = useState(null);
 
     const [rememberMe, setRememberMe] = useState(false);
 
@@ -71,6 +73,12 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
 
                 if (password.length < 6) {
                     setError('La contraseña debe tener al menos 6 caracteres');
+                    setLoading(false);
+                    return;
+                }
+
+                if (!captchaToken) {
+                    setError('Por favor, completa el Captcha de seguridad');
                     setLoading(false);
                     return;
                 }
@@ -308,6 +316,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                             setEmail('');
                             setPassword('');
                             setMotivo('');
+                            setCaptchaToken(null);
                         }}
                         className="btn-primary"
                         style={{ width: '100%' }}
@@ -557,6 +566,20 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                         </div>
                     )}
 
+                    {!isLogin && (
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
+                            <HCaptcha
+                                sitekey={import.meta.env.VITE_HCAPTCHA_SITEKEY || ''}
+                                onVerify={(token) => {
+                                    setCaptchaToken(token);
+                                    setError('');
+                                }}
+                                onExpire={() => setCaptchaToken(null)}
+                                theme={theme}
+                            />
+                        </div>
+                    )}
+
                     {error && (
                         <div style={{
                             padding: '12px 16px',
@@ -573,7 +596,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
 
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={loading || (!isLogin && !captchaToken)}
                         style={{
                             width: '100%',
                             padding: '15px',
@@ -588,7 +611,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '10px',
-                            opacity: loading ? 0.7 : 1,
+                            opacity: (loading || (!isLogin && !captchaToken)) ? 0.7 : 1,
                             transition: 'all 0.2s ease',
                             boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)'
                         }}
@@ -686,6 +709,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                         onClick={() => {
                             setIsLogin(!isLogin);
                             setError('');
+                            setCaptchaToken(null);
                         }}
                         style={{
                             background: 'transparent',

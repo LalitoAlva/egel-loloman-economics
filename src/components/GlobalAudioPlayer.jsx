@@ -56,7 +56,7 @@ const GlobalAudioPlayer = () => {
                 }}>
                     {currentTrack.icon && currentTrack.icon.includes('fa-') ? (
                         <i className={currentTrack.icon}></i>
-                    ) : (currentTrack.icon || '🎧')}
+                    ) : (<i className="fa-solid fa-headphones"></i>)}
                 </div>
                 <div>
                     <div style={{ color: '#fff', fontSize: '0.9rem', fontWeight: '600' }}>
@@ -93,7 +93,7 @@ const GlobalAudioPlayer = () => {
                     onMouseOver={(e) => e.target.style.transform = 'scale(1.05)'}
                     onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
                 >
-                    {isPlaying ? '⏸️' : '▶️'}
+                    {isPlaying ? <i className="fa-solid fa-pause"></i> : <i className="fa-solid fa-play"></i>}
                 </button>
 
                 <button
@@ -109,7 +109,7 @@ const GlobalAudioPlayer = () => {
                         cursor: 'pointer'
                     }}
                 >
-                    ⏹️
+                    <i className="fa-solid fa-stop"></i>
                 </button>
             </div>
 
@@ -152,7 +152,7 @@ const GlobalAudioPlayer = () => {
 
             {/* Volume */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '120px' }}>
-                <span style={{ fontSize: '1rem' }}>🔊</span>
+                <span style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.7)' }}><i className="fa-solid fa-volume-up"></i></span>
                 <input
                     type="range"
                     min="0"
