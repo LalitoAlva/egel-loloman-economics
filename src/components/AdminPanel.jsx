@@ -437,6 +437,7 @@ const AdminPanel = ({ onBack }) => {
                 ver_estadisticas: false,
                 gestionar_usuarios: false,
                 gestionar_contenido: false,
+                gestionar_pdf: false,
                 realizar_examenes: true
             }
         });
@@ -943,8 +944,8 @@ const AdminPanel = ({ onBack }) => {
 
                         {activeTab === 'configuracion' && (
                             <div style={{ maxWidth: '600px' }}>
-                                <h2 style={{ fontSize: '1.5rem', marginBottom: '25px', color: 'var(--text-primary)' }}>
-                                    <i className="fa-solid fa-gear" style={{ marginRight: '10px', color: 'var(--accent-color)' }}></i>
+                                <h2 style={{ fontSize: '1.5rem', marginBottom: '25px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <i className="fa-solid fa-gear" style={{ color: 'var(--accent-color)' }}></i>
                                     Configuración Global
                                 </h2>
 
@@ -3164,8 +3165,8 @@ const RolEditModal = ({ rol, onClose, onSave }) => {
             overflowY: 'auto', backdropFilter: 'blur(5px)'
         }}>
             <div className="slide-card fade-in" style={{ width: '100%', maxWidth: '600px', margin: 0 }}>
-                <h2 style={{ color: 'var(--text-primary)', marginBottom: '20px' }}>
-                    {rol.id ? '✏️ Editar Rol' : '➕ Nuevo Rol'}
+                <h2 style={{ color: 'var(--text-primary)', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    {rol.id ? <><i className="fa-solid fa-pen-to-square"></i> Editar Rol</> : <><i className="fa-solid fa-plus"></i> Nuevo Rol</>}
                 </h2>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
@@ -3213,6 +3214,7 @@ const RolEditModal = ({ rol, onClose, onSave }) => {
                                 { key: 'ver_estadisticas', label: 'Ver Estadísticas' },
                                 { key: 'gestionar_usuarios', label: 'Gestionar Usuarios' },
                                 { key: 'gestionar_contenido', label: 'Gestionar Contenido' },
+                                { key: 'gestionar_pdf', label: 'Editor Formulario PDF' },
                                 { key: 'realizar_examenes', label: 'Realizar Exámenes' }
                             ].map(permiso => (
                                 <label key={permiso.key} style={{

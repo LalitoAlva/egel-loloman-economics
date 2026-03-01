@@ -16,6 +16,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
 
     const isAdmin = user?.roles?.nombre === 'admin';
     const canManageContent = user?.roles?.permisos?.gestionar_contenido || isAdmin;
+    const canManagePdf = user?.roles?.permisos?.gestionar_pdf || isAdmin;
 
     return (
         <>
@@ -264,7 +265,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                     ))}
 
                     {/* Admin Section */}
-                    {(isAdmin || canManageContent) && (
+                    {(isAdmin || canManageContent || canManagePdf) && (
                         <>
                             <div style={{
                                 padding: '20px 20px 10px',
@@ -277,68 +278,69 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                             </div>
 
                             {canManageContent && (
-                                <>
-                                    <button
-                                        onClick={() => {
-                                            onSetMode('content-manager');
-                                            onClose();
-                                        }}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            width: '100%',
-                                            padding: '12px 20px',
-                                            background: currentMode === 'content-manager'
-                                                ? 'rgba(168, 85, 247, 0.15)'
-                                                : 'transparent',
-                                            border: 'none',
-                                            borderLeft: currentMode === 'content-manager'
-                                                ? '3px solid #a855f7'
-                                                : '3px solid transparent',
-                                            color: currentMode === 'content-manager'
-                                                ? 'var(--accent-color)'
-                                                : 'var(--text-secondary)',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            textAlign: 'left',
-                                            fontSize: '0.95rem'
-                                        }}
-                                    >
-                                        <i className="fa-solid fa-sliders" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
-                                        Administrar Contenido
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            onSetMode('pdf-editor');
-                                            onClose();
-                                        }}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '12px',
-                                            width: '100%',
-                                            padding: '12px 20px',
-                                            background: currentMode === 'pdf-editor'
-                                                ? 'rgba(239, 68, 68, 0.15)'
-                                                : 'transparent',
-                                            border: 'none',
-                                            borderLeft: currentMode === 'pdf-editor'
-                                                ? '3px solid #ef4444'
-                                                : '3px solid transparent',
-                                            color: currentMode === 'pdf-editor'
-                                                ? '#ef4444'
-                                                : 'var(--text-secondary)',
-                                            cursor: 'pointer',
-                                            transition: 'all 0.2s',
-                                            textAlign: 'left',
-                                            fontSize: '0.95rem'
-                                        }}
-                                    >
-                                        <i className="fa-solid fa-file-pdf" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
-                                        Editor Formulario PDF
-                                    </button>
-                                </>
+                                <button
+                                    onClick={() => {
+                                        onSetMode('content-manager');
+                                        onClose();
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        width: '100%',
+                                        padding: '12px 20px',
+                                        background: currentMode === 'content-manager'
+                                            ? 'rgba(168, 85, 247, 0.15)'
+                                            : 'transparent',
+                                        border: 'none',
+                                        borderLeft: currentMode === 'content-manager'
+                                            ? '3px solid #a855f7'
+                                            : '3px solid transparent',
+                                        color: currentMode === 'content-manager'
+                                            ? 'var(--accent-color)'
+                                            : 'var(--text-secondary)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        textAlign: 'left',
+                                        fontSize: '0.95rem'
+                                    }}
+                                >
+                                    <i className="fa-solid fa-sliders" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
+                                    Administrar Contenido
+                                </button>
+                            )}
+
+                            {canManagePdf && (
+                                <button
+                                    onClick={() => {
+                                        onSetMode('pdf-editor');
+                                        onClose();
+                                    }}
+                                    style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '12px',
+                                        width: '100%',
+                                        padding: '12px 20px',
+                                        background: currentMode === 'pdf-editor'
+                                            ? 'rgba(239, 68, 68, 0.15)'
+                                            : 'transparent',
+                                        border: 'none',
+                                        borderLeft: currentMode === 'pdf-editor'
+                                            ? '3px solid #ef4444'
+                                            : '3px solid transparent',
+                                        color: currentMode === 'pdf-editor'
+                                            ? '#ef4444'
+                                            : 'var(--text-secondary)',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s',
+                                        textAlign: 'left',
+                                        fontSize: '0.95rem'
+                                    }}
+                                >
+                                    <i className="fa-solid fa-file-pdf" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
+                                    Editor Formulario PDF
+                                </button>
                             )}
 
                             {isAdmin && (
@@ -370,6 +372,7 @@ const Sidebar = ({ isOpen, onClose, currentMode, onSetMode, user, onLogout, onCh
                                     }}
                                 >
                                     <i className="fa-solid fa-gear" style={{ fontSize: '1.1rem', width: '20px', textAlign: 'center' }}></i>
+                                    Panel de Administración
                                 </button>
                             )}
                         </>
