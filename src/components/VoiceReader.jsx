@@ -4,6 +4,8 @@ const VoiceReader = ({ text }) => {
     const [isSpeaking, setIsSpeaking] = useState(false);
     const [utterance, setUtterance] = useState(null);
 
+    const [isPaused, setIsPaused] = useState(false);
+
     useEffect(() => {
         return () => {
             window.speechSynthesis.cancel();
@@ -25,10 +27,16 @@ const VoiceReader = ({ text }) => {
 
     const toggleSpeech = () => {
         if (isSpeaking) {
-            window.speechSynthesis.cancel();
-            setIsSpeaking(false);
+            if (isPaused) {
+                window.speechSynthesis.resume();
+                setIsPaused(false);
+            } else {
+                window.speechSynthesis.pause();
+                setIsPaused(true);
+            }
         } else {
             window.speechSynthesis.cancel();
+            setIsPaused(false);
 
             const textToRead = cleanText(text);
             const newUtterance = new SpeechSynthesisUtterance(textToRead);
@@ -46,10 +54,14 @@ const VoiceReader = ({ text }) => {
             newUtterance.lang = 'es-MX';
             newUtterance.rate = 1;
 
-            newUtterance.onend = () => setIsSpeaking(false);
+            newUtterance.onend = () => {
+                setIsSpeaking(false);
+                setIsPaused(false);
+            };
             newUtterance.onerror = (e) => {
                 console.error("Speech error", e);
                 setIsSpeaking(false);
+                setIsPaused(false);
             };
 
             setUtterance(newUtterance);
@@ -62,7 +74,7 @@ const VoiceReader = ({ text }) => {
         <button
             onClick={toggleSpeech}
             style={{
-                background: isSpeaking ? '#ef4444' : 'var(--accent-color)',
+                background: isSpeaking ? (isPaused ? '#eab308' : '#ef4444') : 'var(--accent-color)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: '50%',
@@ -77,9 +89,9 @@ const VoiceReader = ({ text }) => {
                 marginBottom: '10px',
                 fontSize: '1.2rem'
             }}
-            title={isSpeaking ? "Detener lectura" : "Escuchar texto"}
+            title={!isSpeaking ? "Escuchar texto" : (isPaused ? "Reanudar lectura" : "Pausar lectura")}
         >
-            <i className={isSpeaking ? "fa-solid fa-stop" : "fa-solid fa-volume-high"}></i>
+            <i className={!isSpeaking ? "fa-solid fa-volume-high" : (isPaused ? "fa-solid fa-play" : "fa-solid fa-pause")}></i>
         </button>
     );
 };

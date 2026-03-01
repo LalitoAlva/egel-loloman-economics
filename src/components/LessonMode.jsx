@@ -4,6 +4,8 @@ import { useAudio } from '../context/AudioContext';
 import AudioPromptModal from './AudioPromptModal';
 import VoiceReader from './VoiceReader';
 import { useAuth } from '../context/AuthContext';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const LessonMode = ({ onBack }) => {
     const { user } = useAuth();
@@ -303,41 +305,30 @@ const LessonMode = ({ onBack }) => {
         return parts.length === 1 && typeof parts[0] === 'string' ? parts[0] : parts;
     };
 
-    // Renderizado de Markdown (fallback para contenido sin HTML)
-    const renderMarkdown = (text) => {
+    // Renderizado de Markdown con react-markdown y plugin de github
+    const renderMarkdownNative = (text) => {
         if (!text) return null;
-
-        return text.split('\n').map((line, i) => {
-            // Headers (con soporte para bold inline)
-            if (line.startsWith('### ')) return <h4 key={i} style={{ color: 'var(--accent-color)', marginTop: '20px' }}>{processInline(line.replace('### ', ''), `h4-${i}`)}</h4>;
-            if (line.startsWith('## ')) return <h3 key={i} style={{ color: 'var(--text-primary)', marginTop: '25px' }}>{processInline(line.replace('## ', ''), `h3-${i}`)}</h3>;
-            if (line.startsWith('# ')) return <h2 key={i} style={{ color: 'var(--warning-color)', marginTop: '30px' }}>{processInline(line.replace('# ', ''), `h2-${i}`)}</h2>;
-
-            // Lists (con soporte para bold/italic inline)
-            if (line.trim().startsWith('* ') || line.trim().startsWith('- ')) {
-                const content = line.replace(/^[\s]*[\*\-]\s/, '');
-                return <li key={i} style={{ marginLeft: '20px', marginBottom: '8px' }}>{processInline(content, `li-${i}`)}</li>;
-            }
-            if (line.match(/^\d+\.\s/)) {
-                const content = line.replace(/^\d+\.\s/, '');
-                return <li key={i} style={{ marginLeft: '20px', marginBottom: '8px', listStyleType: 'decimal' }}>{processInline(content, `ol-${i}`)}</li>;
-            }
-
-            // Línea con bold/italic/imágenes
-            if (line.includes('**') || line.includes('*') || line.match(/!\[/)) {
-                return (
-                    <p key={i} style={{ marginBottom: '12px', lineHeight: '1.7' }}>
-                        {processInline(line, `p-${i}`)}
-                    </p>
-                );
-            }
-
-            // Empty
-            if (line.trim() === '') return <br key={i} />;
-
-            // Normal text
-            return <p key={i} style={{ marginBottom: '12px', lineHeight: '1.7' }}>{line}</p>;
-        });
+        return (
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    table: ({ node, ...props }) => <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px', marginBottom: '20px' }} {...props} />,
+                    th: ({ node, ...props }) => <th style={{ border: '1px solid var(--card-border)', padding: '10px', background: 'var(--bg-secondary)', textAlign: 'left' }} {...props} />,
+                    td: ({ node, ...props }) => <td style={{ border: '1px solid var(--card-border)', padding: '10px' }} {...props} />,
+                    code: ({ node, inline, ...props }) => inline
+                        ? <code style={{ background: 'var(--bg-secondary)', padding: '2px 6px', borderRadius: '4px', color: '#ec4899' }} {...props} />
+                        : <pre style={{ background: '#1e1e1e', padding: '15px', borderRadius: '8px', overflowX: 'auto', color: '#d4d4d4' }}><code {...props} /></pre>,
+                    img: ({ node, ...props }) => <img style={{ maxWidth: '100%', borderRadius: '12px', margin: '15px 0', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }} {...props} />,
+                    h2: ({ node, ...props }) => <h2 style={{ color: 'var(--warning-color)', marginTop: '30px' }} {...props} />,
+                    h3: ({ node, ...props }) => <h3 style={{ color: 'var(--text-primary)', marginTop: '25px' }} {...props} />,
+                    h4: ({ node, ...props }) => <h4 style={{ color: 'var(--accent-color)', marginTop: '20px' }} {...props} />,
+                    p: ({ node, ...props }) => <p style={{ marginBottom: '12px', lineHeight: '1.7' }} {...props} />,
+                    a: ({ node, ...props }) => <a style={{ color: 'var(--accent-color)', textDecoration: 'underline' }} {...props} />
+                }}
+            >
+                {text}
+            </ReactMarkdown>
+        );
     };
 
     // Renderizar contenido completo (HTML o Markdown + multimedia)
@@ -361,7 +352,7 @@ const LessonMode = ({ onBack }) => {
                         style={{ lineHeight: '1.8', wordBreak: 'break-word' }}
                     />
                 ) : (
-                    renderMarkdown(text)
+                    renderMarkdownNative(text)
                 )}
 
                 {/* Multimedia (de ---MEDIA--- o de columnas de la BD) */}

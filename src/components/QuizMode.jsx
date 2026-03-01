@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { RichText, QuestionImage, getCleanQuestionText } from '../lib/renderQuestionHTML';
 import QuestionPreviewModal from './QuestionPreviewModal';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const QuizMode = ({ onBack, resumeExamId }) => {
     const { user } = useAuth();
@@ -976,7 +978,7 @@ const QuizMode = ({ onBack, resumeExamId }) => {
 
                 {/* Question */}
                 <div style={{ fontSize: '1.2rem', lineHeight: '1.7', marginBottom: '10px', fontWeight: '700' }}>
-                    <RichText content={pregunta.pregunta} />
+                    {renderTextNative(pregunta.pregunta)}
                 </div>
                 <QuestionImage url={pregunta.imagen_url} />
 
@@ -1095,7 +1097,7 @@ const QuizMode = ({ onBack, resumeExamId }) => {
                                     💡 Explicación:
                                 </strong>
                                 <div style={{ lineHeight: '1.6', marginBottom: pregunta.formula ? '12px' : 0 }}>
-                                    <RichText content={pregunta.explicacion} />
+                                    {renderTextNative(pregunta.explicacion)}
                                 </div>
                                 {pregunta.formula && (
                                     <div style={{

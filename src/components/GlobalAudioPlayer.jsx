@@ -51,15 +51,18 @@ const GlobalAudioPlayer = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '1.2rem'
+                    fontSize: '1.2rem',
+                    color: '#fff'
                 }}>
-                    {currentTrack.icon || '🎧'}
+                    {currentTrack.icon && currentTrack.icon.includes('fa-') ? (
+                        <i className={currentTrack.icon}></i>
+                    ) : (currentTrack.icon || '🎧')}
                 </div>
                 <div>
                     <div style={{ color: '#fff', fontSize: '0.9rem', fontWeight: '600' }}>
                         {currentTrack.title || 'Audio'}
                     </div>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.75rem' }}>
                         {currentTrack.module || 'Módulo'}
                     </div>
                 </div>
@@ -112,7 +115,7 @@ const GlobalAudioPlayer = () => {
 
             {/* Progress bar */}
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', minWidth: '45px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', minWidth: '45px' }}>
                     {formatTime(currentTime)}
                 </span>
 
@@ -142,7 +145,7 @@ const GlobalAudioPlayer = () => {
                     />
                 </div>
 
-                <span style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', minWidth: '45px' }}>
+                <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.8rem', minWidth: '45px' }}>
                     {formatTime(duration)}
                 </span>
             </div>
@@ -178,7 +181,7 @@ const GlobalAudioPlayer = () => {
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    color: 'var(--text-secondary)',
+                    color: 'rgba(255,255,255,0.7)',
                     fontSize: '1.2rem',
                     marginLeft: '10px'
                 }}
