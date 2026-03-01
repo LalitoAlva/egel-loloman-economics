@@ -566,19 +566,17 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                         </div>
                     )}
 
-                    {!isLogin && (
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
-                            <HCaptcha
-                                sitekey={import.meta.env.VITE_HCAPTCHA_SITEKEY || ''}
-                                onVerify={(token) => {
-                                    setCaptchaToken(token);
-                                    setError('');
-                                }}
-                                onExpire={() => setCaptchaToken(null)}
-                                theme={theme}
-                            />
-                        </div>
-                    )}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '25px' }}>
+                        <HCaptcha
+                            sitekey={import.meta.env.VITE_HCAPTCHA_SITEKEY || ''}
+                            onVerify={(token) => {
+                                setCaptchaToken(token);
+                                setError('');
+                            }}
+                            onExpire={() => setCaptchaToken(null)}
+                            theme={theme}
+                        />
+                    </div>
 
                     {error && (
                         <div style={{
@@ -596,7 +594,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
 
                     <button
                         type="submit"
-                        disabled={loading || (!isLogin && !captchaToken)}
+                        disabled={loading || !captchaToken}
                         style={{
                             width: '100%',
                             padding: '15px',
@@ -611,7 +609,7 @@ const LoginScreen = ({ onBack, onSuccess, hideBackButton = false }) => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: '10px',
-                            opacity: (loading || (!isLogin && !captchaToken)) ? 0.7 : 1,
+                            opacity: (loading || !captchaToken) ? 0.7 : 1,
                             transition: 'all 0.2s ease',
                             boxShadow: '0 4px 15px rgba(168, 85, 247, 0.3)'
                         }}
