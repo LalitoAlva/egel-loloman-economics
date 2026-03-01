@@ -233,7 +233,16 @@ const LessonMode = ({ onBack }) => {
     // Limpiar HTML para VoiceReader (texto plano sin tags)
     const stripHTML = (html) => {
         if (!html) return '';
-        return html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').trim();
+        return html
+            .replace(/<br\s*\/?>/gi, '... ')
+            .replace(/<\/(p|div|h[1-6]|li)>/gi, '... ')
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/[ \t]+/g, ' ') // Solo compactar espacios horizontales, mantener saltos de línea \n
+            .trim();
     };
 
     // Procesar negritas, cursivas e imágenes inline en cualquier texto
