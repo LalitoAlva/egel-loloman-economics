@@ -59,15 +59,15 @@ const NotificationsBubble = ({ isOpen, onToggle, onClose, inline, ...props }) =>
             const weekStart = new Date(today);
             weekStart.setDate(today.getDate() - dayOfWeek);
 
-            const { data: existingReminder } = await supabase
+            const { data: existingReminders } = await supabase
                 .from('notificaciones')
                 .select('id')
                 .eq('usuario_id', user.id)
                 .eq('tipo', 'prueba_semanal')
                 .gte('created_at', weekStart.toISOString())
-                .single();
+                .limit(1);
 
-            if (!existingReminder) {
+            if (!existingReminders || existingReminders.length === 0) {
                 // Create weekly test reminder
                 await supabase.from('notificaciones').insert([{
                     usuario_id: user.id,
