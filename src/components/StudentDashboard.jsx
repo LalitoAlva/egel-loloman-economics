@@ -68,6 +68,25 @@ const StudentDashboard = ({ onBack, onResumeExam }) => {
         setLoading(false);
     };
 
+    const handleDeleteAttempt = async (examId) => {
+        if (window.confirm('¿Estás seguro de que deseas eliminar y descartar este intento incompleto?')) {
+            try {
+                const { error } = await supabase
+                    .from('examenes')
+                    .delete()
+                    .eq('id', examId);
+
+                if (error) throw error;
+
+                // Recargar los datos para refrescar la tabla y estadísticas
+                loadStudentData();
+            } catch (error) {
+                console.error("Error al eliminar el intento:", error);
+                alert("Hubo un problema al eliminar el intento. Intenta nuevamente.");
+            }
+        }
+    };
+
     if (!user) {
         return (
             <div className="container fade-in" style={{ textAlign: 'center', paddingTop: '60px' }}>
@@ -253,24 +272,45 @@ const StudentDashboard = ({ onBack, onResumeExam }) => {
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <button
-                                                    onClick={() => onResumeExam && onResumeExam(exam.id)}
-                                                    style={{
-                                                        padding: '6px 14px',
-                                                        background: 'var(--accent-color)',
-                                                        color: '#fff',
-                                                        border: 'none',
-                                                        borderRadius: '6px',
-                                                        cursor: 'pointer',
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: 'bold',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        gap: '6px'
-                                                    }}
-                                                >
-                                                    <i className="fa-solid fa-play"></i> Continuar
-                                                </button>
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                    <button
+                                                        onClick={() => onResumeExam && onResumeExam(exam.id)}
+                                                        style={{
+                                                            padding: '6px 14px',
+                                                            background: 'var(--accent-color)',
+                                                            color: '#fff',
+                                                            border: 'none',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.85rem',
+                                                            fontWeight: 'bold',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: '6px'
+                                                        }}
+                                                    >
+                                                        <i className="fa-solid fa-play"></i> Continuar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteAttempt(exam.id)}
+                                                        title="Eliminar intento"
+                                                        style={{
+                                                            padding: '6px 10px',
+                                                            background: 'var(--bg-secondary)',
+                                                            color: '#ef4444',
+                                                            border: '1px solid var(--card-border)',
+                                                            borderRadius: '6px',
+                                                            cursor: 'pointer',
+                                                            fontSize: '0.9rem',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            transition: 'all 0.2s'
+                                                        }}
+                                                    >
+                                                        <i className="fa-regular fa-trash-can"></i>
+                                                    </button>
+                                                </div>
                                             )}
                                         </td>
                                         <td style={td}>
