@@ -20,12 +20,13 @@ const PdfEditor = ({ onBack }) => {
 
     // Auth Check
     const isAdmin = user?.roles?.nombre === 'admin';
+    const canManageContent = user?.roles?.permisos?.gestionar_contenido || isAdmin;
 
     useEffect(() => {
-        if (isAdmin) {
+        if (canManageContent) {
             loadFormulasModule();
         }
-    }, [isAdmin]);
+    }, [canManageContent]);
 
     const loadFormulasModule = async () => {
         try {
@@ -209,7 +210,7 @@ const PdfEditor = ({ onBack }) => {
         }
     };
 
-    if (!isAdmin) {
+    if (!canManageContent) {
         return (
             <div className="container fade-in" style={{ textAlign: 'center', paddingTop: '60px' }}>
                 <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🚫</div>
@@ -238,7 +239,7 @@ const PdfEditor = ({ onBack }) => {
                     <div>
                         <h1 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.8rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <i className="fa-solid fa-file-pdf" style={{ color: '#ef4444' }}></i>
-                            Editor Directo de PDF
+                            Editor Formulario PDF
                         </h1>
                         <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0 0', fontSize: '0.9rem' }}>
                             Módulo vinculado: <strong>{formulasModule?.titulo}</strong>
