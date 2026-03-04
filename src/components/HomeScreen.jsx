@@ -257,7 +257,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
             </div>
 
             {/* Module Cards - Git Style Grid */}
-            <div style={{
+            <div className="home-module-grid" style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
                 gap: '20px',
@@ -266,6 +266,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                 {modulos.map((modulo, index) => (
                     <div
                         key={modulo.id || index}
+                        className="hover-card home-module-card"
                         style={{
                             background: 'var(--card-bg)',
                             borderRadius: '12px',
@@ -273,16 +274,15 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                             overflow: 'hidden',
                             transition: 'all 0.3s'
                         }}
-                        className="hover-card"
                     >
                         {/* Card Header */}
-                        <div style={{
+                        <div className="card-header" style={{
                             padding: '20px',
                             borderBottom: `1px solid ${modulo.color}33`,
                             background: `linear-gradient(135deg, ${modulo.color}15, transparent)`
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{
+                                <div className="card-icon" style={{
                                     width: '45px',
                                     height: '45px',
                                     borderRadius: '10px',
@@ -292,15 +292,16 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                     justifyContent: 'center',
                                     fontSize: '1.5rem',
                                     border: `2px solid ${modulo.color}50`,
-                                    color: modulo.color
+                                    color: modulo.color,
+                                    flexShrink: 0
                                 }}>
                                     <Icon name={modulo.icon} />
                                 </div>
-                                <div>
-                                    <h3 style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.1rem' }}>
+                                <div style={{ minWidth: 0 }}>
+                                    <h3 className="card-title" style={{ color: 'var(--text-primary)', margin: 0, fontSize: '1.1rem' }}>
                                         {modulo.titulo}
                                     </h3>
-                                    <span style={{
+                                    <span className="card-subtitle" style={{
                                         color: 'var(--text-secondary)',
                                         fontSize: '0.8rem',
                                         fontWeight: '500'
@@ -312,8 +313,8 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                         </div>
 
                         {/* Card Body */}
-                        <div style={{ padding: '20px' }}>
-                            <p style={{
+                        <div className="card-body" style={{ padding: '20px' }}>
+                            <p className="card-desc" style={{
                                 color: 'var(--text-secondary)',
                                 fontSize: '0.9rem',
                                 marginBottom: '20px',
@@ -323,7 +324,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                             </p>
 
                             {/* Features */}
-                            <div style={{
+                            <div className="card-features" style={{
                                 display: 'flex',
                                 gap: '10px',
                                 marginBottom: '20px',
@@ -374,6 +375,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
                                 gap: '10px'
                             }}>
                                 <button
+                                    className="card-btn"
                                     onClick={() => {
                                         onSelectModule(modulo);
                                         onSetMode('lesson');
@@ -396,6 +398,7 @@ const HomeScreen = ({ onSelectModule, onSetMode }) => {
 
                                 {modulo.audio_url && (
                                     <button
+                                        className="card-btn"
                                         onClick={() => handlePlayAudio(modulo)}
                                         style={{
                                             padding: '10px 16px',

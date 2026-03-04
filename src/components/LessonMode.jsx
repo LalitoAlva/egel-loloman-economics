@@ -506,25 +506,45 @@ const LessonMode = ({ onBack }) => {
                             key={mod.id}
                             className="slide-card clickable-card fade-in"
                             style={{
-                                animationDelay: `${index * 100}ms`,
-                                borderLeft: `8px solid ${mod.color}`,
-                                padding: '25px',
-                                cursor: 'pointer'
+                                animationDelay: `${index * 80}ms`,
+                                borderLeft: `5px solid ${mod.color}`,
+                                padding: '16px 18px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '14px'
                             }}
                             onClick={() => selectModulo(mod)}
                         >
-                            <div style={{ fontSize: '2.5rem', marginBottom: '15px' }}><i className={mod.icon}></i></div>
-                            <h3 style={{ fontSize: '1.3rem', color: 'var(--text-primary)', marginBottom: '10px' }}>{mod.titulo}</h3>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>{mod.descripcion || 'Contenido completo del módulo'}</p>
-
-                            <div style={{ marginTop: '15px', display: 'flex', gap: '10px' }}>
-                                {mod.audio_url && (
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-headphones"></i> Audio</span>
-                                )}
-                                {mod.infografia_url && (
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-image"></i> Infografía</span>
-                                )}
+                            <div style={{
+                                fontSize: '1.6rem',
+                                width: '44px',
+                                height: '44px',
+                                borderRadius: '10px',
+                                background: `${mod.color}20`,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                color: mod.color
+                            }}>
+                                <i className={mod.icon}></i>
                             </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <h3 style={{ fontSize: '1rem', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>{mod.titulo}</h3>
+                                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', margin: 0, lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                    {mod.descripcion || 'Contenido completo del módulo'}
+                                </p>
+                                <div style={{ marginTop: '6px', display: 'flex', gap: '10px' }}>
+                                    {mod.audio_url && (
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-headphones"></i> Audio</span>
+                                    )}
+                                    {mod.infografia_url && (
+                                        <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}><i className="fa-solid fa-image"></i> Infografía</span>
+                                    )}
+                                </div>
+                            </div>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: '1.2rem', flexShrink: 0 }}>›</div>
                         </div>
                     ))}
                 </div>
