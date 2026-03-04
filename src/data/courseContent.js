@@ -831,6 +831,91 @@ $$i = r^* + \\pi + 0.5(\\pi - \\pi^*) + 0.5(Y - Y^*)$$
                         answer: "Depende de la tasa REAL, no nominal. Ecuación de Fisher: i_real = i_nominal - π_esperada. Si el banco baja i_nominal a 5% pero la inflación esperada es 6%, la tasa real es ¡-1%! (negativa). Eso SÍ estimula. Pero si solo baja a 7%, la tasa real es +1%, aún restrictiva. Las expectativas importan."
                     }
                 ]
+            },
+            {
+                id: 't15-oferta-demanda',
+                title: 'Ley de Oferta y Demanda',
+                content: 'El mercado se equilibra donde oferta = demanda.',
+                lesson: {
+                    explanation: "La Ley de Demanda: ↑Precio → ↓Cantidad demandada (relación inversa). La Ley de Oferta: ↑Precio → ↑Cantidad ofrecida (relación directa). El equilibrio ocurre donde las curvas se cruzan (Qd = Qs). Un exceso de oferta (precio arriba del equilibrio) presiona el precio a la baja. Un exceso de demanda (precio abajo del equilibrio) presiona al alza. Desplazamientos: cambios en ingreso, gustos o tecnología mueven las CURVAS; cambios en precio mueven SOBRE la curva.",
+                    example_title: "El Aguacate en Super Bowl",
+                    example: "Antes del Super Bowl, la demanda de aguacate se dispara (la curva de demanda se desplaza a la derecha). Con la misma oferta, el precio sube de $30 a $60/kg. Los productores de Michoacán responden produciendo más (movimiento SOBRE la curva de oferta). Si además hay sequía, la oferta se desplaza a la izquierda y el precio sube aún más. El nuevo equilibrio tiene precio más alto y cantidad incierta."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Cuál es la diferencia entre un 'cambio en la cantidad demandada' y un 'cambio en la demanda'?",
+                        hint: "Movimiento sobre vs desplazamiento de la curva.",
+                        answer: "Un cambio en la cantidad demandada es un movimiento SOBRE la misma curva causado por un cambio en el PRECIO del bien. Un cambio en la demanda es un DESPLAZAMIENTO de toda la curva causado por factores externos (ingreso, gustos, precios de bienes relacionados, expectativas, número de consumidores)."
+                    }
+                ]
+            },
+            {
+                id: 't16-duopolio',
+                title: 'Modelos de Duopolio: Cournot, Edgeworth y Chamberlin',
+                content: 'Cómo compiten dos empresas.',
+                lesson: {
+                    explanation: "Cournot (1838): Las empresas compiten eligiendo CANTIDADES simultáneamente. Cada una decide cuánto producir tomando como dada la producción del rival. Equilibrio: cada empresa produce q = (a-c)/3 (1/3 de la demanda). Bertrand (1883): Compiten en PRECIOS → precio cae hasta costo marginal (resultado competitivo). Edgeworth: Como Bertrand pero con restricción de capacidad → no hay equilibrio en precios puros, hay ciclos. Chamberlin: Competencia monopolística → muchas empresas con productos diferenciados. Cada una tiene algo de poder de mercado por diferenciación.",
+                    example_title: "Coca-Cola vs Pepsi",
+                    example: "Modelo Cournot: Ambas deciden cuántos litros producir. Si Coca produce mucho, Pepsi produce menos (reacción estratégica). Equilibrio: ambas producen menos que un monopolio pero más que en competencia perfecta. Modelo Chamberlin: Coca tiene sabor diferente a Pepsi → cada una enfrenta su propia curva de demanda con pendiente negativa. Pueden cobrar más que el costo marginal gracias a la lealtad de marca. Beneficio económico → entran nuevas marcas → demanda individual se reduce hasta beneficio cero a largo plazo."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué el resultado de Cournot da un precio ENTRE el de monopolio y el de competencia perfecta?",
+                        hint: "Número de empresas.",
+                        answer: "Porque con 2 empresas hay algo de competencia (presiona precio a la baja) pero no tanta como con muchas empresas. A medida que aumentan las empresas en el modelo de Cournot, el resultado converge al competitivo. Con 1 empresa = monopolio, con n→∞ = competencia perfecta. El duopolio de Cournot queda exactamente en medio."
+                    }
+                ]
+            },
+            {
+                id: 't17-pareto',
+                title: 'Equilibrio Competitivo y Óptimo de Pareto',
+                content: 'No se puede mejorar a uno sin empeorar a otro.',
+                lesson: {
+                    explanation: "Un Óptimo de Pareto es una asignación donde NO es posible mejorar a alguien sin empeorar a otro. Primer Teorema del Bienestar: Todo equilibrio competitivo es Pareto-óptimo (eficiente). Segundo Teorema: Todo óptimo de Pareto puede alcanzarse como equilibrio competitivo con las transferencias adecuadas. La Caja de Edgeworth visualiza el intercambio entre 2 personas con 2 bienes: la Curva de Contrato une todos los puntos Pareto-óptimos.",
+                    example_title: "Repartir Pizza y Refresco",
+                    example: "Ana tiene 3 pizzas y 1 refresco. Luis tiene 1 pizza y 3 refrescos. Ana prefiere refresco, Luis prefiere pizza. Si intercambian 1 pizza por 1 refresco, AMBOS mejoran → la asignación original NO era Pareto-óptima. Siguen intercambiando hasta que cualquier cambio adicional perjudicaría a uno → Óptimo de Pareto. En la Caja de Edgeworth, este punto está donde sus curvas de indiferencia son tangentes (RMS_Ana = RMS_Luis)."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Un Óptimo de Pareto es necesariamente 'justo' o equitativo?",
+                        hint: "Una persona con todo y otra con nada.",
+                        answer: "No. Una asignación donde una persona tiene TODOS los bienes y la otra nada es Pareto-óptima (no puedes mejorar a la segunda sin quitarle a la primera). Pareto mide eficiencia, NO equidad. Por eso el Segundo Teorema del Bienestar es importante: permite redistribuir primero y luego dejar al mercado alcanzar la eficiencia."
+                    }
+                ]
+            },
+            {
+                id: 't18-contabilidad-nacional',
+                title: 'Contabilidad Nacional: PNB, Desempleo y Balanza Comercial',
+                content: 'Los indicadores que miden la salud de un país.',
+                lesson: {
+                    explanation: "PIB = valor de todo lo producido DENTRO del país. PNB = PIB + ingresos de nacionales en el exterior - ingresos de extranjeros en el país. PIB per cápita = PIB / Población (indicador de nivel de vida promedio). Tasa de Desempleo = Desempleados / PEA × 100. PEA = personas que trabajan + buscan trabajo. Balanza Comercial = Exportaciones - Importaciones. Superávit: X > M. Déficit: M > X. Balanza de Pagos = Cuenta Corriente + Cuenta de Capital + Cuenta Financiera.",
+                    example_title: "México 2023 en Números",
+                    example: "PIB: $1.3 billones USD. PNB: ligeramente menor porque muchas empresas extranjeras operan en México (sus ganancias salen). PIB per cápita: $10,800 USD (divide entre 130 millones). Desempleo: 2.8% (bajo, pero 55% está en informalidad → no se cuenta como 'desempleado'). Balanza Comercial con EE.UU.: superávit de $130,000 MDD (exportamos más). Con China: déficit de $90,000 MDD (importamos electrónicos)."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué un país puede tener baja tasa de desempleo pero alta pobreza al mismo tiempo?",
+                        hint: "Calidad del empleo.",
+                        answer: "Porque la tasa de desempleo solo mide si tienes trabajo o no, no la CALIDAD del empleo. En México, 55% del empleo es informal (sin prestaciones, bajo salario). Una persona vendiendo chicles en la calle cuenta como 'empleada'. Por eso se complementa con indicadores como tasa de informalidad, subempleo y pobreza laboral (CONEVAL)."
+                    }
+                ]
+            },
+            {
+                id: 't19-ciclos-mercado-laboral',
+                title: 'Ciclos Económicos y Mercado Laboral',
+                content: 'Expansión, recesión, y el empleo.',
+                lesson: {
+                    explanation: "Los ciclos económicos tienen 4 fases: Expansión (PIB crece, empleo sube), Auge (pico del ciclo, presión inflacionaria), Recesión (PIB cae 2 trimestres consecutivos, desempleo sube), Depresión (recesión prolongada). Ley de Okun: por cada 1% que el PIB cae debajo de su potencial, el desempleo sube ~2%. Curva de Phillips de largo plazo: vertical en la tasa natural de desempleo → no hay trade-off permanente inflación-desempleo. NAIRU: tasa de desempleo que no acelera la inflación.",
+                    example_title: "La Crisis de 2008-2009 en México",
+                    example: "2008: Expansión previa con PIB creciendo 3%. Crisis de EE.UU. contagia a México por: 1) Caída de exportaciones (70% van a EE.UU.), 2) Caída de remesas, 3) Caída del turismo. 2009: PIB cae -5.3%. Desempleo sube de 3.5% a 5.5% (Ley de Okun). Gobierno aplica política fiscal expansiva y Banxico baja tasas. 2010: Recuperación con PIB +5.1%. Ciclo completo en ~3 años."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si la Curva de Phillips de largo plazo es vertical, ¿por qué los gobiernos intentan reducir el desempleo con política monetaria expansiva?",
+                        hint: "Corto vs largo plazo.",
+                        answer: "Porque en el CORTO PLAZO sí existe el trade-off: una política monetaria expansiva puede reducir temporalmente el desempleo por debajo de su tasa natural. Pero a largo plazo, los agentes ajustan expectativas de inflación, los salarios suben, y el desempleo regresa a su tasa natural pero con inflación más alta."
+                    }
+                ]
             }
         ]
     },
@@ -954,6 +1039,108 @@ Uso de costos fijos para magnificar rendimientos.
                         answer: "La de Alto Apalancamiento. Al tener muchos costos fijos que no puede quitarse, sus pérdidas se magnifican rápidamente cuando bajan las ventas."
                     }
                 ]
+            },
+            {
+                id: 't6-fin-vpn',
+                title: 'Valor Presente Neto (VPN)',
+                content: 'Cuánto vale hoy el dinero de mañana.',
+                lesson: {
+                    explanation: "El VPN descuenta todos los flujos futuros de un proyecto a valor presente y les resta la inversión inicial. Si VPN > 0, el proyecto genera más de lo que cuesta. Si VPN < 0, destruye valor. Fórmula: VPN = -I₀ + Σ[Fₜ / (1+r)ᵗ]",
+                    example_title: "Abrir una Sucursal en Guadalajara",
+                    example: "Inversión inicial: $500,000. Flujos esperados: Año 1: $150,000, Año 2: $200,000, Año 3: $250,000, Año 4: $200,000. Tasa de descuento: 10%. VPN = -500,000 + 150,000/1.1 + 200,000/1.21 + 250,000/1.331 + 200,000/1.4641 = -500,000 + 136,364 + 165,289 + 187,828 + 136,603 = $126,084. Como VPN > 0, el proyecto es viable."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si la tasa de descuento sube de 10% a 15%, ¿qué le pasa al VPN del proyecto?",
+                        hint: "Los flujos futuros valen menos hoy.",
+                        answer: "Disminuye. Una tasa más alta descuenta más agresivamente los flujos futuros, reduciendo su valor presente. El proyecto puede dejar de ser rentable si el VPN se vuelve negativo."
+                    }
+                ]
+            },
+            {
+                id: 't7-fin-tir',
+                title: 'Tasa Interna de Retorno (TIR)',
+                content: 'La tasa que hace VPN = 0.',
+                lesson: {
+                    explanation: "La TIR es la tasa de descuento que hace que el VPN sea exactamente cero. Es el rendimiento porcentual del proyecto. Regla: Si TIR > costo de capital → proyecto aceptable. Si TIR < costo de capital → rechazar.",
+                    example_title: "Subway vs Starbucks",
+                    example: "Abrir un Subway cuesta $800,000 y tiene TIR del 18%. Abrir un Starbucks cuesta $1,200,000 y tiene TIR del 22%. Si tu costo de capital es 12%, ambos son viables (TIR > 12%). Pero ojo: la TIR NO considera el tamaño. El VPN del Starbucks podría ser mayor en pesos aunque el Subway tenga buena TIR."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué puede ser peligroso elegir proyectos SOLO por la TIR más alta?",
+                        hint: "Tamaño del proyecto.",
+                        answer: "Porque la TIR no considera la escala. Un proyecto pequeño con TIR del 50% puede generar $10,000 de VPN, mientras que uno grande con TIR del 20% puede generar $500,000 de VPN. Siempre complementa con VPN."
+                    }
+                ]
+            },
+            {
+                id: 't8-fin-inversion-publica',
+                title: 'Evaluación de Inversión Pública',
+                content: 'Beneficio social vs beneficio privado.',
+                lesson: {
+                    explanation: "La inversión pública usa análisis Costo-Beneficio Social. A diferencia del sector privado, incluye externalidades, precios sombra y beneficios no monetarios (salud, educación, medio ambiente). Se usa la Tasa Social de Descuento (más baja que la privada, ~10% en México según SHCP).",
+                    example_title: "Hospital vs Carretera",
+                    example: "Un hospital genera beneficios difíciles de medir en dinero: vidas salvadas, productividad recuperada, bienestar. El análisis costo-beneficio social asigna 'precios sombra' a estos beneficios. La SHCP en México exige que todo proyecto de inversión pública demuestre que sus beneficios sociales superan sus costos usando la metodología del CEPEP."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué la tasa social de descuento es menor que la tasa privada?",
+                        hint: "Horizonte temporal del gobierno.",
+                        answer: "Porque el gobierno tiene un horizonte de planeación más largo que las empresas privadas y debe considerar el bienestar de generaciones futuras. Una tasa más baja da más peso al futuro, justificando proyectos de largo plazo como infraestructura."
+                    }
+                ]
+            },
+            {
+                id: 't9-fin-valor-dinero',
+                title: 'Valor del Dinero en el Tiempo',
+                content: 'Un peso hoy vale más que un peso mañana.',
+                lesson: {
+                    explanation: "Concepto fundamental de finanzas: el dinero tiene un costo de oportunidad temporal. Valor Futuro: VF = VP × (1+r)ⁿ. Valor Presente: VP = VF / (1+r)ⁿ. Anualidades: VP = PMT × [(1-(1+r)⁻ⁿ)/r]. Perpetuidades: VP = PMT/r.",
+                    example_title: "La Herencia del Abuelo",
+                    example: "Tu abuelo te ofrece: A) $100,000 hoy, o B) $150,000 en 5 años. Con una tasa del 10%: VP de opción B = 150,000/(1.1)⁵ = $93,138. ¡Opción A vale más! Necesitarías que te ofrecieran al menos $161,051 en 5 años para que fuera equivalente a $100,000 hoy."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si la inflación es del 5% anual, ¿cuánto poder adquisitivo pierdes si guardas $10,000 bajo el colchón por 3 años?",
+                        hint: "Fórmula de valor futuro invertida.",
+                        answer: "Valor real = 10,000 / (1.05)³ = $8,638. Pierdes $1,362 de poder adquisitivo (13.6%). Por eso el dinero debe estar invertido al menos a la tasa de inflación para mantener su valor."
+                    }
+                ]
+            },
+            {
+                id: 't10-fin-razones',
+                title: 'Razones Financieras',
+                content: 'Radiografía de la salud financiera.',
+                lesson: {
+                    explanation: "Las razones financieras se dividen en 4 familias: 1) LIQUIDEZ: Razón Circulante = Activo Circulante / Pasivo Circulante (capacidad de pagar deudas CP, ideal >1). Prueba Ácida = (AC - Inventarios) / PC (más estricta). 2) ACTIVIDAD: Rotación de Inventarios = Costo de Ventas / Inventario Promedio (veces que vendes tu inventario al año). Rotación CxC = Ventas a Crédito / CxC Promedio. Días de Cobro = 365 / Rotación CxC. 3) APALANCAMIENTO: Deuda/Capital = Pasivo Total / Capital Contable. Cobertura de Intereses = EBITDA / Gastos Financieros. 4) RENTABILIDAD: ROE = Utilidad Neta / Capital Contable. ROA = Utilidad Neta / Activo Total. Margen Neto = Utilidad Neta / Ventas. Fórmula DuPont: ROE = Margen × Rotación de Activos × Apalancamiento.",
+                    example_title: "Diagnóstico de una Tienda de Ropa",
+                    example: "La tienda tiene: AC $500,000, Inventarios $300,000, PC $400,000, Capital $600,000, Pasivo Total $800,000, Ventas $1,200,000, Utilidad Neta $120,000. Razón Circulante = 500/400 = 1.25 (puede pagar sus deudas). Prueba Ácida = (500-300)/400 = 0.5 (¡alerta! sin vender inventario no puede pagar). Deuda/Capital = 800/600 = 1.33 (debe más de lo que tiene propio). ROE = 120/600 = 20% (buen rendimiento). Diagnóstico: rentable pero con riesgo de liquidez por exceso de inventario."
+                },
+                socratic_questions: [
+                    {
+                        q: "Una empresa tiene Razón Circulante de 3.0. ¿Eso es necesariamente bueno?",
+                        hint: "Demasiada liquidez tiene un costo.",
+                        answer: "No necesariamente. Una razón muy alta puede indicar que la empresa tiene demasiado efectivo ocioso o inventario estancado que podría estar invertido generando rendimiento. Lo ideal depende de la industria, pero generalmente entre 1.5 y 2.5 es saludable. Hay que complementar con la Prueba Ácida y la rotación de inventarios."
+                    }
+                ]
+            },
+            {
+                id: 't11-fin-inversion-privada',
+                title: 'Evaluación de Inversión Privada',
+                content: 'Maximizar rentabilidad con riesgo controlado.',
+                lesson: {
+                    explanation: "La evaluación de inversión privada busca maximizar el rendimiento para los accionistas. Herramientas: 1) Análisis de Sensibilidad: varía una variable a la vez (¿qué pasa si ventas caen 20%?). 2) Análisis de Escenarios: Optimista, Base, Pesimista con probabilidades. VPN Esperado = Σ(prob × VPN). 3) Punto de Equilibrio: unidades mínimas para cubrir costos. 4) Relación Riesgo-Rendimiento: mayor riesgo debe compensarse con mayor rendimiento. 5) Estructura de capital: proporción óptima deuda vs capital propio minimiza WACC.",
+                    example_title: "Franquicia de Café: ¿Conviene?",
+                    example: "Inversión: $2,000,000. Escenario Optimista (30%): VPN = $800,000. Base (50%): VPN = $200,000. Pesimista (20%): VPN = -$400,000. VPN Esperado = 0.3(800) + 0.5(200) + 0.2(-400) = $240 + $100 - $80 = $260,000. Proyecto viable en promedio. Pero sensibilidad muestra que si renta sube 30%, VPN base se vuelve negativo. Recomendación: negociar contrato de renta fija a largo plazo antes de invertir."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué una empresa usaría deuda si tiene suficiente capital propio?",
+                        hint: "Escudo fiscal y costo de oportunidad.",
+                        answer: "Porque la deuda tiene beneficio fiscal: los intereses son deducibles de impuestos, reduciendo el costo efectivo. Si la tasa de interés después de impuestos es menor que el ROE, conviene usar deuda (apalancamiento financiero positivo). Además, el capital propio tiene costo de oportunidad: podría invertirse en otro proyecto rentable."
+                    }
+                ]
             }
         ]
     },
@@ -1013,6 +1200,113 @@ Demuestra matemáticamente que no existe un sistema de votación perfecto (democ
                         q: "¿Qué implica el Teorema de Arrow sobre la frase 'la voluntad del pueblo'?",
                         hint: "Agregación de preferencias.",
                         answer: "Que matemáticamente tal vez no existe. Las preferencias individuales racionales pueden sumar una preferencia colectiva irracional o cíclica."
+                    }
+                ]
+            },
+            {
+                id: 't3-intl-balanza',
+                title: '3. Balanza de Pagos',
+                content: 'Registro de transacciones económicas con el exterior',
+                lesson: {
+                    explanation: "La Balanza de Pagos registra TODAS las transacciones económicas de un país con el resto del mundo. Se divide en: (1) Cuenta Corriente: exportaciones e importaciones de bienes (balanza comercial), servicios, ingreso primario (remesas de utilidades) e ingreso secundario (remesas familiares). (2) Cuenta de Capital: transferencias de activos no financieros. (3) Cuenta Financiera: inversión extranjera directa (IED), inversión de cartera, préstamos. Principio fundamental: la Balanza de Pagos SIEMPRE suma cero (contabilidad de partida doble). Un déficit en cuenta corriente se financia con superávit en cuenta financiera (entrada de capital extranjero).",
+                    example_title: "México y las Remesas",
+                    example: "México exporta petróleo ($30,000 MDD) pero importa más bienes ($45,000 MDD). Déficit comercial de -$15,000 MDD. Sin embargo, recibe $60,000 MDD en remesas (ingreso secundario). Esto compensa el déficit comercial y genera superávit en cuenta corriente. Si además llega IED ($35,000 MDD), la cuenta financiera también tiene superávit. Las reservas internacionales de Banxico crecen."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si un país tiene déficit en cuenta corriente durante 10 años seguidos, ¿es necesariamente malo?",
+                        hint: "¿Cómo se financia ese déficit?",
+                        answer: "No necesariamente. Si se financia con IED productiva (fábricas, tecnología), es sostenible porque genera capacidad exportadora futura. Pero si se financia con deuda de corto plazo (capital golondrina), es peligroso: ese capital puede huir ante cualquier crisis, provocando una devaluación (como México en 1994)."
+                    },
+                    {
+                        q: "¿Por qué las remesas familiares se registran en ingreso secundario y no en cuenta financiera?",
+                        hint: "¿Es una inversión o una transferencia sin contraprestación?",
+                        answer: "Porque son transferencias unilaterales: el trabajador envía dinero a su familia sin recibir un activo o servicio a cambio. No es inversión (cuenta financiera) ni pago por un servicio (cuenta corriente-servicios). Es ingreso secundario porque es una transferencia corriente sin contraprestación."
+                    }
+                ]
+            },
+            {
+                id: 't4-intl-tipocambio',
+                title: '4. Tipo de Cambio y Mercado de Divisas',
+                content: 'Determinación del precio de las monedas',
+                lesson: {
+                    explanation: "El tipo de cambio es el precio de una moneda en términos de otra. Regímenes: (1) Tipo de cambio fijo: el banco central fija el precio y usa reservas para defenderlo. (2) Flotación libre: lo determina la oferta y demanda del mercado. (3) Flotación administrada (México actual): flota libremente pero el banco central interviene ocasionalmente. Teoría de Paridad del Poder Adquisitivo (PPP): a largo plazo, el tipo de cambio se ajusta para que un bien cueste lo mismo en dos países. Paridad de tasas de interés: si México tiene tasas más altas que EE.UU., el peso se aprecia en el corto plazo (entra capital buscando rendimiento), pero se esperaría una depreciación futura.",
+                    example_title: "El Carry Trade con el Peso Mexicano",
+                    example: "2023: Tasa en México = 11.25%, en EE.UU. = 5.25%. Diferencial = 6%. Inversionistas piden prestado dólares baratos, los cambian a pesos, los invierten en Cetes. Ganan 6% extra. Esto APRECIA el peso (demanda de pesos sube). El peso pasa de $20 a $17 por dólar. Pero si Banxico baja tasas, el carry trade se deshace: venden pesos, compran dólares, el peso se DEPRECIA rápidamente."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si la inflación en México es 5% y en EE.UU. es 2%, ¿qué predice la PPP sobre el tipo de cambio?",
+                        hint: "La moneda del país con mayor inflación se...",
+                        answer: "El peso debería depreciarse aproximadamente 3% (diferencial de inflación). Si el tipo de cambio era $17, debería moverse hacia $17.51. La lógica: los bienes mexicanos se encarecen más rápido, pierden competitividad, la demanda de pesos cae. A largo plazo, PPP tiende a cumplirse, pero a corto plazo hay muchas desviaciones."
+                    }
+                ]
+            },
+            {
+                id: 't5-intl-politica-comercial',
+                title: '5. Política Comercial: Aranceles y Cuotas',
+                content: 'Instrumentos de protección al comercio',
+                lesson: {
+                    explanation: "Los gobiernos intervienen en el comercio con: (1) Aranceles: impuesto a las importaciones. Efecto: sube precio doméstico, protege al productor local, perjudica al consumidor, genera recaudación fiscal, pero crea pérdida de eficiencia (triángulos de Harberger). (2) Cuotas: límite a la cantidad importada. Efecto similar al arancel pero sin recaudación para el gobierno (la renta va al importador con licencia). (3) Subsidios a exportaciones: pago del gobierno al exportador. Distorsiona precios, puede generar represalias (guerras comerciales). Argumento de la industria naciente (List, 1841): proteger temporalmente industrias nuevas hasta que sean competitivas. Problema: las protecciones 'temporales' suelen volverse permanentes.",
+                    example_title: "T-MEC y el Acero",
+                    example: "EE.UU. pone arancel de 25% al acero importado (Sección 232). Antes: acero chino costaba $500/ton en EE.UU. Después: $625/ton. Productores de acero de EE.UU. celebran (pueden cobrar hasta $624 sin perder competitividad). Pero las automotrices de Detroit sufren: su insumo subió 25%. ¿Ganó EE.UU.? El empleo en acero subió 1,800, pero se perdieron 75,000 empleos en industrias que usan acero. Pérdida neta."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué una cuota de importación es PEOR que un arancel que produce el mismo efecto en precios?",
+                        hint: "¿Quién se queda con la 'renta' en cada caso?",
+                        answer: "Con un arancel, el gobierno recauda ingresos (área c del diagrama). Con una cuota, esa misma renta va a quien tiene la licencia de importación (a menudo una empresa extranjera o un importador con conexiones políticas). El efecto en precios y cantidades es igual, pero la distribución de la renta es menos eficiente con cuotas."
+                    }
+                ]
+            },
+            {
+                id: 't6-intl-ventaja-comparativa',
+                title: '6. Ventaja Comparativa (Ricardo)',
+                content: 'Por qué los países comercian aunque uno sea mejor en todo',
+                lesson: {
+                    explanation: "David Ricardo (1817) demostró que un país debe especializarse en producir aquello donde tiene MENOR costo de oportunidad, aunque sea peor en todo (ventaja absoluta). Clave: lo que importa no es ser el 'mejor', sino ser el 'menos malo relativamente'. Si México produce 10 autos o 50 toneladas de maíz, y EE.UU. produce 30 autos o 60 toneladas, EE.UU. tiene ventaja absoluta en ambos. Pero el costo de oportunidad de 1 auto en México es 5 ton maíz, y en EE.UU. es 2 ton. EE.UU. tiene ventaja comparativa en autos (costo de oportunidad menor). México debe especializarse en maíz. Ambos ganan con el comercio.",
+                    example_title: "El Abogado y su Secretaria",
+                    example: "Un abogado escribe 80 palabras por minuto y su secretaria 60. El abogado es MEJOR en todo (ventaja absoluta en ambas tareas). Pero su hora vale $2,000 (abogacía) vs $200 (mecanografía). El costo de oportunidad de que el abogado teclee es $2,000/hora. Debe especializarse en abogacía y contratar a la secretaria para teclear, aunque él teclee más rápido."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si China es más eficiente que México en producir TODOS los bienes, ¿por qué México sigue exportando?",
+                        hint: "Costo de oportunidad relativo.",
+                        answer: "Porque México tiene ventaja comparativa en algunos bienes (menor costo de oportunidad). China puede ser mejor en todo (ventaja absoluta), pero no puede especializarse en todo simultáneamente. Si China tiene ventaja comparativa enorme en electrónica, le conviene más concentrarse ahí e importar aguacates de México, aunque también pudiera producirlos."
+                    }
+                ]
+            },
+            {
+                id: 't7-intl-bloques',
+                title: '7. Bloques Económicos e Integración',
+                content: 'TLC, uniones aduaneras y mercados comunes',
+                lesson: {
+                    explanation: "Niveles de integración económica (de menor a mayor): (1) Área de Libre Comercio: eliminan aranceles entre sí, cada uno mantiene los suyos con terceros (T-MEC). (2) Unión Aduanera: libre comercio interno + arancel externo común (Mercosur). (3) Mercado Común: + libre movilidad de factores (trabajo, capital). (4) Unión Económica: + política económica común (UE pre-euro). (5) Unión Monetaria: + moneda común (Zona Euro). Efectos: creación de comercio (positivo, sustituyes producción cara nacional por importación barata del socio) vs desviación de comercio (negativo, dejas de comprar al más eficiente del mundo por comprarle al socio que tiene preferencia arancelaria).",
+                    example_title: "T-MEC vs TPP",
+                    example: "T-MEC (México-EE.UU.-Canadá): Área de libre comercio. México exporta autos a EE.UU. sin arancel, pero debe cumplir reglas de origen (75% contenido regional). Si México firma con China, EE.UU. no tiene que aceptar esas importaciones (cada país mantiene su política con terceros). Zona Euro: 20 países con una moneda (euro), un banco central (BCE), pero diferentes políticas fiscales. Problema: Grecia no podía devaluar su moneda para salir de la crisis de 2010."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué la desviación de comercio es negativa para el bienestar global?",
+                        hint: "Piensa en quién es el productor más eficiente del mundo.",
+                        answer: "Porque dejas de comprarle al productor más barato del mundo (que está fuera del bloque) para comprarle a tu socio comercial (que es más caro pero no paga arancel). Ejemplo: México importaba textiles de China a $5 (con arancel $7). Con T-MEC, importa de EE.UU. a $6 (sin arancel). Pagamos más ($6 vs $5), el mundo produce menos eficientemente."
+                    }
+                ]
+            },
+            {
+                id: 't8-intl-relaciones',
+                title: '8. Organismos Económicos Internacionales',
+                content: 'FMI, Banco Mundial, OMC y su papel',
+                lesson: {
+                    explanation: "Principales organismos: (1) FMI (Fondo Monetario Internacional): prestamista de última instancia para países con crisis de balanza de pagos. Condiciona préstamos a reformas (austeridad fiscal, liberalización). Creado en Bretton Woods (1944). (2) Banco Mundial: financiamiento para desarrollo (infraestructura, educación, salud). Enfocado en países en desarrollo. (3) OMC (Organización Mundial del Comercio): regula el comercio internacional, resuelve disputas comerciales, promueve la liberalización. Principios: nación más favorecida (si das un beneficio a uno, a todos), trato nacional (importaciones tratadas igual que nacionales). (4) OCDE: club de países 'ricos', coordina políticas económicas, produce estadísticas y recomendaciones.",
+                    example_title: "México y el FMI en 1995",
+                    example: "Crisis del Tequila (1994-95): México agota reservas defendiendo el peso fijo. Devaluación de 50%. No puede pagar deuda de corto plazo. Acude al FMI que organiza un rescate de $50,000 MDD (el más grande hasta entonces). Condiciones: austeridad fiscal, altas tasas de interés, privatizaciones. México pagó todo anticipadamente en 2000. Lección: el FMI ayuda pero sus condiciones son dolorosas socialmente."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué el FMI es criticado por imponer 'austeridad' a países en crisis?",
+                        hint: "Política fiscal contractiva en recesión.",
+                        answer: "Porque exige recortar gasto público y subir impuestos (austeridad) justamente cuando el país está en recesión. Keynes diría que eso PROFUNDIZA la crisis. El argumento del FMI: es necesario para restaurar la confianza de inversionistas y estabilizar la moneda. El debate sigue vigente: ¿estabilidad primero o crecimiento primero?"
                     }
                 ]
             }
@@ -1308,6 +1602,517 @@ El dictamen final sobre los Estados Financieros.
                         q: "¿Puede el auditor reducir el Riesgo Inherente de su cliente?",
                         hint: "Naturaleza del negocio.",
                         answer: "No. El auditor no puede cambiar el negocio del cliente. Solo puede evaluar ese riesgo y diseñar pruebas (Riesgo de Detección) para contrarrestarlo."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'pub-1',
+        title: 'Economía Pública',
+        desc: 'Política Fiscal, Monetaria y Papel del Estado',
+        icon: '🏛️',
+        color: '#a78bfa',
+        detailed_report: `# Economía Pública
+**Marco Teórico para el EGEL de Economía**
+
+## Introducción
+La Economía Pública estudia el papel del gobierno en la economía: cómo recauda (política fiscal), cómo gasta, cómo regula y cómo sus acciones afectan la eficiencia y equidad del sistema económico. Es una de las áreas con más peso en el EGEL-ECONO (46 reactivos).
+
+---
+
+## 1. Política Fiscal y Presupuesto Público
+
+### 1.1 Ingresos Públicos
+- **Tributarios:** Impuestos directos (ISR) e indirectos (IVA, IEPS)
+- **No Tributarios:** Derechos, productos, aprovechamientos
+- **Organismos y Empresas:** PEMEX, CFE, IMSS
+
+### 1.2 Gasto Público
+- **Gasto Corriente:** Sueldos, servicios, materiales (no genera activos)
+- **Gasto de Capital:** Inversión en infraestructura (genera activos productivos)
+- **Transferencias:** Programas sociales, subsidios, pensiones
+
+### 1.3 Déficit y Deuda Pública
+- **Déficit Fiscal:** Gasto > Ingresos → Necesidad de endeudamiento
+- **Sostenibilidad:** Deuda/PIB como indicador clave
+- **Equivalencia Ricardiana (Barro):** Bajo ciertos supuestos, financiar con deuda o impuestos tiene el mismo efecto
+
+## 2. Bienes Públicos y Externalidades
+
+### 2.1 Bienes Públicos
+- **No Rivalidad:** El consumo de uno no reduce la disponibilidad para otros
+- **No Exclusión:** No se puede impedir su consumo
+- **Problema del Free Rider:** Nadie quiere pagar voluntariamente
+- **Ejemplos:** Defensa nacional, alumbrado público, justicia
+
+### 2.2 Externalidades
+- **Negativas:** Contaminación (costo social > costo privado)
+- **Positivas:** Educación, vacunación (beneficio social > beneficio privado)
+- **Soluciones:** Impuestos pigouvianos, subsidios, regulación, derechos de propiedad (Coase)
+
+## 3. Política Monetaria
+
+### 3.1 Banco Central (Banxico)
+- **Objetivo principal:** Estabilidad de precios (control de inflación)
+- **Instrumentos:** Tasa de interés objetivo, operaciones de mercado abierto, encaje legal
+- **Autonomía:** Independencia del gobierno para credibilidad
+
+### 3.2 Transmisión Monetaria
+- Banxico sube tasa → Crédito más caro → Menor inversión y consumo → Menor presión inflacionaria
+- Canal del tipo de cambio: Tasa alta → Capital externo entra → Peso se aprecia → Importaciones más baratas
+
+## 4. Distribución del Ingreso y Pobreza
+- **Coeficiente de Gini:** Mide desigualdad (0 = igualdad perfecta, 1 = desigualdad total)
+- **Curva de Lorenz:** Representación gráfica de la distribución
+- **CONEVAL:** Mide pobreza multidimensional en México (ingreso + carencias sociales)`,
+        topics: [
+            {
+                id: 't1-pub-fiscal',
+                title: 'Política Fiscal y Presupuesto Público',
+                content: 'Cómo el gobierno recauda y gasta.',
+                lesson: {
+                    explanation: "La política fiscal es la herramienta del gobierno para influir en la economía mediante impuestos y gasto público. Expansiva: ↑Gasto o ↓Impuestos → estimula demanda agregada. Contractiva: ↓Gasto o ↑Impuestos → frena inflación. El multiplicador fiscal amplifica el efecto: si el gobierno gasta $1, el PIB crece más de $1 por el efecto cascada del consumo.",
+                    example_title: "Programa de Infraestructura 2024",
+                    example: "El gobierno invierte $100 mil millones en carreteras. Paga a constructores → estos pagan salarios → trabajadores compran en tiendas → tiendas compran a proveedores. Si el multiplicador es 1.5, el PIB crece $150 mil millones. Pero si lo financia con deuda, la Equivalencia Ricardiana dice que los consumidores ahorrarán anticipando impuestos futuros, reduciendo el efecto."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué el multiplicador del gasto público es mayor que el multiplicador de una reducción de impuestos del mismo monto?",
+                        hint: "Parte del dinero de los impuestos se ahorra.",
+                        answer: "Porque cuando el gobierno gasta $1, ese $1 se gasta completamente en la economía. Pero si reduce impuestos en $1, el contribuyente ahorra una parte (propensión marginal al ahorro) y solo gasta el resto. Por eso ΔG tiene más impacto que ΔT."
+                    }
+                ]
+            },
+            {
+                id: 't2-pub-bienes',
+                title: 'Bienes Públicos y Externalidades',
+                content: 'Fallas de mercado que justifican al gobierno.',
+                lesson: {
+                    explanation: "Los bienes públicos (no rivales y no excluibles) no los produce el mercado eficientemente porque nadie quiere pagar si puede consumirlos gratis (free rider). Las externalidades son costos o beneficios que recaen en terceros. Soluciones: Impuesto Pigouviano (igualar costo privado con social), Teorema de Coase (negociación privada si costos de transacción son bajos), regulación directa.",
+                    example_title: "La Fábrica y el Río",
+                    example: "Una fábrica de papel contamina el río. Su costo privado es $50/tonelada pero el costo social (incluyendo daño a pescadores, salud, turismo) es $80. La diferencia de $30 es la externalidad negativa. Solución Pigouviana: impuesto de $30/tonelada para que el precio refleje el verdadero costo. Solución Coase: si la fábrica y los pescadores pueden negociar, llegarán al nivel óptimo de contaminación sin intervención."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué el alumbrado público es un bien público pero la electricidad de tu casa no lo es?",
+                        hint: "Rivalidad y exclusión.",
+                        answer: "El alumbrado público es no rival (tu uso no reduce la luz para otros) y no excluible (no pueden impedirte verlo). La electricidad doméstica es rival (lo que usas tú no lo usa otro) y excluible (te cortan si no pagas). Por eso la electricidad doméstica la puede proveer el mercado pero el alumbrado no."
+                    }
+                ]
+            },
+            {
+                id: 't3-pub-monetaria',
+                title: 'Política Monetaria y Banxico',
+                content: 'Control de inflación y tasas de interés.',
+                lesson: {
+                    explanation: "Banxico (autónomo desde 1993) tiene como mandato principal la estabilidad de precios. Su principal instrumento es la Tasa de Interés Interbancaria a 1 día. Mecanismo: ↑Tasa → Crédito caro → Menor consumo e inversión → Menor inflación. También afecta el tipo de cambio: tasa alta atrae capital extranjero → peso se aprecia → importaciones baratas → menor inflación.",
+                    example_title: "Banxico vs Inflación 2022-2023",
+                    example: "La inflación llegó a 8.7% en 2022. Banxico subió la tasa de 4% a 11.25%. Resultado: Créditos hipotecarios pasaron de 8% a 12%, las empresas frenaron inversiones, el peso se apreció de 20 a 17 por dólar (entró capital extranjero buscando rendimiento), y la inflación bajó gradualmente a 4.5%. Costo: menor crecimiento económico."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué es importante que el Banco Central sea autónomo del gobierno?",
+                        hint: "Tentación de imprimir dinero.",
+                        answer: "Porque si el gobierno controla la política monetaria, tiene incentivo a financiar su gasto imprimiendo dinero (señoreaje), lo que genera inflación. La autonomía da credibilidad: los agentes económicos confían en que se controlará la inflación, lo que ancla las expectativas y facilita el trabajo del banco central."
+                    }
+                ]
+            },
+            {
+                id: 't4-pub-distribucion',
+                title: 'Distribución del Ingreso y Pobreza',
+                content: 'Medir y combatir la desigualdad.',
+                lesson: {
+                    explanation: "El Coeficiente de Gini va de 0 (igualdad perfecta) a 1 (un individuo tiene todo). México ~0.42. La Curva de Lorenz muestra el % acumulado de ingreso vs % acumulado de población. CONEVAL mide pobreza multidimensional: no solo ingreso, sino 6 carencias sociales (educación, salud, seguridad social, vivienda, servicios básicos, alimentación). Pobreza extrema: ingreso < línea de bienestar mínimo + 3 o más carencias.",
+                    example_title: "Dos Méxicos",
+                    example: "El 10% más rico de México gana 21 veces más que el 10% más pobre. Si dibujas la Curva de Lorenz, se aleja mucho de la línea de 45° (igualdad). El área entre la curva y la diagonal, dividida entre el área total del triángulo, te da el Gini. CONEVAL reporta que 36.3% de mexicanos están en pobreza (2022): tienen ingreso insuficiente Y al menos una carencia social."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué CONEVAL usa medición multidimensional y no solo ingreso para medir pobreza?",
+                        hint: "Puedes ganar suficiente pero no tener acceso a servicios.",
+                        answer: "Porque una persona puede tener ingreso suficiente pero carecer de acceso a salud, educación o vivienda digna. La pobreza no es solo falta de dinero sino falta de capacidades y oportunidades. La medición multidimensional captura mejor el bienestar real de las personas."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'des-1',
+        title: 'Desarrollo Económico',
+        desc: 'Crecimiento, Desarrollo e Indicadores',
+        icon: '🌱',
+        color: '#34d399',
+        detailed_report: `# Desarrollo y Crecimiento Económico
+**Marco Teórico para el EGEL de Economía**
+
+## Introducción
+El área de Crecimiento y Desarrollo Económico (27 reactivos en EGEL-ECONO) analiza por qué unos países son ricos y otros pobres, qué determina el crecimiento de largo plazo y cómo se mide el desarrollo más allá del PIB.
+
+---
+
+## 1. Teorías del Crecimiento Económico
+
+### 1.1 Modelo de Solow (1956)
+- **Función de producción:** Y = A·K^α·L^(1-α)
+- **Estado Estacionario:** Donde inversión = depreciación
+- **Predicción:** Los países pobres crecen más rápido (convergencia)
+- **Residuo de Solow:** La productividad total de factores (PTF) explica lo que capital y trabajo no
+
+### 1.2 Crecimiento Endógeno
+- **Romer (1986):** El conocimiento tiene rendimientos crecientes
+- **Lucas (1988):** Capital humano como motor del crecimiento
+- **Diferencia con Solow:** El crecimiento puede ser auto-sostenido sin depender de factores exógenos
+
+## 2. Desarrollo Económico
+
+### 2.1 Más Allá del PIB
+- **IDH (PNUD):** Combina esperanza de vida, educación e ingreso
+- **Componentes:** Salud (esperanza de vida), Educación (años promedio y esperados), Ingreso (INB per cápita PPP)
+- **Categorías:** Muy alto (>0.8), Alto (0.7-0.8), Medio (0.55-0.7), Bajo (<0.55)
+
+### 2.2 Trampas de Pobreza
+- **Círculo vicioso:** Pobreza → Bajo ahorro → Baja inversión → Baja productividad → Pobreza
+- **Sachs:** Big Push (inversión masiva coordinada)
+- **Easterly:** Instituciones > Ayuda externa
+
+## 3. Desarrollo en México
+- **ISI (1940-1982):** Industrialización por Sustitución de Importaciones
+- **Apertura (1986+):** Entrada al GATT, TLCAN/T-MEC
+- **Retos actuales:** Desigualdad regional, informalidad (~55%), baja productividad, dependencia de remesas`,
+        topics: [
+            {
+                id: 't1-des-crecimiento',
+                title: 'Modelos de Crecimiento Económico',
+                content: 'Solow, crecimiento endógeno y convergencia.',
+                lesson: {
+                    explanation: "El modelo de Solow predice que los países convergen al mismo nivel de ingreso si tienen las mismas tasas de ahorro y crecimiento poblacional. El estado estacionario es donde la inversión nueva solo repone la depreciación. El 'residuo de Solow' (PTF) captura tecnología, instituciones y eficiencia. Los modelos endógenos (Romer, Lucas) argumentan que la inversión en conocimiento y capital humano genera crecimiento auto-sostenido sin necesidad de choques tecnológicos externos.",
+                    example_title: "China vs México: ¿Por qué China Creció Más?",
+                    example: "En 1980, China y México tenían PIB per cápita similar (~$2,000 USD). Para 2020, China lo multiplicó por 15 y México por 3. Solow diría: China ahorró e invirtió más (~45% del PIB vs 20%). Romer diría: China invirtió masivamente en educación y tecnología. La PTF de China creció 4% anual vs 0.5% en México. La trampa de ingreso medio explica por qué México se estancó."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si el modelo de Solow predice convergencia, ¿por qué muchos países pobres no han alcanzado a los ricos?",
+                        hint: "Supuestos del modelo.",
+                        answer: "Porque la convergencia de Solow requiere mismas tasas de ahorro, crecimiento poblacional y acceso a tecnología. En la realidad, los países pobres tienen menor ahorro, mayor crecimiento poblacional, peores instituciones y menor acceso a tecnología. La convergencia 'condicional' (controlando estas variables) sí se observa empíricamente."
+                    }
+                ]
+            },
+            {
+                id: 't2-des-idh',
+                title: 'IDH y Medición del Desarrollo',
+                content: 'Medir desarrollo más allá del PIB.',
+                lesson: {
+                    explanation: "El Índice de Desarrollo Humano (IDH) del PNUD combina tres dimensiones: salud (esperanza de vida al nacer), educación (años promedio y esperados de escolaridad) e ingreso (INB per cápita en PPA). Va de 0 a 1. México: 0.758 (alto). Noruega: 0.961 (muy alto). El IDH muestra que PIB alto no garantiza desarrollo: Arabia Saudita tiene PIB per cápita alto pero IDH menor al esperado por desigualdad de género y educación.",
+                    example_title: "Costa Rica vs Guinea Ecuatorial",
+                    example: "Guinea Ecuatorial tiene PIB per cápita de $8,000 (por petróleo) pero IDH de 0.592 (medio). Costa Rica tiene PIB per cápita de $12,000 pero IDH de 0.806 (muy alto). ¿Por qué? Costa Rica invierte en salud (esperanza de vida: 80 años vs 59) y educación (años escolaridad: 12 vs 6). El dinero del petróleo no se tradujo en bienestar para la población."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Cuál es la principal limitación del PIB per cápita como indicador de bienestar?",
+                        hint: "Distribución y dimensiones no monetarias.",
+                        answer: "No refleja distribución (un país con Gini alto puede tener PIB per cápita alto pero la mayoría pobre), no incluye trabajo doméstico ni economía informal, no mide salud ni educación, no considera sustentabilidad ambiental, y no captura libertades o seguridad. Por eso el IDH y otros índices multidimensionales son complementos necesarios."
+                    }
+                ]
+            },
+            {
+                id: 't3-des-mexico',
+                title: 'Desarrollo Económico de México',
+                content: 'De la ISI al T-MEC.',
+                lesson: {
+                    explanation: "México pasó por tres etapas: 1) ISI (1940-1982): Protección arancelaria, empresas paraestatales, crecimiento del 6% anual ('Milagro Mexicano'), pero dependencia de deuda externa y crisis de 1982. 2) Apertura (1986-2000): Entrada al GATT, privatizaciones, TLCAN en 1994, crisis del 'error de diciembre'. 3) Era actual: T-MEC (2020), nearshoring, retos de informalidad (~55% del empleo), baja recaudación fiscal (~17% del PIB vs 34% OCDE), y desigualdad regional (Norte industrial vs Sur agrícola).",
+                    example_title: "El Nearshoring y Nuevo León",
+                    example: "Desde 2020, empresas como Tesla, BMW y Samsung relocalizan producción de China a México (nearshoring). Nuevo León recibe la mayor inversión: $6,000 MDD en 2023. Pero el Sur (Chiapas, Guerrero, Oaxaca) no se beneficia por falta de infraestructura y capital humano. Esto amplía la desigualdad regional: PIB per cápita de Nuevo León es 5 veces el de Chiapas. El desarrollo económico de México sigue siendo geográficamente desigual."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Por qué fracasó el modelo ISI en México a pesar de que generó crecimiento por 40 años?",
+                        hint: "Eficiencia y financiamiento.",
+                        answer: "Porque la protección arancelaria creó empresas ineficientes que no podían competir internacionalmente, el gasto público excesivo se financió con deuda externa, y cuando subieron las tasas de interés en EE.UU. (1982), México no pudo pagar su deuda. Además, la ISI generó inflación crónica y un déficit comercial permanente por importar insumos que no se producían localmente."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'ref-formulas',
+        title: 'Formulario EGEL',
+        desc: 'Todas las fórmulas clave para el examen',
+        icon: '📐',
+        color: '#f472b6',
+        detailed_report: `# Formulario Integral EGEL Plus ECONO
+**Referencia Rápida de Fórmulas**
+
+---
+
+## MICROECONOMÍA
+
+### Teoría del Consumidor
+- **Restricción Presupuestaria:** M = Pₓ·X + Pᵧ·Y
+- **Condición de Equilibrio:** RMS = UMgₓ/UMgᵧ = Pₓ/Pᵧ
+- **RMS Cobb-Douglas:** RMS = (α/β)(Y/X)
+- **Demanda Marshalliana C-D:** X* = (α/(α+β)) · (M/Pₓ)
+- **Ecuación de Slutsky:** ∂x/∂p = ∂xʰ/∂p − x·(∂x/∂M)
+- **Sustitutos Perfectos:** U = aX + bY → RMS = a/b
+- **Complementos Perfectos:** U = min{aX, bY} → Óptimo en aX = bY
+
+### Elasticidades
+- **Elasticidad Precio:** Eₚ = (∂Q/∂P)(P/Q) = %ΔQ/%ΔP
+- **Elasticidad Ingreso:** Eᵢ = (∂Q/∂M)(M/Q)
+- **Elasticidad Cruzada:** Eₓᵧ = (∂Qₓ/∂Pᵧ)(Pᵧ/Qₓ)
+- **Ingreso Total y Elasticidad:** |Eₚ| > 1 → ↑P = ↓IT | |Eₚ| < 1 → ↑P = ↑IT
+
+### Teoría del Productor
+- **Función Cobb-Douglas:** Q = A·K^α·L^β
+- **PMgL = ∂Q/∂L** | **PMeL = Q/L**
+- **RMST = PMgL/PMgK** → Condición mín. costos: RMST = w/r
+- **Rendimientos a Escala:** α+β > 1 (crecientes), = 1 (constantes), < 1 (decrecientes)
+
+### Costos
+- **CT = CF + CV(Q)** | **CMg = ∂CT/∂Q**
+- **CMe = CT/Q** | **CVMe = CV/Q**
+- **Punto de Cierre CP:** P = min CVMe
+- **Beneficio Máximo:** IMg = CMg (y CMg creciente)
+
+### Estructuras de Mercado
+- **Competencia Perfecta:** P = CMg = IMg
+- **Monopolio:** IMg = CMg donde IMg = P(1 + 1/Eₚ)
+- **Índice de Lerner:** L = (P - CMg)/P = -1/Eₚ
+- **Cournot (2 empresas simétricas):** qᵢ = (a - c)/(3b) | Q = 2(a-c)/(3b)
+- **Bertrand:** P = CMg (resultado competitivo con solo 2 empresas)
+
+---
+
+## MACROECONOMÍA
+
+### Contabilidad Nacional
+- **PIB (Gasto):** Y = C + I + G + (X - M)
+- **PIB (Ingreso):** Y = W + R + i + π + Depreciación + Impuestos Indirectos
+- **PNB = PIB + Ingreso Factorial del Exterior - Pagos Factoriales al Exterior**
+- **Deflactor = (PIB Nominal / PIB Real) × 100**
+- **Tasa de Desempleo = (Desempleados / PEA) × 100**
+
+### Modelo IS-LM
+- **Multiplicador del Gasto:** k = 1/(1-c) donde c = PMgC
+- **Multiplicador Tributario:** kₜ = -c/(1-c)
+- **Multiplicador de Presupuesto Equilibrado:** k = 1
+
+### Mundell-Fleming
+- **TC fijo + movilidad de capital:** Fiscal efectiva, monetaria inefectiva
+- **TC flexible + movilidad de capital:** Monetaria efectiva, fiscal inefectiva
+
+### Inflación y Phillips
+- **Ecuación de Fisher:** i = r + πᵉ
+- **Curva de Phillips CP:** π = πᵉ - β(u - uₙ) + ε
+- **Ley de Okun:** ΔU ≈ -0.5 × (ΔY - 3%)
+
+### Crecimiento (Solow)
+- **Y = A·K^α·L^(1-α)**
+- **Estado Estacionario:** s·f(k) = (n + δ)·k
+- **Regla de Oro:** PMgK = n + δ
+- **Residuo de Solow:** ΔA/A = ΔY/Y - α·ΔK/K - (1-α)·ΔL/L
+
+---
+
+## PROYECTOS DE INVERSIÓN
+
+### Valor del Dinero en el Tiempo
+- **Valor Futuro:** VF = VP × (1 + r)ⁿ
+- **Valor Presente:** VP = VF / (1 + r)ⁿ
+- **Anualidad (VP):** VP = PMT × [(1 - (1+r)⁻ⁿ) / r]
+- **Perpetuidad:** VP = PMT / r
+
+### Evaluación de Proyectos
+- **VPN = -I₀ + Σ [Fₜ / (1+r)ᵗ]** → aceptar si VPN > 0
+- **TIR:** tasa r tal que VPN = 0 → aceptar si TIR > costo de capital
+- **WACC = wₑ·Kₑ + wᵈ·Kᵈ·(1-T)**
+- **CAE = VPN × [r / (1 - (1+r)⁻ⁿ)]**
+- **Punto de Equilibrio:** Q* = CF / (PVu - CVu)
+
+### Razones Financieras
+- **Razón Circulante = AC / PC** (liquidez, ideal 1.5-2.5)
+- **Prueba Ácida = (AC - Inventarios) / PC**
+- **Capital de Trabajo Neto = AC - PC**
+- **Rotación de Inventarios = Costo de Ventas / Inventario Promedio**
+- **Rotación CxC = Ventas a Crédito / CxC Promedio**
+- **Días de Cobro = 365 / Rotación CxC**
+- **Deuda/Capital = Pasivo Total / Capital Contable**
+- **Cobertura de Intereses = EBITDA / Gastos Financieros**
+- **ROE = Utilidad Neta / Capital Contable**
+- **ROA = Utilidad Neta / Activo Total**
+- **Margen Neto = Utilidad Neta / Ventas Netas**
+- **Margen Bruto = (Ventas - Costo de Ventas) / Ventas**
+- **Fórmula DuPont:** ROE = Margen Neto × Rotación de Activos × Apalancamiento
+
+### Inversión Pública
+- **Beneficio-Costo Social = VP Beneficios Sociales / VP Costos Sociales** (aceptar si > 1)
+- **Tasa Social de Descuento (México SHCP):** ~10%
+
+---
+
+## DISTRIBUCIÓN Y POBREZA
+- **Coeficiente de Gini:** 0 = igualdad perfecta, 1 = desigualdad total
+- **Gini = A / (A + B)** donde A = área entre Lorenz y diagonal
+- **IDH = (Índice Salud × Índice Educación × Índice Ingreso)^(1/3)**`,
+        topics: [
+            {
+                id: 't1-ref-micro',
+                title: 'Fórmulas de Microeconomía',
+                content: 'Consumidor, productor y mercados.',
+                lesson: {
+                    explanation: "Las fórmulas más importantes de micro para el EGEL: 1) Equilibrio del consumidor: RMS = Px/Py. Para Cobb-Douglas U=X^a·Y^b: X*=(a/(a+b))(M/Px). 2) Elasticidad: Ep=(ΔQ/ΔP)(P/Q). Si |Ep|>1, demanda elástica (↑P→↓IT). 3) RMST=PMgL/PMgK=w/r en el óptimo. 4) Beneficio máximo cuando IMg=CMg. 5) Monopolio: IMg=P(1+1/Ep), Lerner L=(P-CMg)/P. 6) Cournot: qi=(a-c)/3b para duopolio simétrico.",
+                    example_title: "Resolución Rápida Tipo EGEL",
+                    example: "Problema: U=X^0.4·Y^0.6, Px=10, Py=20, M=1000. Paso 1: X*=(0.4/1)(1000/10)=40. Paso 2: Y*=(0.6/1)(1000/20)=30. Verificar: 40(10)+30(20)=400+600=1000 ✓. RMS=0.4/0.6·(30/40)=0.5=10/20=Px/Py ✓. Tip EGEL: En Cobb-Douglas, el consumidor SIEMPRE gasta la fracción α/(α+β) de su ingreso en X."
+                },
+                socratic_questions: [
+                    {
+                        q: "Si tienes U=X²Y y Px=4, Py=2, M=120, ¿cuánto es X* y Y*?",
+                        hint: "α=2, β=1, α+β=3.",
+                        answer: "X*=(2/3)(120/4)=20. Y*=(1/3)(120/2)=20. Verificación: 20(4)+20(2)=80+40=120 ✓."
+                    }
+                ]
+            },
+            {
+                id: 't2-ref-macro',
+                title: 'Fórmulas de Macroeconomía',
+                content: 'PIB, IS-LM, Solow y Phillips.',
+                lesson: {
+                    explanation: "Fórmulas macro esenciales: 1) PIB=C+I+G+(X-M). 2) Multiplicador=1/(1-PMgC). Si PMgC=0.8, k=5. 3) Ecuación de Fisher: i=r+πe. 4) Phillips: π=πe-β(u-un). 5) Solow: Estado estacionario donde s·f(k)=(n+δ)k. 6) Ley de Okun: ΔU≈-0.5(ΔY-3%). 7) Mundell-Fleming: TC fijo→fiscal efectiva; TC flexible→monetaria efectiva.",
+                    example_title: "Multiplicador en Acción",
+                    example: "PMgC=0.75, G aumenta en $100M. Multiplicador=1/(1-0.75)=4. ΔY=4×100=$400M. Con impuestos proporcionales t=0.2: Multiplicador=1/(1-0.75(1-0.2))=1/(1-0.6)=2.5. ΔY=2.5×100=$250M. Los impuestos 'filtran' parte del efecto. Tip EGEL: El multiplicador tributario siempre es MENOR que el del gasto porque parte del recorte de impuestos se ahorra."
+                },
+                socratic_questions: [
+                    {
+                        q: "En Mundell-Fleming con TC flexible y movilidad perfecta, ¿por qué la política fiscal es inefectiva?",
+                        hint: "Tasa de interés y tipo de cambio.",
+                        answer: "Porque ↑G → ↑Y → ↑demanda de dinero → ↑tasa de interés → entra capital extranjero → peso se aprecia → ↓exportaciones netas. La caída en exportaciones compensa exactamente el aumento del gasto público. Solo la política monetaria mueve el PIB con TC flexible."
+                    }
+                ]
+            },
+            {
+                id: 't3-ref-finanzas',
+                title: 'Fórmulas de Proyectos de Inversión',
+                content: 'VPN, TIR, razones financieras.',
+                lesson: {
+                    explanation: "Fórmulas de inversión: 1) VP=VF/(1+r)^n. 2) VPN=-I₀+Σ[Ft/(1+r)^t], aceptar si >0. 3) TIR: tasa que hace VPN=0, aceptar si >WACC. 4) WACC=we·Ke+wd·Kd·(1-T). 5) Punto de Equilibrio: Q*=CF/(PVu-CVu). 6) Razones: RC=AC/PC, PA=(AC-Inv)/PC, ROE=UN/CC, ROA=UN/AT, Margen=UN/Ventas. 7) DuPont: ROE=Margen×Rotación×Apalancamiento. 8) B/C Social>1 = viable.",
+                    example_title: "Evaluación Completa de Proyecto",
+                    example: "Inversión: $1,000,000. Flujos: $350,000/año por 4 años. WACC=12%. VPN=-1,000,000+312,500+279,018+249,123+222,431=$63,072. VPN>0: viable. TIR≈15% (>12% WACC). Payback=1,000,000/350,000≈2.86 años. Si la empresa tiene RC=2.0, PA=1.2, ROE=18%, está en posición de financiar."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Qué pasa con el VPN si la inflación sube y el WACC se ajusta?",
+                        hint: "Tasa de descuento más alta.",
+                        answer: "El VPN disminuye porque una tasa más alta reduce el valor presente de los flujos futuros. Proyectos viables con inflación baja pueden volverse inviables con inflación alta. Por eso en épocas de alta inflación se invierte menos."
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        id: 'ref-autores',
+        title: 'Autores Clave EGEL',
+        desc: 'Economistas que debes conocer para el examen',
+        icon: '👤',
+        color: '#fbbf24',
+        detailed_report: `# Autores Clave para el EGEL Plus ECONO
+**Referencia de Economistas y sus Contribuciones**
+
+---
+
+## MICROECONOMÍA
+
+### Teoría del Consumidor
+- **Adam Smith (1723-1790):** "La Riqueza de las Naciones" (1776). Mano invisible, división del trabajo, libre mercado.
+- **Alfred Marshall (1842-1924):** "Principles of Economics" (1890). Demandas ordinarias (marshallianas), excedente del consumidor, equilibrio parcial.
+- **Vilfredo Pareto (1848-1923):** Curvas de indiferencia, óptimo de Pareto, distribución de Pareto (80/20).
+- **John R. Hicks (1904-1989):** "Value and Capital" (1939). Demandas compensadas (hicksianas), IS-LM.
+- **Paul Samuelson (1915-2009):** "Foundations of Economic Analysis" (1947). Preferencias reveladas, Stolper-Samuelson.
+- **Hal Varian (1947-):** "Intermediate Microeconomics". Libro de texto estándar moderno.
+- **Wassily Leontief (1905-1999):** Función de proporciones fijas (complementos perfectos), modelo input-output.
+
+### Teoría del Productor y Mercados
+- **Antoine Cournot (1801-1877):** Modelo de duopolio por cantidades (1838).
+- **Joseph Bertrand (1822-1900):** Modelo de duopolio por precios (1883). P = CMg con solo 2 empresas.
+- **Francis Edgeworth (1845-1926):** Caja de Edgeworth, duopolio con restricción de capacidad.
+- **Edward Chamberlin (1899-1967):** Competencia monopolística (1933). Diferenciación de producto.
+- **Joan Robinson (1903-1983):** "Economics of Imperfect Competition" (1933). Discriminación de precios, monopsonio.
+- **Heinrich von Stackelberg (1905-1946):** Modelo líder-seguidor en oligopolio (1934).
+- **John Nash (1928-2015):** Equilibrio de Nash (1950). Teoría de juegos no cooperativos.
+
+### Bienestar y Fallos de Mercado
+- **Arthur Pigou (1877-1959):** Impuestos pigouvianos para corregir externalidades.
+- **Ronald Coase (1910-2013):** Teorema de Coase: negociación privada resuelve externalidades si costos de transacción son bajos.
+- **Kenneth Arrow (1921-2017):** Teorema de imposibilidad, equilibrio general, economía de la información.
+
+---
+
+## MACROECONOMÍA
+
+### Clásicos y Keynesianos
+- **John M. Keynes (1883-1946):** "Teoría General" (1936). Demanda agregada, multiplicador, trampa de liquidez.
+- **John Hicks & Alvin Hansen:** Modelo IS-LM (formalización de Keynes).
+- **Irving Fisher (1867-1947):** Ecuación de Fisher (i = r + πe), teoría cuantitativa del dinero.
+- **Milton Friedman (1912-2006):** Monetarismo, ingreso permanente, tasa natural de desempleo. "La inflación es siempre un fenómeno monetario."
+
+### Phillips, Expectativas y Crecimiento
+- **A.W. Phillips (1914-1975):** Curva de Phillips (1958): relación inflación-desempleo.
+- **Robert Lucas (1937-2023):** Expectativas racionales, crítica de Lucas, crecimiento endógeno.
+- **Robert Solow (1924-2023):** Modelo neoclásico de crecimiento (1956). Convergencia, residuo de Solow.
+- **Paul Romer (1955-):** Crecimiento endógeno (1986). Rendimientos crecientes del conocimiento.
+- **Robert Barro (1944-):** Equivalencia ricardiana, instituciones y crecimiento.
+
+### Comercio Internacional
+- **David Ricardo (1772-1823):** Ventaja comparativa.
+- **Eli Heckscher & Bertil Ohlin:** Modelo H-O: comercio basado en dotación de factores.
+- **Robert Mundell (1932-2021):** Mundell-Fleming, áreas monetarias óptimas.
+- **Wolfgang Stolper & Samuelson:** El comercio beneficia al factor abundante.
+
+---
+
+## FINANZAS Y PROYECTOS
+- **Franco Modigliani & Merton Miller:** Teorema M-M: estructura de capital irrelevante en mercados perfectos.
+- **William Sharpe (1934-):** CAPM, Beta, relación riesgo-rendimiento.
+- **Charles Cobb & Paul Douglas:** Función Cobb-Douglas (1928).
+
+---
+
+## DESARROLLO Y BIENESTAR
+- **Amartya Sen (1933-):** Capacidades y libertades, IDH (co-creador).
+- **Jeffrey Sachs (1954-):** Big Push, fin de la pobreza.
+- **Douglass North (1920-2015):** Instituciones como determinantes del desarrollo.
+- **Arthur Lewis (1915-1991):** Modelo dual (sector moderno vs tradicional).`,
+        topics: [
+            {
+                id: 't1-aut-micro',
+                title: 'Autores de Microeconomía',
+                content: 'De Marshall a Nash.',
+                lesson: {
+                    explanation: "Autores clave de micro para el EGEL: Marshall (demandas ordinarias, equilibrio parcial), Hicks (demandas compensadas, IS-LM), Pareto (curvas de indiferencia, óptimo), Samuelson (preferencias reveladas), Leontief (complementos perfectos), Cournot (duopolio por cantidades), Bertrand (duopolio por precios), Nash (equilibrio no cooperativo), Chamberlin (competencia monopolística), Pigou (impuestos correctivos), Coase (negociación privada), Arrow (imposibilidad, equilibrio general).",
+                    example_title: "¿Quién es Quién en el Examen?",
+                    example: "Si el EGEL pregunta por 'demandas que mantienen utilidad constante' → Hicks. 'Demandas que dependen de ingreso y precios' → Marshall. 'Solución sin gobierno a externalidades' → Coase. 'No existe sistema de votación perfecto' → Arrow. 'Función min{aX,bY}' → Leontief. 'Empresas compiten en cantidades' → Cournot. 'Empresas compiten en precios' → Bertrand. 'Productos diferenciados' → Chamberlin."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Cuál es la diferencia fundamental entre Pigou y Coase para resolver externalidades?",
+                        hint: "Intervención vs negociación.",
+                        answer: "Pigou propone intervención del gobierno (impuestos/subsidios) para igualar costo privado con social. Coase argumenta que si los costos de transacción son bajos, las partes negocian privadamente sin gobierno. Pigou = 'arriba hacia abajo', Coase = 'abajo hacia arriba'. Coase falla cuando hay muchos afectados."
+                    }
+                ]
+            },
+            {
+                id: 't2-aut-macro',
+                title: 'Autores de Macroeconomía y Finanzas',
+                content: 'De Keynes a Lucas.',
+                lesson: {
+                    explanation: "Autores macro: Keynes (demanda agregada, multiplicador, trampa de liquidez), Hicks-Hansen (IS-LM), Fisher (i=r+πe), Friedman (monetarismo, tasa natural de desempleo), Phillips (curva inflación-desempleo), Solow (crecimiento, estado estacionario), Romer (crecimiento endógeno), Lucas (expectativas racionales), Mundell (Mundell-Fleming). Finanzas: Modigliani-Miller (estructura de capital), Sharpe (CAPM, Beta). Desarrollo: Sen (IDH, capacidades), North (instituciones).",
+                    example_title: "Debate Keynes vs Friedman",
+                    example: "Si el EGEL plantea una recesión: Keynes diría 'aumenta gasto público, el multiplicador reactiva'. Friedman diría 'política fiscal solo genera inflación a largo plazo; mantén estable el crecimiento del dinero'. Trampa de liquidez → Keynes. 'Inflación es fenómeno monetario' → Friedman. Expectativas racionales → Lucas. Convergencia y PTF → Solow. Crecimiento por conocimiento → Romer."
+                },
+                socratic_questions: [
+                    {
+                        q: "¿Qué es la 'crítica de Lucas' y por qué cambió la macroeconomía?",
+                        hint: "Los agentes cambian su comportamiento ante políticas nuevas.",
+                        answer: "Lucas argumentó que los modelos basados en datos históricos NO pueden predecir el efecto de políticas nuevas, porque los agentes racionales CAMBIARÁN su comportamiento. Si el gobierno siempre combate recesiones con gasto, los agentes lo anticipan y ajustan precios, neutralizando el efecto. Obligó a usar modelos con 'microfundamentos'."
                     }
                 ]
             }
